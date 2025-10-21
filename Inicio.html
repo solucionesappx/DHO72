@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación Móvil - Inicio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Configuración de Tailwind para usar el color de acento y la fuente Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        html {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Definición de colores base */
+        :root {
+            --color-bg-light: #f9fafb;
+            --color-text-light: #1f2937;
+            --color-primary-light: #3b82f6;
+            --color-bg-dark: #1f2937;
+            --color-text-dark: #f3f4f6;
+            --color-primary-dark: #60a5fa;
+            --color-surface-light: #ffffff;
+            --color-surface-dark: #374151;
+            --color-header: #2D59A1; 
+            --color-data-text: #ffffff; 
+            --color-bg-table-row: #1f2937; 
+        }
+        
+        /* Estilos del cuerpo en modo oscuro */
+        .dark { background-color: var(--color-bg-dark); color: var(--color-text-dark); }
+        
+        #app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 10vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        header, footer {
+            width: 100%;
+            max-width: 500px; 
+            z-index: 50; 
+            transition: background-color 0.3s, color 0.3s;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Estilos específicos para header y footer en modo oscuro */
+        .dark header, .dark footer { 
+            background-color: var(--color-surface-dark); 
+            border-color: #4b5563; 
+        }
+
+        main {
+            flex-grow: 1;
+            overflow: hidden; 
+        }
+        
+        /* CONTENEDOR DESPLEGABLE (SCROLLABLE-CONTENT) */
+        #scroll-container {
+            height: 100%;
+            overflow-y: auto; 
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 76px; 
+            padding-bottom: 72px; 
+            transition: padding 0.3s ease-in-out;
+        }
+
+        .footer-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 4px;
+            font-size: 0.75rem;
+            line-height: 1;
+            transition: color 0.2s, background-color 0.2s;
+            border-radius: 0.5rem;
+            color: inherit;
+        }
+
+        .footer-btn.active { color: var(--color-primary-dark); }
+
+        /* ========================================================== */
+        /* --- REGLA CSS REUTILIZABLE PARA TARJETAS DE MÉTRICAS --- */
+        /* ========================================================== */
+        /* Esta clase encapsula el diseño de la tarjeta de métrica individual */
+        .metric-card {
+            /* w-1/3 py-0 px-1.5 rounded-xl shadow-2xl transition-all duration-300 dark:bg-gray-700 flex items-center space-x-2 */
+            width: 33.333333%; /* w-1/3 */
+            padding-top: 0; /* py-0 */
+            padding-bottom: 0; /* py-0 */
+            padding-left: 0.375rem; /* px-1.5 */
+            padding-right: 0.375rem; /* px-1.5 */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* shadow-2xl */
+            transition: all 300ms; /* transition-all duration-300 */
+            display: flex; /* flex */
+            align-items: center; /* items-center */
+            gap: 0.5rem; /* space-x-2 */
+        }
+        
+        /* ========================================================== */
+        /* --- CLASE REUTILIZABLE PARA EL MOTOR DE BÚSQUEDA --- */
+        /* ========================================================== */
+        /* Encapsula el diseño y espaciado del motor de búsqueda y sus botones */
+        .search-actions-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; /* space-x-2 */
+            margin-top: 1rem; /* mt-4 */
+            width: 100%;
+        }
+        
+        /* Estilo para el input de búsqueda dentro del contenedor */
+        .search-input-wrapper {
+            position: relative;
+            flex-grow: 1;
+            border-radius: 0.75rem; /* rounded-xl */
+        }
+        
+        .search-input-wrapper input {
+            /* Asegura que el input ocupe el espacio sin romperse */
+            width: 100%;
+            padding-left: 2.5rem; /* pl-10 */
+            padding-right: 1rem; /* pr-4 */
+            padding-top: 0.5rem; /* py-2 */
+            padding-bottom: 0.5rem; /* py-2 */
+            border-radius: 0.75rem;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); /* shadow-inner */
+            
+            /* Colores de fondo y borde para modo oscuro */
+            background-color: #374151; /* dark:bg-gray-700 */
+            color: #f3f4f6; /* dark:text-gray-100 */
+            border: 1px solid #4b5563; /* dark:border-gray-600 */
+            
+            /* Efecto de foco */
+            transition: border-color 0.15s, box-shadow 0.15s;
+            outline: none;
+        }
+
+        .search-input-wrapper input:focus {
+            border-color: #3b82f6; /* focus:ring-blue-500 */
+            box-shadow: 0 0 0 2px #3b82f6; /* focus:ring-2 focus:ring-blue-500 */
+        }
+        
+        /* Estilo para el icono de lupa dentro del input */
+        .search-icon {
+            position: absolute;
+            left: 0.75rem; /* left-3 */
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af; /* text-gray-400 */
+        }
+        
+        /* ========================================================== */
+        /* --- ESTILOS DE LA TABLA DINÁMICA --- */
+        /* ========================================================== */
+        
+        .table-scroll-container {
+            max-height: calc(85vh - 350px); /* Ajuste de la altura de la tabla, modificado a 85vh */
+            overflow-x: auto; 
+            overflow-y: auto; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            display: block; 
+            border: 1px solid #4b5563; 
+            background-color: var(--color-bg-table-row); 
+        }
+        
+        .table-scroll-container table {
+            border-collapse: collapse; 
+            table-layout: auto; 
+            width: max-content; 
+            min-width: 100%; 
+        }
+
+        .table-scroll-container th {
+            position: sticky;
+            top: 0; 
+            z-index: 20; 
+            background-color: var(--color-header); 
+            color: var(--color-data-text);
+            padding: 0.25rem 0.5rem; 
+            text-align: center; 
+            white-space: nowrap;
+            font-size: 0.75rem; 
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1); 
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .sticky-id-cell {
+            position: sticky;
+            left: 0;
+            z-index: 30; 
+            font-weight: bold;
+            text-align: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.2); 
+        }
+        
+        .table-scroll-container th.sticky-id-cell {
+            background-color: var(--color-header); 
+            z-index: 40; 
+        }
+        
+        .table-data-cell.sticky-id-cell {
+            /* El color de fondo se mantiene aquí para la celda ID pegajosa para distinguirla */
+            background-color: var(--color-surface-dark); 
+            color: var(--color-primary-dark);
+            font-size: 0.75rem; 
+        }
+
+        .table-data-cell {
+            font-size: 0.875rem; 
+            padding-top: 0.25rem; 
+            padding-bottom: 0.25rem;
+            white-space: nowrap; 
+            transition: background-color 0.15s, color: 0.15s, border-color 0.15s;
+            border-bottom: 1px solid #4b5563; 
+            height: 32px; 
+            /* Propiedades eliminadas: display: flex y align-items: center */
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+            gap: 4px;
+        }
+
+        /*
+        * REGLA MODIFICADA: Se elimina background-color. Solo se mantiene el color del texto.
+        */
+        .row-warning-text .table-data-cell {
+            color: #fcd34d; /* Amarillo para el texto */
+        }
+        
+        .row-alert-text .table-data-cell {
+            background-color: #582b2b; 
+            color: #fca5a5; 
+            font-weight: 600;
+        }
+        
+        /* Estilos para el overlay del modal */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.8);
+            transition: opacity 0.3s ease;
+        }
+
+        /* Estilos específicos para el modal de detalles del trabajador */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #4b5563; /* Borde sutil */
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #9ca3af; /* Gris sutil para la etiqueta */
+            font-weight: 500;
+            flex-shrink: 0; /* Evita que la etiqueta se encoja */
+            padding-right: 1rem;
+            /* Permite que la etiqueta se envuelva en caso de que sea larga, aunque no debería serlo */
+            white-space: normal; 
+        }
+
+        .detail-value {
+            font-size: 0.9rem;
+            color: #f3f4f6; /* Blanco para el valor */
+            font-weight: 600;
+            text-align: right;
+            
+            /* --- REGLAS CLAVE PARA EL SCROLL HORIZONTAL --- */
+            white-space: nowrap; /* Fuerza el contenido a estar en una sola línea */
+            overflow-x: auto; /* Habilita el scroll horizontal si es necesario */
+            max-width: 60%; /* Ocupa un máximo del 60% del ancho del detalle para dejar espacio a la etiqueta */
+            
+            /* Ocultar la barra de desplazamiento en navegadores WebKit */
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Ocultar la barra de desplazamiento en Chrome, Safari y Opera */
+        .detail-value::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Ajuste para el campo Nota/Alerta para que ocupe todo el ancho y se envuelva */
+        .detail-row-note .detail-value {
+            text-align: left;
+            font-weight: 400;
+            margin-top: 0.25rem;
+            font-style: italic;
+            width: 100%;
+            max-width: 100%; /* Elimina la restricción de ancho para la nota */
+            white-space: normal; /* Permite el salto de línea para la nota */
+            overflow-x: hidden; /* No queremos scroll horizontal para la nota */
+        }
+    </style>
+</head>
+<body class="dark transition-colors duration-300">
+    <div id="app-container" class="shadow-xl">
+        <header id="app-header" class="fixed top-0 w-full h-14 border-b border-gray-700 dark:border-gray-500 flex items-center justify-between px-4">
+            <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
+                Mi Aplicación Móvil ZXC
+            </h1>
+            <div class="flex space-x-3">
+                <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="window.location.href = 'index.html'">
+                    <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
+                </button>
+            </div>
+        </header>
+
+        <main id="main-content">
+            <div id="scroll-container" class="flex flex-col">
+                <h2 class="text-2xl font-extrabold text-gray-200 border-b border-gray-700 pb-2">Gestión de Vacaciones</h2>
+                
+                <div id="table-loading-status" class="mt-8 text-center" style="display:none;">
+                </div>
+
+                <!-- INICIO DEL CONTENEDOR METRICAS BD_PERSONAL -->
+                <div id="data-view-container" class="w-full mt-4">
+                    <!-- Título (sin borde inferior) -->
+                    <h2 class="text-xl font-bold pb-2">BD Personal</h2> 
+                    
+                    <!-- Contenedor de métricas -->
+                    <div class="flex justify-between space-x-2 p-1">
+                        <!-- Tarjeta de Métrica: Total Empleados - USANDO LA CLASE REUTILIZABLE -->
+                        <div id="metric-total-records" class="metric-card"> 
+                            <i data-lucide="users" class="w-6 h-6 text-green-500 flex-shrink-0"></i> 
+                            <div class="flex flex-col"> 
+                                <span class="text-xl font-extrabold text-green-500 leading-none block" data-metric="total">0</span> 
+                                <span class="text-xs dark:text-gray-300 whitespace-nowrap leading-none block">Total Empleados</span> 
+                            </div> 
+                        </div> 
+                        <!-- Tarjeta de Métrica: Dados de Baja - USANDO LA CLASE REUTILIZABLE -->
+                        <div class="metric-card"> 
+                            <i data-lucide="user-minus" class="w-6 h-6 text-red-500 flex-shrink-0"></i> 
+                            <div class="flex flex-col"> 
+                                <span class="text-xl font-extrabold text-red-500 leading-none block" data-metric="perfil_dados_baja">0</span> 
+                                <span class="text-xs dark:text-gray-300 whitespace-nowrap leading-none block">Dados de Baja</span> 
+                            </div> 
+                        </div> 
+                        <!-- Tarjeta de Métrica: Notas/Alertas - USANDO LA CLASE REUTILIZABLE -->
+                        <div class="metric-card"> 
+                            <i data-lucide="alert-triangle" class="w-6 h-6 text-yellow-500 flex-shrink-0"></i> 
+                            <div class="flex flex-col"> 
+                                <span class="text-xl font-extrabold text-yellow-500 leading-none block" data-metric="ctrl1_warning">0</span> 
+                                <span class="text-xs dark:text-gray-300 whitespace-nowrap leading-none block">Notas/Alertas</span> 
+                            </div> 
+                        </div> 
+                    </div> 
+                </div>
+                <!-- FIN DEL CONTENEDOR METRICAS BD_PERSONAL -->
+                
+                <!-- INICIO DEL MOTOR DE BÚSQUEDA Y RECARGA (USANDO LA NUEVA CLASE) -->
+                <div id="search-container" class="search-actions-container">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="search-input" placeholder="Buscar por Nombre, Cédula, Cargo..."
+                                class="w-full rounded-xl shadow-inner
+                                        text-gray-900 dark:text-gray-100
+                                        placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+                                        autocomplete="off">
+                        <i data-lucide="search" class="search-icon w-5 h-5 text-gray-500 dark:text-gray-300"></i>
+                    </div>
+                    <button id="clear-search-btn" class="p-2.5 rounded-full hover:bg-gray-700 shadow-md transition-colors duration-200 text-red-500 dark:text-red-400 font-bold" title="Reiniciar Filtros y Ordenación">
+                        <i data-lucide="x-circle" class="w-8 h-8"></i>
+                    </button>
+                    <button id="reload-icon" class="p-2 rounded-full text-blue-400 hover:bg-gray-700 transition duration-150" title="Recargar Datos (Omitir Caché)">
+                        <i data-lucide="refresh-cw" class="w-8 h-8"></i>
+                    </button>
+                </div>
+                <!-- FIN DEL MOTOR DE BÚSQUEDA Y RECARGA -->
+                
+                <div id="employee-table-wrapper" class="mt-6 flex-grow">
+                    <h3 class="text-lg font-semibold mb-3 border-b border-gray-700 pb-2">Base de Datos de Empleados</h3>
+                    <div id="employee-table-container" class="table-scroll-container">
+                    </div>
+                </div>
+                
+            </div>
+        </main>
+
+        <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
+            <button class="footer-btn active" data-section="Inicio">
+                <i data-lucide="home" class="w-6 h-6"></i>
+                <span>Inicio</span>
+            </button>
+            <button class="footer-btn" data-section="Vacaciones">
+                <i data-lucide="calendar-days" class="w-6 h-6"></i> 
+                <span>Vacaciones</span>
+            </button>
+            <button class="footer-btn" data-section="Agregar">
+                <i data-lucide="calendar-plus" class="w-6 h-6"></i>
+                <span>Agregar</span>
+            </button>
+            <button class="footer-btn" data-section="Perfil">
+                <i data-lucide="user" class="w-6 h-6"></i>
+                <span>Perfil</span>
+            </button>
+            <button class="footer-btn" data-section="Configuración">
+                <i data-lucide="settings" class="w-6 h-6"></i>
+                <span>Config</span>
+            </button>
+        </footer>
+    </div>
+    
+    <!-- ========================================================== -->
+    <!-- --- MODAL DE DETALLES DEL TRABAJADOR --- -->
+    <!-- ========================================================== -->
+    <div id="details-employee-modal" 
+         class="hidden fixed inset-0 z-50 modal-overlay items-start justify-center pt-20 sm:pt-14">
+        <div class="bg-gray-800 w-full max-w-sm p-6 rounded-xl shadow-2xl border border-gray-700 transform scale-100 transition-transform duration-300">
+            <!-- Encabezado del Modal -->
+            <div class="flex justify-between items-start border-b border-gray-700 pb-3 mb-4">
+                <h2 class="text-xl font-bold text-blue-400 flex items-center space-x-2">
+                    <span>Detalle Trabajador</span>
+
+                    <!-- Botón de Ver Detalle de Vacaciones -->
+                    <button class="p-1 rounded-full"
+                            title="Ver Detalle de Vacaciones" 
+                            onclick="showVacationDetailModal()">
+                        <i data-lucide="calendar-days" class="w-6 h-6 text-yellow-400"></i>
+                    </button>
+
+                    <!-- Botón de Editar Detalle de Trabajador (SOLICITUD ANTERIOR) -->
+                    <button class="p-1 rounded-full" 
+                            title="Editar Detalle de Trabajador" 
+                            onclick="showDetailEditModal()">
+                        <i data-lucide="edit-3" class="w-6 h-6 text-blue-400"></i>
+                    </button>
+                    
+
+                    
+                </h2>
+                <!-- Botón de Cerrar (X) -->
+                <button type="button" onclick="closeDetailsModal()" 
+                        class="w-8 h-8 
+                               flex items-center justify-center 
+                               rounded-full 
+                               text-red-400 
+                               shadow-red-500/50 
+                               hover:shadow-[0_0_15px_4px_rgba(239,68,68,0.7)] 
+                               hover:text-red-600
+                               hover:scale-110
+                               transition-all duration-300">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                    
+                </button>
+            </div>
+            
+            <!-- Contenedor de los detalles (se llena con JS) -->
+            <div id="details-container" class="max-h-[70vh] overflow-y-auto pr-1">
+                <!-- Los campos de detalle se insertarán aquí -->
+            </div>
+
+            <!-- El botón de Editar y su contenedor han sido eliminados. -->
+        </div>
+    </div>
+    <!-- ========================================================== -->
+    
+    <script>
+        // Inicializa los íconos de Lucide
+        lucide.createIcons();
+
+        // =================================================================
+        // --- CONSTANTES Y VARIABLES GLOBALES (Para la conexión GAS) ---
+        // =================================================================
+        // URL de la API para Google Apps Script
+        const GET_URL = 'https://script.google.com/macros/s/AKfycbx87WvxA9ca1KyGMA1wsw1npZw5vPtjoItomhF823BICXScNrWGFh5m0Dj6Veb24CtHXQ/exec';
+        const TARGET_SHEET_NAME = 'BD_Personal2'; // Nombre de la hoja
+        const CACHE_KEY = 'employeeDataCache_BD_Personal2';
+        const CACHE_EXPIRATION_MS = 15 * 60 * 1000; // 15 minutos
+        
+        let debounceTimer; // Temporizador de retardo para la búsqueda
+        
+        // Mapeo de columnas a mostrar en la tabla (Solo las columnas visibles en la tabla)
+        const TABLE_COLUMNS = [
+            { key: 'EMPRESA', label: 'EMPRESA' },
+            { key: 'NOMBRES', label: 'NOMBRES' },
+            { key: 'APELLIDOS', label: 'APELLIDOS' },
+            { key: 'CEDULA', label: 'CÉDULA' },
+            { key: 'NOMINA', label: 'NÓMINA' },
+            { key: 'PERFIL', label: 'PERFIL' },
+            { key: 'INGRESO', label: 'Ingreso' },
+            { key: 'SECTOR', label: 'SECTOR' },
+            { key: 'UNIDAD', label: 'UNIDAD' },
+            { key: 'CARGO', label: 'CARGO' },
+            { key: 'CTRL2', label: 'Días Vacaciones' }, 
+        ];
+
+        let allEmployeeData = [];
+        let filteredEmployeeData = [];
+        
+        // Inicializar variables de ordenación - AHORA NULAS POR DEFECTO
+        let currentSortColumn = null; // Sin columna de ordenación por defecto
+        let currentSortDirection = null; // Sin dirección de ordenación por defecto
+
+        // NUEVO: Almacena el objeto del empleado actualmente visible en el modal para edición.
+        let currentSelectedEmployee = null; 
+        
+        // =================================================================
+        // --- FUNCIONES DE MANEJO DE DATOS GAS Y ORDENACIÓN ---
+        // =================================================================
+        function buildGasApiUrl(sheetName) {
+            return `${GET_URL}?sheet=${sheetName}`;
+        }
+        
+        /**
+         * Realiza la ordenación del array de datos por la columna y dirección especificadas.
+         * @param {Array<Object>} data - El array de datos a ordenar.
+         * @param {string} column - La clave de la columna.
+         * @param {string} direction - 'asc' o 'desc'.
+         */
+        function performSort(data, column, direction) {
+            // Si la columna o dirección no están definidas, no se ordena
+            if (!column || !direction) {
+                // Si la función se llama sin argumentos de ordenación, no hacemos nada y mantenemos el orden actual (o el orden de llegada si es la primera vez)
+                return;
+            }
+
+            const directionMultiplier = direction === 'asc' ? 1 : -1;
+
+            data.sort((a, b) => {
+                const aVal = a[column];
+                const bVal = b[column];
+
+                // Manejar valores nulos/indefinidos
+                if (aVal === undefined || aVal === null) return 1 * directionMultiplier;
+                if (bVal === undefined || bVal === null) return -1 * directionMultiplier;
+
+                // Intentar comparación numérica
+                const aNum = Number(aVal);
+                const bNum = Number(bVal);
+
+                if (!isNaN(aNum) && !isNaN(bNum) && typeof aVal !== 'string' && typeof bVal !== 'string') {
+                    if (aNum < bNum) return -1 * directionMultiplier;
+                    if (aNum > bNum) return 1 * directionMultiplier;
+                }
+
+                // Comparación de cadenas insensible a mayúsculas/minúsculas
+                const aStr = String(aVal).toLowerCase();
+                const bStr = String(bVal).toLowerCase();
+
+                if (aStr < bStr) return -1 * directionMultiplier;
+                if (aStr > bStr) return 1 * directionMultiplier;
+
+                return 0; // Valores iguales
+            });
+        }
+        
+        /**
+         * Ordena los datos filtrados por la columna especificada (llamada por el clic del usuario).
+         * @param {string} column - La clave de la columna por la que ordenar.
+         */
+        function sortData(column) {
+            // Determinar la nueva dirección de ordenación
+            if (currentSortColumn === column) {
+                // Si la columna es la misma, invertir la dirección
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                // Si es una nueva columna, establecerla y empezar ascendente
+                currentSortColumn = column;
+                currentSortDirection = 'asc'; 
+            }
+
+            // Usar la utilidad de ordenación
+            performSort(filteredEmployeeData, currentSortColumn, currentSortDirection);
+            
+            // Volver a renderizar la tabla con los datos ordenados
+            renderTable(filteredEmployeeData);
+        }
+
+        // --- FUNCIONES AUXILIARES DE FORMATO ---
+
+        /**
+         * Formatea un número de identificación nacional (Cédula) con puntos como separadores de miles.
+         * @param {string|number} value - El valor de la identificación.
+         * @returns {string} ID formateado.
+         */
+        function formatNumberWithDots(value) {
+            if (value === null || value === undefined || value === '') return 'N/A';
+            // Asegurarse de que sea una cadena y eliminar caracteres no dígitos
+            const str = String(value).replace(/\D/g, ''); 
+            return str.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        /**
+         * Formatea un valor de fecha (esperado como cadena 'YYYY-MM-DD' o similar) a DD/MM/YYYY.
+         * @param {string|number} value - El valor de la fecha.
+         * @returns {string} Fecha formateada.
+         */
+        function formatDate(value) {
+            if (!value) return 'N/A';
+            try {
+                // Intentar crear un objeto de fecha
+                const date = new Date(value);
+                if (isNaN(date.getTime())) {
+                    return String(value); // Devolver el valor original si no es una fecha válida
+                }
+                // Ajustar para evitar problemas de zona horaria si la fecha es solo día
+                const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+                const localDate = new Date(date.getTime() + userTimezoneOffset);
+
+                const day = String(localDate.getDate()).padStart(2, '0');
+                const month = String(localDate.getMonth() + 1).padStart(2, '0');
+                const year = localDate.getFullYear();
+                return `${day}/${month}/${year}`;
+            } catch (e) {
+                return String(value);
+            }
+        }
+        
+        // --- FUNCIÓN DE RENDERIZADO DE TABLA ---
+        
+        /**
+         * Renderiza la tabla de datos de empleados en el contenedor designado.
+         * @param {Array<Object>} data - Los datos de empleados a mostrar.
+         */
+        function renderTable(data) {
+            const container = document.getElementById('employee-table-container');
+            if (!container) return;
+            
+            if (data.length === 0) {
+                container.innerHTML = `<p class="text-center py-4 text-gray-400">No se encontraron registros que coincidan con la búsqueda.</p>`;
+                return;
+            }
+            
+            const narrowIdWidth = "30px";
+            
+            let tableHtml = `
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th class="sticky-id-cell p-3" style="min-width: ${narrowIdWidth}; max-width: ${narrowIdWidth};">ID</th>
+                            ${TABLE_COLUMNS.map(col => {
+                                let sortIcon = '';
+                                // Mostrar icono solo si esta columna es la columna de ordenación actual
+                                if (currentSortColumn === col.key) {
+                                    const iconName = currentSortDirection === 'asc' ? 'arrow-up' : 'arrow-down'; 
+                                    sortIcon = `<i data-lucide="${iconName}" class="w-3 h-3 text-white"></i>`;
+                                }
+                                return `<th class="sortable-header" data-key="${col.key}">
+                                        <div class="header-content">
+                                            <span>${col.label}</span>
+                                            ${sortIcon}
+                                        </div>
+                                    </th>`;
+                            }).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.forEach((row, index) => {
+                // Intentar usar ID, de lo contrario usar index + 1
+                const rowId = row.ID !== undefined && row.ID !== null ? row.ID : (index + 1); 
+                const hasWarning = row.CTRL1 && String(row.CTRL1).trim() !== 'N/A' && String(row.CTRL1).trim() !== '';
+                const isBaja = row.PERFIL && String(row.PERFIL).trim().toUpperCase() === 'DADO DE BAJA';
+
+                let classToAdd = '';
+                    if (hasWarning) {
+                        classToAdd = 'row-warning-text';
+                    } else if (isBaja) {
+                        classToAdd = 'row-alert-text';
+                    }
+                tableHtml += `
+                    <tr class="worker-row ${classToAdd} hover:bg-gray-700/50" data-index="${index}" data-nomina="${row.NOMINA || ''}" data-cedula="${row.CEDULA || ''}">
+                        <td class="table-data-cell sticky-id-cell" style="min-width: ${narrowIdWidth}; max-width: ${narrowIdWidth};">${rowId}</td>
+                        ${TABLE_COLUMNS.map(col => {
+                            const value = row[col.key] || '';
+                            let formattedValue = String(value); 
+                            
+                            if (col.key === 'CEDULA') {
+                                formattedValue = formatNumberWithDots(value);
+                            } else if (col.key === 'INGRESO' || col.key === 'NACIMIENTO') {
+                                formattedValue = formatDate(value);
+                            } else if (col.key === 'CTRL2') {
+                                formattedValue = value === '' ? 'N/A' : value;
+                            }
+                            
+                            let alignmentClass;
+                            // Clases de alineación de celda para TD
+                            if (col.key === 'EMPRESA') {
+                                // 1. EMPRESA: Alineación central
+                                alignmentClass = 'text-center px-2 font-semibold';
+                            } else if (['NOMBRES', 'APELLIDOS', 'PERFIL', 'SECTOR', 'UNIDAD', 'CARGO'].includes(col.key)) {
+                                // 2. Columnas alineadas a la izquierda
+                                alignmentClass = 'text-left px-2';
+                            } else if (col.key === 'CTRL2') { 
+                                // 3. Días de Vacaciones (Números) Alineados a la derecha
+                                alignmentClass = 'text-right px-2 font-semibold';
+                            } else {
+                                // 4. El resto (CEDULA, NOMINA, INGRESO) centrado por defecto
+                                alignmentClass = 'text-center px-1';
+                            }
+                            
+                            return `<td class="table-data-cell ${alignmentClass}">${formattedValue}</td>`;
+                        }).join('')}
+                    </tr>
+                `;
+            });
+            
+            tableHtml += `</tbody></table>`;
+            container.innerHTML = tableHtml;
+            
+            lucide.createIcons();
+            
+            initializeTableListeners();
+        }
+
+        /**
+         * Muestra un mensaje temporal en el contenedor de estado.
+         */
+        function showTemporaryAlert(message, type = 'blue') {
+            const alertContainer = document.getElementById('table-loading-status');
+            const colorClasses = {
+                blue: 'bg-blue-600',
+                red: 'bg-red-600',
+                green: 'bg-green-600',
+            };
+            
+            if (alertContainer) {
+                alertContainer.innerHTML = `
+                    <div class="${colorClasses[type]} p-3 rounded-xl shadow-lg text-white mt-4 mx-auto max-w-sm">
+                        <p class="text-sm">${message}</p>
+                    </div>
+                `;
+                alertContainer.style.display = 'block';
+                setTimeout(() => {
+                    alertContainer.style.display = 'none';
+                }, 3000); 
+            }
+        }
+
+        // =================================================================
+        // --- LÓGICA DE MODAL DE DETALLES ---
+        // =================================================================
+        
+        /**
+         * Muestra el modal de detalles y lo rellena con la información del empleado.
+         * @param {Object} employee - El objeto completo del empleado.
+         */
+        function openDetailsModal(employee) {
+            // 1. Almacenar el empleado seleccionado globalmente
+            currentSelectedEmployee = employee; 
+
+            const modal = document.getElementById('details-employee-modal');
+            const detailsContainer = document.getElementById('details-container');
+            
+            // Lista de campos a mostrar y sus etiquetas (ajustadas al diseño de referencia)
+            const detailFields = [
+                { key: 'NOMBRES', label: 'Nombres:' },
+                { key: 'APELLIDOS', label: 'Apellidos:' },
+                { key: 'CEDULA', label: 'Cédula:', format: formatNumberWithDots },
+                { key: 'NOMINA', label: 'Nómina:' },
+                { key: 'UNIDAD', label: 'Unidad:' },
+                { key: 'CARGO', label: 'Cargo:' },
+                { key: 'EMPRESA', label: 'Empresa:' },
+                { key: 'SECTOR', label: 'Sector:' },
+                { key: 'PERFIL', label: 'Perfil:' },
+                { key: 'INGRESO', label: 'Ingreso:', format: formatDate },
+                { key: 'NACIMIENTO', label: 'F. Nacimiento:', format: formatDate },
+                { key: 'CTRL2', label: 'D. Vacaciones:' },
+                { key: 'CTRL1', label: 'Nota:', large: true }, // Campo grande (Nota)
+            ];
+
+            let detailsHtml = '';
+
+            detailFields.forEach(field => {
+                let value = employee[field.key] || 'N/A';
+                let rawValue = value; // Mantener el valor original
+                
+                if (field.format) {
+                    value = field.format(value);
+                }
+                
+                // Si el campo es CTRL1 (Nota), usar el estilo especial que permite el salto de línea.
+                if (field.key === 'CTRL1') {
+                    if (rawValue.trim() === '' || rawValue.trim().toUpperCase() === 'N/A') {
+                        value = 'Sin nota';
+                    }
+                    detailsHtml += `
+                        <!-- Contenedor especial para la Nota (permite salto de línea en el valor) -->
+                        <div class="detail-row detail-row-note flex-col items-start pt-1 pb-2">
+                            <p class="detail-label">${field.label}</p>
+                            <!-- El valor de la nota utiliza CSS para permitir el salto de línea y ocupar todo el ancho -->
+                            <p class="detail-value text-sm text-yellow-400 font-normal italic w-full">${value}</p>
+                        </div>
+                    `;
+                } else {
+                    // Contenedor estándar de dos columnas (etiqueta | valor)
+                    detailsHtml += `
+                        <div class="detail-row">
+                            <p class="detail-label">${field.label}</p>
+                            <!-- El valor estándar utiliza CSS para forzar nowrap y habilitar overflow-x: auto -->
+                            <p class="detail-value text-right font-bold">${value}</p>
+                        </div>
+                    `;
+                }
+            });
+
+            detailsContainer.innerHTML = detailsHtml;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+
+        /**
+         * Oculta el modal de detalles del trabajador.
+         */
+        function closeDetailsModal() {
+            const modal = document.getElementById('details-employee-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            currentSelectedEmployee = null; // Limpiar la referencia al cerrar
+        }
+
+
+        /**
+         * Maneja el evento de doble clic en una fila de trabajador.
+         */
+        function handleRowDoubleClick(event) {
+            event.stopPropagation(); // Previene conflictos
+            const row = event.currentTarget;
+            const cedula = row.getAttribute('data-cedula');
+            
+            // 1. Encontrar el objeto completo del empleado usando la CÉDULA
+            // Asegúrate de que la CÉDULA en la data sea tratada como string para la comparación.
+            const employee = allEmployeeData.find(e => String(e.CEDULA) === cedula);
+
+            if (employee) {
+                console.log(`[DOBLE CLIC] Abriendo detalles para Cédula: ${cedula}`);
+                openDetailsModal(employee);
+                console.log (employee);
+            } else {
+                console.error(`No se encontró el empleado con Cédula: ${cedula}`);
+                // Mostrar alerta de error temporal
+                showTemporaryAlert('Error: No se encontraron los detalles del empleado. (ID no encontrado)', 'red');
+            }
+        }
+
+        /**
+         * Inicializa los escuchadores de acciones de la tabla (ej. clic en encabezado, clic/doble clic en fila).
+         */
+        function initializeTableListeners() {
+            // Asignar escuchadores a los encabezados para la ordenación
+            document.querySelectorAll('.sortable-header').forEach(header => {
+                header.removeEventListener('click', handleSortHeaderClick); 
+                header.addEventListener('click', handleSortHeaderClick);
+            });
+
+            // Añadir escuchadores a las filas para detalles
+            document.querySelectorAll('.worker-row').forEach(row => {
+                // Limpiar escuchadores previos
+                row.removeEventListener('click', handleRowClick);
+                row.removeEventListener('dblclick', handleRowDoubleClick);
+
+                // Añadir nuevos escuchadores
+                row.addEventListener('click', handleRowClick);
+                row.addEventListener('dblclick', handleRowDoubleClick);
+            });
+        }
+        
+        /**
+         * Función con nombre para manejar el clic en el encabezado de ordenación (utilizada para la eliminación segura de escuchadores).
+         */
+        function handleSortHeaderClick() {
+            const columnKey = this.getAttribute('data-key');
+            if (columnKey) {
+                sortData(columnKey);
+            }
+        }
+
+        /**
+         * Maneja el clic simple en una fila.
+         */
+        function handleRowClick(event) {
+            // Lógica para seleccionar/resaltar la fila con un solo clic (opcional)
+            const row = event.currentTarget;
+            
+            // Quitar selección previa de resaltado
+            document.querySelectorAll('.worker-row.bg-indigo-700').forEach(r => r.classList.remove('bg-indigo-700'));
+            
+            // Añadir selección a la fila actual
+            row.classList.add('bg-indigo-700');
+        }
+
+        /**
+         * Actualiza las métricas principales basadas en los datos cargados.
+         * Recuentos: Total de Registros, 'Dados de Baja' (PERFIL = 'DADO DE BAJA'), y Advertencias (CTRL1 no vacío).
+         * @param {Array<Object>} allData - Todos los registros cargados de la BD.
+         */
+        function updateMetrics(allData) {
+            // Inicializar contadores
+            let totalRecords = 0;
+            let dadosDeBajaCount = 0;
+            let warningCount = 0;
+
+            // Procesar datos
+            if (Array.isArray(allData)) {
+                totalRecords = allData.length;
+                
+                allData.forEach(row => {
+                    // Contar 'Dados de Baja' (PERFIL)
+                    if (row.PERFIL && String(row.PERFIL).trim().toUpperCase() === 'DADO DE BAJA') {
+                        dadosDeBajaCount++;
+                    }
+                    
+                    // Contar Advertencias/Alertas (CTRL1)
+                    if (row.CTRL1 && String(row.CTRL1).trim() !== '' && String(row.CTRL1).trim() !== 'N/A') {
+                        warningCount++;
+                    }
+                });
+            }
+
+            // Mapear métricas a IDs
+            const metricsMap = {
+                'total': totalRecords,
+                'perfil_dados_baja': dadosDeBajaCount,
+                'ctrl1_warning': warningCount,
+            };
+
+            // Actualizar DOM
+            // Usando Object.keys().forEach() en lugar de for...of con Object.entries()
+            Object.keys(metricsMap).forEach(metricKey => {
+                const value = metricsMap[metricKey];
+                const metricElement = document.querySelector(`[data-metric="${metricKey}"]`);
+                if (metricElement) {
+                    metricElement.textContent = value;
+                }
+            });
+        }
+
+        /**
+         * Filtra la lista de empleados basándose en el texto de búsqueda.
+         * @param {string} searchTerm - El término de búsqueda.
+         */
+        function filterEmployees(searchTerm) {
+            const query = String(searchTerm).trim().toLowerCase();
+            
+            if (query === '') {
+                // Si la búsqueda está vacía, mostrar todos los datos sin alterar el orden (filteredData = allData.slice())
+                filteredEmployeeData = [...allEmployeeData];
+            } else {
+                // Filtrar datos
+                filteredEmployeeData = allEmployeeData.filter(employee => {
+                    // INCLUIR COLUMNAS PARA BÚSQUEDA
+                    const searchFields = [
+                        'EMPRESA', 'NOMBRES', 'APELLIDOS', 'CEDULA', 'CARGO', 'NOMINA', 'SECTOR', 'UNIDAD'
+                    ];
+
+                    return searchFields.some(field => 
+                        String(employee[field] || '').toLowerCase().includes(query)
+                    );
+                });
+            }
+            
+            // Reaplicar la ordenación actual si existe
+            if (currentSortColumn && currentSortDirection) {
+                performSort(filteredEmployeeData, currentSortColumn, currentSortDirection);
+            }
+
+            // Volver a renderizar y actualizar métricas con los datos filtrados
+            updateMetrics(filteredEmployeeData);
+            renderTable(filteredEmployeeData);
+        }
+        
+        /**
+         * Limpia el campo de búsqueda y restablece la tabla, incluyendo la ordenación.
+         */
+        function clearSearch() {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+
+            // REINICIAR ORDENACIÓN a NULL para el orden por defecto de GAS
+            currentSortColumn = null;
+            currentSortDirection = null;
+
+            // Restablecer filtro (lo que activará el renderizado sin ordenación)
+            filterEmployees(''); 
+            
+            // La alerta de confirmación ha sido eliminada por solicitud del usuario
+        }
+        
+        /**
+         * Recarga los datos de la fuente de datos (GAS), forzando la omisión de la caché.
+         */
+        async function reloadData() {
+            // Asegurarse de que al recargar se reinicie el orden
+            currentSortColumn = null;
+            currentSortDirection = null;
+
+            await loadData(true); // Pasar 'true' para forzar la recarga
+            // Limpiar filtro después de la recarga
+            clearSearch();
+        }
+
+
+        /**
+         * Carga datos desde la caché local o Google Apps Script.
+         * @param {boolean} forceReload - Si es true, omite la caché local.
+         */
+        async function loadData(forceReload = false) {
+            const statusElement = document.getElementById('table-loading-status');
+            const dataViewContainer = document.getElementById('data-view-container');
+            const mainTableWrapper = document.getElementById('employee-table-wrapper'); 
+            const tableContainer = document.getElementById('employee-table-container');
+            
+            // Inicializar métricas a "..." antes de cargar
+            document.querySelectorAll('[data-metric]').forEach(el => el.textContent = '...');
+
+
+            // Mostrar el spinner y ocultar el contenido
+            if (statusElement) {
+                statusElement.innerHTML = `
+                    <div class="py-8">
+                        <i data-lucide="loader-circle" class="w-8 h-8 mx-auto animate-spin text-blue-500"></i> 
+                        <p class="mt-2 text-sm text-gray-400">Cargando datos de la hoja "${TARGET_SHEET_NAME}"...</p>
+                    </div>
+                `;
+                statusElement.style.display = 'block';
+            }
+            if (dataViewContainer) dataViewContainer.style.display = 'none';
+            if (mainTableWrapper) mainTableWrapper.style.display = 'none'; 
+            if (tableContainer) tableContainer.innerHTML = ''; 
+            
+            lucide.createIcons(); 
+
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            if (cachedData && !forceReload) { // Comprobar caché solo si la recarga NO es forzada
+                try {
+                    const parsedCache = JSON.parse(cachedData);
+                    const now = new Date().getTime();
+                    
+                    // Verificar si la caché sigue siendo válida (15 minutos)
+                    if (now < parsedCache.expiry && Array.isArray(parsedCache.data)) {
+                        console.log("Cargando datos desde el CACHÉ local (Válido por 15 minutos).");
+                        const dataToUse = parsedCache.data;
+                        allEmployeeData = dataToUse;
+                        filteredEmployeeData = [...dataToUse];
+                        
+                        // Ocultar estado de carga y mostrar contenido principal
+                        if (statusElement) statusElement.style.display = 'none';
+                        if (dataViewContainer) dataViewContainer.style.display = 'block';
+                        if (mainTableWrapper) mainTableWrapper.style.display = 'block'; 
+
+                        updateMetrics(filteredEmployeeData);
+                        renderTable(filteredEmployeeData); // Renderizar en el orden de GAS
+                        
+                        return; // ¡Carga de caché exitosa!
+                    } else {
+                        console.log("Caché expirada o no válida. Recuperando datos nuevos.");
+                        localStorage.removeItem(CACHE_KEY); // Limpiar caché expirada
+                    }
+                } catch (e) {
+                    console.error("Error al parsear el caché local:", e);
+                    localStorage.removeItem(CACHE_KEY); // Limpiar caché corrupta
+                }
+            }
+            
+            // Si no hay caché válida o se fuerza la recarga, obtener datos de GAS
+            try {
+                if (forceReload) {
+                    console.log("Cargando datos frescos (Caché omitida/limpiada).");
+                }
+                const apiUrl = buildGasApiUrl(TARGET_SHEET_NAME);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error de red: ${response.status} ${response.statusText || 'Error desconocido'}`);
+                }
+
+                const result = await response.json();
+                let data = result;
+
+                if (result && result.data && Array.isArray(result.data)) {
+                    data = result.data;
+                } else if (!Array.isArray(result)) {
+                    throw new Error("Formato de datos no válido. Se esperaba un array JSON o un objeto con la propiedad 'data' (array).");
+                }
+                
+                // Ocultar estado de carga y mostrar contenido principal
+                if (statusElement) statusElement.style.display = 'none';
+                if (dataViewContainer) dataViewContainer.style.display = 'block';
+                if (mainTableWrapper) mainTableWrapper.style.display = 'block'; 
+
+
+                if (data.length === 0) {
+                    if (statusElement) {
+                        statusElement.innerHTML = '<div class="text-center py-8 text-gray-500 dark:text-gray-400">No se encontraron registros.</div>';
+                        statusElement.style.display = 'block'; // Mostrar mensaje de "no hay registros"
+                    }
+                    if (dataViewContainer) dataViewContainer.style.display = 'none';
+                    if (mainTableWrapper) mainTableWrapper.style.display = 'none';
+                    updateMetrics([]);
+                } else {
+                    allEmployeeData = data;
+                    filteredEmployeeData = [...data]; // Inicialmente, todos los datos están filtrados
+
+                    // Guardar en caché solo si la carga fue exitosa
+                    const expiry = new Date().getTime() + CACHE_EXPIRATION_MS;
+                    const cacheObject = { data: data, expiry: expiry };
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObject));
+                    console.log("Nuevos datos obtenidos y guardados en caché (expira en 15 minutos).");
+                    
+                    updateMetrics(filteredEmployeeData);
+                    renderTable(filteredEmployeeData); // Renderizar en el orden de llegada
+                }
+
+            } catch (error) {
+                console.error("Fallo al obtener los datos:", error);
+                
+                // Mostrar mensaje de error en el contenedor de estado
+                if (statusElement) {
+                    statusElement.innerHTML = `
+                        <div class="bg-red-800 p-4 rounded-xl shadow-lg text-white mt-4">
+                            <strong class="font-bold">Error de Carga:</strong>
+                            <p class="mt-1 text-sm">No se pudo cargar la información de ${TARGET_SHEET_NAME}.</p>
+                            <p class="mt-1 text-xs opacity-80">Detalles: ${error.message}</p>
+                            <p class="mt-2 text-xs opacity-80">Verifique la URL del Script y el despliegue (CORS).</p>
+                        </div>
+                    `;
+                    statusElement.style.display = 'block';
+                    lucide.createIcons();
+                }
+                if (dataViewContainer) dataViewContainer.style.display = 'none';
+                if (mainTableWrapper) mainTableWrapper.style.display = 'none'; // Asegurarse de que la tabla no se muestre en caso de error
+                updateMetrics([]); // Limpiar métricas en caso de error
+            }
+        }
+        
+        // --- FUNCIÓN DE DETALLE DE VACACIONES (existente) ---
+        function showVacationDetailModal() {
+             // Muestra la alerta de que la funcionalidad no está lista (dummy)
+             // showCustomAlert("Funcionalidad de detalle de vacaciones aún no implementada.");
+             window.location.href = 'Vacaciones.html';
+             return;
+        }
+       
+        // =================================================================
+        // --- FUNCIONES DE NAVEGACIÓN Y UI ---
+        // =================================================================
+
+        // Función principal para cargar el contenido de la sección y manejar la navegación MPA (Multi-Page Application)
+        function loadContent(section) {
+            console.log("Navegando a la sección:", section);
+
+            // Redirección a archivos HTML individuales.
+            const navigationMap = {
+                'Inicio': 'Inicio.html',
+                'Vacaciones': 'Vacaciones.html', 
+                'Agregar': 'AgregarDat.html',
+                'Perfil': 'PerfilUser.html',
+                'Configuración': 'ConfigApp.html'
+            };
+
+            const targetFile = navigationMap[section];
+
+            if (targetFile) {
+                if (section === 'Inicio') {
+                    // Si ya está en Inicio.html, forzar una recarga de datos sin caché
+                    reloadData(); 
+                    return;
+                }
+                
+                window.location.href = targetFile;
+                return; 
+            }
+            
+            console.error(`ERROR: Sección no mapeada para navegación: ${section}`);
+        }
+        
+        /**
+         * Inicializa los escuchadores DOM específicos de la página de Inicio (búsqueda, recarga).
+         */
+        function initializeHomeListeners() {
+            const searchInput = document.getElementById('search-input');
+            const clearBtn = document.getElementById('clear-search-btn');
+            const reloadBtn = document.getElementById('reload-icon');
+            const detailsModal = document.getElementById('details-employee-modal');
+            const closeDetailsBtn = detailsModal.querySelector('button[onclick="closeDetailsModal()"]'); // Selecciona el botón de la X
+            
+            // Escuchador para el campo de búsqueda con Debounce (300ms)
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        filterEmployees(searchInput.value);
+                    }, 300);
+                });
+            }
+
+            // Escuchador para el botón de borrar búsqueda y ordenación
+            if (clearBtn) {
+                clearBtn.addEventListener('click', clearSearch);
+            }
+
+            // Escuchador para el botón de recargar datos (omite caché)
+            if (reloadBtn) {
+                reloadBtn.addEventListener('click', reloadData);
+            }
+
+            // Escuchador para cerrar el modal de detalles a través del botón (X)
+            if (detailsModal) {
+                closeDetailsBtn.addEventListener('click', closeDetailsModal);
+            }
+
+            // Escuchador para cerrar el modal de detalles haciendo clic en el overlay
+            if (detailsModal) {
+                detailsModal.addEventListener('click', (event) => {
+                    if (event.target.id === 'details-employee-modal') {
+                        closeDetailsModal();
+                    }
+                });
+            }
+            
+            // Los escuchadores de tabla se llaman dentro de renderTable
+        }
+        
+        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica para mostrar solo el primer nombre del usuario si está disponible en localStorage
+            const usuarioNombreCompleto = localStorage.getItem('Usuario_Nombre');
+            const headerTitle = document.querySelector('#app-header h1');
+            
+            if (usuarioNombreCompleto && headerTitle) {
+                // Extraer el primer nombre y capitalizar la primera letra
+                const primerNombre = usuarioNombreCompleto.trim().split(' ')[0];
+                const capitalizedFirstName = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
+                
+                headerTitle.textContent = `¡Hola, ${capitalizedFirstName}!`;
+            }
+
+            // Comenzar a cargar los datos de la Hoja de Google
+            loadData();
+            
+            // Inicializar escuchadores de UI (búsqueda, recarga, controles de modal)
+            initializeHomeListeners();
+
+            // Añadir escuchadores de eventos para la navegación MPA
+            const footerButtons = document.querySelectorAll('.footer-btn');
+            footerButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const section = button.getAttribute('data-section');
+                    loadContent(section);
+                });
+            });
+
+            // Volver a inicializar los íconos al cargar
+            lucide.createIcons();
+        });
+        
+    </script>
+</body>
+</html>
