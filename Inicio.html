@@ -16,17 +16,14 @@
 
         /* Definición de colores base */
         :root {
-            --color-bg-light: #f9fafb;
-            --color-text-light: #1f2937;
-            --color-primary-light: #3b82f6;
             --color-bg-dark: #1f2937;
             --color-text-dark: #f3f4f6;
             --color-primary-dark: #60a5fa;
-            --color-surface-light: #ffffff;
             --color-surface-dark: #374151;
             --color-header: #2D59A1; 
             --color-data-text: #ffffff; 
             --color-bg-table-row: #1f2937; 
+            --color-input-bg: #4b5563; 
         }
         
         /* Estilos del cuerpo en modo oscuro */
@@ -52,6 +49,16 @@
             transform: translateX(-50%);
         }
 
+        #scroll-container {
+            height: 100%;
+            overflow-y: auto; 
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-top: 76px; 
+            padding-bottom: 72px; 
+            transition: padding 0.3s ease-in-out;
+        }
+
         /* Estilos específicos para header y footer en modo oscuro */
         .dark header, .dark footer { 
             background-color: var(--color-surface-dark); 
@@ -63,17 +70,6 @@
             overflow: hidden; 
         }
         
-        /* CONTENEDOR DESPLEGABLE (SCROLLABLE-CONTENT) */
-        #scroll-container {
-            height: 100%;
-            overflow-y: auto; 
-            padding-left: 1rem;
-            padding-right: 1rem;
-            padding-top: 76px; 
-            padding-bottom: 72px; 
-            transition: padding 0.3s ease-in-out;
-        }
-
         .footer-btn {
             display: flex;
             flex-direction: column;
@@ -237,9 +233,6 @@
             gap: 4px;
         }
 
-        /*
-        * REGLA MODIFICADA: Se elimina background-color. Solo se mantiene el color del texto.
-        */
         .row-warning-text .table-data-cell {
             color: #fcd34d; /* Amarillo para el texto */
         }
@@ -256,61 +249,173 @@
             transition: opacity 0.3s ease;
         }
 
-        /* Estilos específicos para el modal de detalles del trabajador */
+        /* ========================================================== */
+        /* --- ESTILOS DEL MODAL DE DETALLE/EDICIÓN --- */
+        /* ========================================================== */
+        
+        /* Contenedor del modal, con posición relativa para que el botón de cerrar sea absoluto */
+        .modal-content-wrapper {
+            position: relative; 
+            background-color: #1f2937; /* Base del modal */
+            border: 1px solid #4b5563;
+        }
+        
+        /* Botón de Cerrar (X) Reubicado */
+        #close-modal-x-btn {
+            position: absolute;
+            top: 0.25rem; 
+            right: 0.25rem; 
+            z-index: 60; /* Asegurar que esté por encima de todo */
+        }
+        
+        /* Ajuste para el encabezado interno, ya sin el botón de cerrar */
+        .modal-header-actions {
+            display: flex;
+            justify-content: space-between; /* Alinear título a la izquierda, acciones al centro */
+            align-items: center;
+            border-bottom: 1px solid #4b5563; 
+            padding-bottom: 0.75rem; /* pb-3 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        
+        /* Contenedor del Título */
+        .modal-header-title {
+            flex-grow: 1; /* Permite que ocupe espacio, pero lo centramos con el flex-basis */
+            text-align: left;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #60a5fa;
+            white-space: nowrap;
+        }
+        
+        /* Contenedor de Botones de Acción (Lápiz, Guardar, etc.) */
+        .modal-header-action-icons {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-grow: 1; 
+            justify-content: left; /* Centrar los íconos de acción */
+        }
+        
+        /* ========================================================== */
+        /* --- ESTILOS DE MODO VISTA --- */
+        /* ========================================================== */
+        /* Estilo general del campo de formulario en modo edición */
         .detail-row {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center; 
             padding: 0.4rem 0;
-            border-bottom: 1px solid #4b5563; /* Borde sutil */
+            border-bottom: 1px solid #4b5563; 
         }
-
+        
         .detail-row:last-child {
             border-bottom: none;
         }
 
         .detail-label {
             font-size: 0.9rem;
-            color: #9ca3af; /* Gris sutil para la etiqueta */
+            color: #9ca3af; 
             font-weight: 500;
-            flex-shrink: 0; /* Evita que la etiqueta se encoja */
+            flex-shrink: 0; 
             padding-right: 1rem;
-            /* Permite que la etiqueta se envuelva en caso de que sea larga, aunque no debería serlo */
             white-space: normal; 
+            width: 40%; 
+            transition: color 0.2s; 
         }
 
         .detail-value {
             font-size: 0.9rem;
-            color: #f3f4f6; /* Blanco para el valor */
-            font-weight: 600;
+            color: #f3f4f6; 
+            font-weight: 500;
             text-align: right;
+            white-space: nowrap; 
+            overflow-x: auto; 
+            max-width: 60%; 
+            font-weight: bold; /* Los valores visualizados están en negrita */
             
-            /* --- REGLAS CLAVE PARA EL SCROLL HORIZONTAL --- */
-            white-space: nowrap; /* Fuerza el contenido a estar en una sola línea */
-            overflow-x: auto; /* Habilita el scroll horizontal si es necesario */
-            max-width: 60%; /* Ocupa un máximo del 60% del ancho del detalle para dejar espacio a la etiqueta */
-            
-            /* Ocultar la barra de desplazamiento en navegadores WebKit */
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;  
+            scrollbar-width: none;  
         }
 
-        /* Ocultar la barra de desplazamiento en Chrome, Safari y Opera */
         .detail-value::-webkit-scrollbar {
             display: none;
         }
-
-        /* Ajuste para el campo Nota/Alerta para que ocupe todo el ancho y se envuelva */
-        .detail-row-note .detail-value {
+        
+        /* Estilos para el campo de Nota/Alerta en modo vista */
+        .detail-row-note .detail-label {
+            color: #fcd34d; 
+        }
+        .detail-row-note.view-mode {
+            flex-direction: column;
+            align-items: flex-start;
+            padding-top: 0.2rem;
+            padding-bottom: 0.2rem;
+        }
+        .detail-row-note .detail-value.view-mode {
             text-align: left;
             font-weight: 400;
             margin-top: 0.25rem;
             font-style: italic;
             width: 100%;
-            max-width: 100%; /* Elimina la restricción de ancho para la nota */
-            white-space: normal; /* Permite el salto de línea para la nota */
-            overflow-x: hidden; /* No queremos scroll horizontal para la nota */
+            max-width: 100%; 
+            white-space: normal; 
+            overflow-x: hidden; 
         }
+
+        /* ========================================================== */
+        /* --- ESTILOS DE MODO EDICIÓN --- */
+        /* ========================================================== */
+        /* Estilo general del campo de formulario en modo edición */
+        .edit-input {
+            width: 60%; 
+            padding: 0rem 0.25rem; 
+            border: none; 
+            background-color: transparent;
+            color: #EB3110;
+            font-size: 0.9rem;
+            text-align: right;
+            outline: none;
+            font-weight: bold; 
+        }
+        
+        .edit-input:focus {
+            font-style: italic;
+            background-color:  #374151;
+        }
+        
+        /* Alineación del label a la izquierda y del input a la derecha */
+        .detail-row.edit-mode {
+            align-items: center; 
+        }
+        .detail-row.edit-mode .detail-label {
+            width: 40%; 
+            text-align: left;
+            color: #EB3110; 
+            font-weight: 500; 
+        }
+        
+        /* Ajuste para el campo de Nota/Alerta en modo edición */
+        .detail-row-note.edit-mode {
+            flex-direction: column;
+            align-items: flex-start;
+            padding-top: 0.2rem;
+            padding-bottom: 0.2rem;
+        }
+        .detail-row-note.edit-mode .edit-input {
+            width: 100%;
+            min-height: 80px;
+            text-align: left;
+            margin-top: 0.25rem;
+            resize: vertical; 
+            font-style: normal;
+            
+            /* Ajuste para solo tener el borde izquierdo */
+            border: none; 
+            border-left: 3px solid #fcd34d; 
+            padding-left: 0.5rem; 
+        }
+
     </style>
 </head>
 <body class="dark transition-colors duration-300">
@@ -341,7 +446,7 @@
                     <!-- Contenedor de métricas -->
                     <div class="flex justify-between space-x-2 p-1">
                         <!-- Tarjeta de Métrica: Total Empleados - USANDO LA CLASE REUTILIZABLE -->
-                        <div id="metric-total-records" class="metric-card"> 
+                        <div id="metric-total-records" class="metric-card dark:bg-gray-700"> 
                             <i data-lucide="users" class="w-6 h-6 text-green-500 flex-shrink-0"></i> 
                             <div class="flex flex-col"> 
                                 <span class="text-xl font-extrabold text-green-500 leading-none block" data-metric="total">0</span> 
@@ -349,7 +454,7 @@
                             </div> 
                         </div> 
                         <!-- Tarjeta de Métrica: Dados de Baja - USANDO LA CLASE REUTILIZABLE -->
-                        <div class="metric-card"> 
+                        <div class="metric-card dark:bg-gray-700"> 
                             <i data-lucide="user-minus" class="w-6 h-6 text-red-500 flex-shrink-0"></i> 
                             <div class="flex flex-col"> 
                                 <span class="text-xl font-extrabold text-red-500 leading-none block" data-metric="perfil_dados_baja">0</span> 
@@ -357,7 +462,7 @@
                             </div> 
                         </div> 
                         <!-- Tarjeta de Métrica: Notas/Alertas - USANDO LA CLASE REUTILIZABLE -->
-                        <div class="metric-card"> 
+                        <div class="metric-card dark:bg-gray-700"> 
                             <i data-lucide="alert-triangle" class="w-6 h-6 text-yellow-500 flex-shrink-0"></i> 
                             <div class="flex flex-col"> 
                                 <span class="text-xl font-extrabold text-yellow-500 leading-none block" data-metric="ctrl1_warning">0</span> 
@@ -368,7 +473,7 @@
                 </div>
                 <!-- FIN DEL CONTENEDOR METRICAS BD_PERSONAL -->
                 
-                <!-- INICIO DEL MOTOR DE BÚSQUEDA Y RECARGA (USANDO LA NUEVA CLASE) -->
+                <!-- INICIO DEL MOTOR DE BÚSQUEDA Y RECARGA -->
                 <div id="search-container" class="search-actions-container">
                     <div class="search-input-wrapper">
                         <input type="text" id="search-input" placeholder="Buscar por Nombre, Cédula, Cargo..."
@@ -388,7 +493,14 @@
                 <!-- FIN DEL MOTOR DE BÚSQUEDA Y RECARGA -->
                 
                 <div id="employee-table-wrapper" class="mt-6 flex-grow">
-                    <h3 class="text-lg font-semibold mb-3 border-b border-gray-700 pb-2">Base de Datos de Empleados</h3>
+                    <!-- CONTENEDOR DEL TÍTULO DE LA TABLA Y BOTÓN DE AGREGAR -->
+                    <div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-2">
+                        <h3 class="text-lg font-semibold">Base de Datos de Empleados</h3>
+                        <button id="add-employee-btn" class="p-2 rounded-full text-green-400 transition duration-150 shadow-md" title="Agregar Nuevo Empleado" onclick="openNewEmployeeModal()">
+                            <i data-lucide="user-plus" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    
                     <div id="employee-table-container" class="table-scroll-container">
                     </div>
                 </div>
@@ -421,55 +533,72 @@
     </div>
     
     <!-- ========================================================== -->
-    <!-- --- MODAL DE DETALLES DEL TRABAJADOR --- -->
+    <!-- --- MODAL DE DETALLES DEL TRABAJADOR (VISTA Y EDICIÓN) --- -->
     <!-- ========================================================== -->
     <div id="details-employee-modal" 
          class="hidden fixed inset-0 z-50 modal-overlay items-start justify-center pt-20 sm:pt-14">
-        <div class="bg-gray-800 w-full max-w-sm p-6 rounded-xl shadow-2xl border border-gray-700 transform scale-100 transition-transform duration-300">
-            <!-- Encabezado del Modal -->
-            <div class="flex justify-between items-start border-b border-gray-700 pb-3 mb-4">
-                <h2 class="text-xl font-bold text-blue-400 flex items-center space-x-2">
-                    <span>Detalle Trabajador</span>
+        
+        <!-- Contenedor principal del modal con clase "modal-content-wrapper" y posición relativa -->
+        <div class="bg-gray-800 w-full max-w-sm p-6 rounded-xl shadow-2xl modal-content-wrapper transform scale-100 transition-transform duration-300">
+            
+            <!-- Botón de Cerrar (REUBICADO ABSOLUTAMENTE) -->
+            <button type="button" onclick="closeDetailsModal()" 
+                    id="close-modal-x-btn"
+                    class="w-8 h-8 
+                           flex items-center justify-center 
+                           rounded-full 
+                           text-red-400 
+                           hover:text-red-600
+                           shadow-red-500/50 
+                           hover:shadow-[0_0_15px_4px_rgba(239,68,68,0.7)] 
+                           hover:scale-120
+                           transition-all duration-300 flex-shrink-0">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
 
-                    <!-- Botón de Ver Detalle de Vacaciones -->
-                    <button class="p-1 rounded-full"
+            <!-- Encabezado del Modal (Sin botón de cerrar) -->
+            <div class="modal-header-actions">
+                
+                <!-- 1. Título Dinámico (Izquierda) -->
+                <h2 id="modal-title" class="modal-header-title">Detalle Trabajador</h2>
+
+                <!-- 2. Botones de Acción MODO VISTA / MODO EDICIÓN (Centro) -->
+                <div class="modal-header-action-icons"> 
+                    
+                    <!-- Botones MODO VISTA -->
+                    <!-- EDITAR (Pencil) -->
+                    <button id="edit-button" class="p-1 rounded-full transition-colors duration-200"
+                            title="Editar" 
+                            onclick="toggleEditMode(true)">
+                        <i data-lucide="pencil" class="w-6 h-6 text-blue-400 hover:text-blue-600"></i>
+                    </button>
+                    <!-- VACACIONES (Calendar-days) -->
+                    <button id="vacation-detail-btn" class="p-1 rounded-full transition-colors duration-200"
                             title="Ver Detalle de Vacaciones" 
                             onclick="showVacationDetailModal()">
-                        <i data-lucide="calendar-days" class="w-6 h-6 text-yellow-400"></i>
-                    </button>
-
-                    <!-- Botón de Editar Detalle de Trabajador (SOLICITUD ANTERIOR) -->
-                    <button class="p-1 rounded-full" 
-                            title="Editar Detalle de Trabajador" 
-                            onclick="showDetailEditModal()">
-                        <i data-lucide="edit-3" class="w-6 h-6 text-blue-400"></i>
+                        <i data-lucide="calendar-days" class="w-6 h-6 text-yellow-400 hover:text-yellow-600"></i>
                     </button>
                     
-
-                    
-                </h2>
-                <!-- Botón de Cerrar (X) -->
-                <button type="button" onclick="closeDetailsModal()" 
-                        class="w-8 h-8 
-                               flex items-center justify-center 
-                               rounded-full 
-                               text-red-400 
-                               shadow-red-500/50 
-                               hover:shadow-[0_0_15px_4px_rgba(239,68,68,0.7)] 
-                               hover:text-red-600
-                               hover:scale-110
-                               transition-all duration-300">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                    
-                </button>
+                    <!-- Botones MODO EDICIÓN (Nuevos Íconos Guardar/Cancelar) -->
+                    <!-- GUARDAR (Save) -->
+                    <button id="save-icon-button" class="p-1 rounded-full transition-colors duration-200 hidden"
+                            title="Guardar Cambios" 
+                            onclick="saveEmployeeDetails()">
+                        <i data-lucide="save" class="w-6 h-6 text-green-500 hover:text-green-700"></i>
+                    </button>
+                    <!-- CANCELAR (Undo-2) - El ícono UNDO-2 fue solicitado en la interacción anterior -->
+                    <button id="cancel-icon-button" class="p-1 rounded-full transition-colors duration-200 hidden"
+                            title="Cancelar Edición" 
+                            onclick="cancelEditMode()">
+                        <i data-lucide="undo-2" class="w-6 h-6 text-red-500 hover:text-red-700"></i>
+                    </button>
+                </div>
             </div>
             
             <!-- Contenedor de los detalles (se llena con JS) -->
             <div id="details-container" class="max-h-[70vh] overflow-y-auto pr-1">
-                <!-- Los campos de detalle se insertarán aquí -->
+                <!-- Los detalles de solo lectura o edición se insertarán aquí -->
             </div>
-
-            <!-- El botón de Editar y su contenedor han sido eliminados. -->
         </div>
     </div>
     <!-- ========================================================== -->
@@ -504,15 +633,37 @@
             { key: 'CTRL2', label: 'Días Vacaciones' }, 
         ];
 
+        // Mapeo de todos los campos de detalle para la vista y edición
+        // Se define el tipo de control (text, date, select, textarea)
+        const DETAIL_FIELDS = [
+            // HECHOS EDITABLES (iskey) PARA NUEVOS REGISTROS, PERO NO PARA EDICIÓN POSTERIOR
+            { key: 'NOMBRES', label: 'Nombres:', editable: false, isKey: true }, 
+            { key: 'APELLIDOS', label: 'Apellidos:', editable: false, isKey: true },
+            { key: 'CEDULA', label: 'Cédula:', editable: false, format: formatNumberWithDots, type: 'text', isKey: true },                 
+            { key: 'UNIDAD', label: 'Unidad:',  editable: false, type: 'text', isKey: true }, 
+            { key: 'CARGO', label: 'Cargo:',  editable: false, type: 'text' , isKey: true },
+            { key: 'EMPRESA', label: 'Empresa:',  editable: false, isKey: true },
+            { key: 'NOMINA', label: 'Nómina:', editable: true , isKey: true }, 
+            { key: 'SECTOR', label: 'Sector:', editable: true, type: 'text' , isKey: true }, 
+            { key: 'PERFIL', label: 'Perfil:', editable: true, type: 'text' , isKey: true }, 
+            { key: 'INGRESO', label: 'Ingreso:', editable: false, format: formatDate, type: 'date' , isKey: true }, 
+            { key: 'NACIMIENTO', label: 'F. Nacimiento:',  editable: false, format: formatDate, type: 'date' },
+            { key: 'CTRL2', label: 'D. Vacaciones:',  editable: false, type: 'text' },
+            { key: 'CTRL1', label: 'Nota/Alerta:',  editable: true, type: 'textarea', isNote: true }
+        ];
+
         let allEmployeeData = [];
         let filteredEmployeeData = [];
         
         // Inicializar variables de ordenación - AHORA NULAS POR DEFECTO
-        let currentSortColumn = null; // Sin columna de ordenación por defecto
-        let currentSortDirection = null; // Sin dirección de ordenación por defecto
+        let currentSortColumn = null; 
+        let currentSortDirection = null; 
 
-        // NUEVO: Almacena el objeto del empleado actualmente visible en el modal para edición.
+        // Almacena el objeto del empleado actualmente visible en el modal. Si es null, es un nuevo registro.
         let currentSelectedEmployee = null; 
+        
+        // Estado del modal (Vista o Edición)
+        let isEditMode = false;
         
         // =================================================================
         // --- FUNCIONES DE MANEJO DE DATOS GAS Y ORDENACIÓN ---
@@ -528,9 +679,7 @@
          * @param {string} direction - 'asc' o 'desc'.
          */
         function performSort(data, column, direction) {
-            // Si la columna o dirección no están definidas, no se ordena
             if (!column || !direction) {
-                // Si la función se llama sin argumentos de ordenación, no hacemos nada y mantenemos el orden actual (o el orden de llegada si es la primera vez)
                 return;
             }
 
@@ -608,24 +757,52 @@
         function formatDate(value) {
             if (!value) return 'N/A';
             try {
-                // Intentar crear un objeto de fecha
-                const date = new Date(value);
+                // Si el valor es una cadena de fecha completa (Ej: 2024-10-21T00:00:00.000Z), extraer solo la parte de la fecha (YYYY-MM-DD)
+                const datePart = String(value).split('T')[0];
+                const date = new Date(datePart);
                 if (isNaN(date.getTime())) {
-                    return String(value); // Devolver el valor original si no es una fecha válida
+                    // Intentar con el valor original si la primera conversión falla
+                    const originalDate = new Date(value);
+                    if (isNaN(originalDate.getTime())) {
+                        return String(value); // Devolver el valor original si no es una fecha válida
+                    }
+                    date = originalDate;
                 }
-                // Ajustar para evitar problemas de zona horaria si la fecha es solo día
-                const userTimezoneOffset = date.getTimezoneOffset() * 60000;
-                const localDate = new Date(date.getTime() + userTimezoneOffset);
-
-                const day = String(localDate.getDate()).padStart(2, '0');
-                const month = String(localDate.getMonth() + 1).padStart(2, '0');
-                const year = localDate.getFullYear();
+                
+                // Formato DD/MM/YYYY
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
                 return `${day}/${month}/${year}`;
             } catch (e) {
                 return String(value);
             }
         }
         
+        /**
+         * Muestra un mensaje temporal en el contenedor de estado.
+         */
+        function showTemporaryAlert(message, type = 'blue') {
+            const alertContainer = document.getElementById('table-loading-status');
+            const colorClasses = {
+                blue: 'bg-blue-600',
+                red: 'bg-red-600',
+                green: 'bg-green-600',
+            };
+            
+            if (alertContainer) {
+                alertContainer.innerHTML = `
+                    <div class="${colorClasses[type]} p-3 rounded-xl shadow-lg text-white mt-4 mx-auto max-w-sm">
+                        <p class="text-sm">${message}</p>
+                    </div>
+                `;
+                alertContainer.style.display = 'block';
+                setTimeout(() => {
+                    alertContainer.style.display = 'none';
+                }, 3000); 
+            }
+        }
+
         // --- FUNCIÓN DE RENDERIZADO DE TABLA ---
         
         /**
@@ -724,34 +901,171 @@
             initializeTableListeners();
         }
 
-        /**
-         * Muestra un mensaje temporal en el contenedor de estado.
-         */
-        function showTemporaryAlert(message, type = 'blue') {
-            const alertContainer = document.getElementById('table-loading-status');
-            const colorClasses = {
-                blue: 'bg-blue-600',
-                red: 'bg-red-600',
-                green: 'bg-green-600',
-            };
-            
-            if (alertContainer) {
-                alertContainer.innerHTML = `
-                    <div class="${colorClasses[type]} p-3 rounded-xl shadow-lg text-white mt-4 mx-auto max-w-sm">
-                        <p class="text-sm">${message}</p>
-                    </div>
-                `;
-                alertContainer.style.display = 'block';
-                setTimeout(() => {
-                    alertContainer.style.display = 'none';
-                }, 3000); 
-            }
-        }
-
         // =================================================================
-        // --- LÓGICA DE MODAL DE DETALLES ---
+        // --- LÓGICA DE MODAL DE DETALLES (VISTA Y EDICIÓN) ---
         // =================================================================
         
+        /**
+         * Alterna entre el modo de vista (solo lectura) y el modo de edición.
+         * @param {boolean} enteringEditMode - True si se está entrando en modo edición, False si se sale (o se cancela).
+         */
+        function toggleEditMode(enteringEditMode) {
+            isEditMode = enteringEditMode;
+            const detailsContainer = document.getElementById('details-container');
+            const isNewRecord = currentSelectedEmployee === null;
+            
+            // Referencias a los botones de acción
+            const modalTitle = document.getElementById('modal-title');
+            const editButton = document.getElementById('edit-button');
+            const vacationButton = document.getElementById('vacation-detail-btn');
+            const saveButton = document.getElementById('save-icon-button'); 
+            const cancelButton = document.getElementById('cancel-icon-button'); 
+            
+            // Determinar el título
+            if (isNewRecord) {
+                modalTitle.textContent = 'Nuevo Trabajador'; 
+            } else if (isEditMode) {
+                modalTitle.textContent = 'Editar Trabajador'; 
+            } else {
+                modalTitle.textContent = 'Detalle Trabajador'; 
+            }
+
+            if (isEditMode) {
+                // Modo Edición (o Creación)
+                detailsContainer.innerHTML = renderEditMode(currentSelectedEmployee, isNewRecord);
+                
+                // Ocultar botones de Vista (Editar y Vacaciones)
+                editButton.classList.add('hidden'); 
+                vacationButton.classList.add('hidden'); 
+                
+                // Mostrar botones de Edición
+                saveButton.classList.remove('hidden'); 
+                cancelButton.classList.remove('hidden'); 
+                
+            } else {
+                // Modo Vista (Solo disponible si NO es un nuevo registro)
+                if (!isNewRecord) {
+                    detailsContainer.innerHTML = renderViewMode(currentSelectedEmployee);
+                } else {
+                    // Si es un nuevo registro y salimos del modo edición, debemos cerrar el modal.
+                    closeDetailsModal(); 
+                    return; 
+                }
+
+                // Mostrar/Ocultar botones según el estado
+                editButton.classList.remove('hidden'); // Mostrar Editar
+                vacationButton.classList.remove('hidden'); // Mostrar Vacaciones
+                
+                // Ocultar botones de Edición
+                saveButton.classList.add('hidden'); 
+                cancelButton.classList.add('hidden'); 
+            }
+            lucide.createIcons();
+        }
+
+        /**
+         * Genera el HTML para el modo de edición.
+         * @param {Object|null} employee - El objeto completo del empleado (null si es nuevo).
+         * @param {boolean} isNewRecord - Indica si se está creando un registro nuevo.
+         * @returns {string} El HTML para el modo de edición.
+         */
+        function renderEditMode(employee, isNewRecord) {
+            let editHtml = '';
+            
+            // Usar objeto vacío si es nuevo registro para evitar errores de acceso a propiedades.
+            const data = employee || {}; 
+            
+            DETAIL_FIELDS.forEach(field => {
+                const value = data[field.key] || '';
+                
+                // Determinar si el campo es editable en el contexto actual
+                const isFieldEditable = field.editable || (isNewRecord && field.isKey);
+                
+                // Si NO es editable y NO es un nuevo registro (estamos en modo edición de un registro existente),
+                // renderizar como solo lectura.
+                if (!isFieldEditable && !isNewRecord) {
+                    const formattedValue = field.format ? field.format(value) : String(value);
+                    editHtml += `
+                        <div class="detail-row">
+                            <p class="detail-label">${field.label}</p>
+                            <p class="detail-value text-right font-bold">${formattedValue}</p>
+                        </div>
+                    `;
+                    return; 
+                }
+
+                const rowClass = field.isNote ? 'detail-row-note edit-mode' : 'edit-mode';
+                const inputId = `edit-${field.key.toLowerCase()}`;
+                
+                let inputElement;
+                const currentValue = (field.key === 'INGRESO' || field.key === 'NACIMIENTO') 
+                    ? String(value).split('T')[0] : String(value);
+
+                if (field.isNote && field.type === 'textarea') {
+                    // Campo de nota (textarea)
+                    inputElement = `<textarea id="${inputId}" class="edit-input" data-key="${field.key}">${currentValue}</textarea>`;
+                } else if (field.type === 'date') {
+                    // Campo de fecha (para editable: false, se muestra el valor original de GAS para un posible POST)
+                     inputElement = `<input type="date" id="${inputId}" class="edit-input" value="${currentValue}" ${isFieldEditable ? '' : 'disabled'}>`;
+                } else if (field.type === 'number') {
+                    // Campo numérico
+                    inputElement = `<input type="number" id="${inputId}" class="edit-input" data-key="${field.key}" value="${currentValue}" style="width: 50%;" ${isFieldEditable ? '' : 'disabled'} />`;
+                } else {
+                    // Campo de texto simple (text)
+                    inputElement = `<input type="text" id="${inputId}" class="edit-input" data-key="${field.key}" value="${currentValue}" ${isFieldEditable ? '' : 'disabled'} />`;
+                }
+                
+                // Para el modo de creación, la clase para el label debería ser de edición
+                const labelClass = isNewRecord ? 'detail-label text-left text-[#EB3110] font-medium' : 'detail-label';
+
+
+                editHtml += `
+                    <div class="detail-row ${rowClass}">
+                        <label for="${inputId}" class="${labelClass}">${field.label}</label>
+                        ${inputElement}
+                    </div>
+                `;
+            });
+
+            return `<form id="employee-edit-form">${editHtml}</form>`;
+        }
+
+        /**
+         * Genera el HTML para la vista de detalles (solo lectura).
+         * @param {Object} employee - El objeto completo del empleado.
+         * @returns {string} El HTML para el modo de vista.
+         */
+        function renderViewMode(employee) {
+            let detailsHtml = '';
+
+            DETAIL_FIELDS.forEach(field => {
+                let value = employee[field.key] || 'N/A';
+                
+                // Omitir campos vacíos que no son de nota
+                if (value === 'N/A' && !field.isNote) {
+                    return; 
+                }
+
+                if (field.format) {
+                    value = field.format(value);
+                }
+                
+                // Usar clases especiales para la Nota/Alerta
+                const rowClass = field.isNote ? 'detail-row-note view-mode flex-col items-start pt-0 pb-1' : '';
+                const labelClass = field.isNote ? 'text-yellow-400' : '';
+                const valueClass = field.isNote ? 'detail-value view-mode' : 'detail-value text-right font-bold';
+                
+                detailsHtml += `
+                    <div class="detail-row ${rowClass}">
+                        <p class="detail-label ${labelClass}">${field.label}</p>
+                        <p class="${valueClass}">${value}</p>
+                    </div>
+                `;
+            });
+
+            return detailsHtml;
+        }
+
         /**
          * Muestra el modal de detalles y lo rellena con la información del empleado.
          * @param {Object} employee - El objeto completo del empleado.
@@ -759,64 +1073,32 @@
         function openDetailsModal(employee) {
             // 1. Almacenar el empleado seleccionado globalmente
             currentSelectedEmployee = employee; 
+            isEditMode = false; // Asegurar que siempre inicie en modo vista
 
             const modal = document.getElementById('details-employee-modal');
-            const detailsContainer = document.getElementById('details-container');
             
-            // Lista de campos a mostrar y sus etiquetas (ajustadas al diseño de referencia)
-            const detailFields = [
-                { key: 'NOMBRES', label: 'Nombres:' },
-                { key: 'APELLIDOS', label: 'Apellidos:' },
-                { key: 'CEDULA', label: 'Cédula:', format: formatNumberWithDots },
-                { key: 'NOMINA', label: 'Nómina:' },
-                { key: 'UNIDAD', label: 'Unidad:' },
-                { key: 'CARGO', label: 'Cargo:' },
-                { key: 'EMPRESA', label: 'Empresa:' },
-                { key: 'SECTOR', label: 'Sector:' },
-                { key: 'PERFIL', label: 'Perfil:' },
-                { key: 'INGRESO', label: 'Ingreso:', format: formatDate },
-                { key: 'NACIMIENTO', label: 'F. Nacimiento:', format: formatDate },
-                { key: 'CTRL2', label: 'D. Vacaciones:' },
-                { key: 'CTRL1', label: 'Nota:', large: true }, // Campo grande (Nota)
-            ];
-
-            let detailsHtml = '';
-
-            detailFields.forEach(field => {
-                let value = employee[field.key] || 'N/A';
-                let rawValue = value; // Mantener el valor original
-                
-                if (field.format) {
-                    value = field.format(value);
-                }
-                
-                // Si el campo es CTRL1 (Nota), usar el estilo especial que permite el salto de línea.
-                if (field.key === 'CTRL1') {
-                    if (rawValue.trim() === '' || rawValue.trim().toUpperCase() === 'N/A') {
-                        value = 'Sin nota';
-                    }
-                    detailsHtml += `
-                        <!-- Contenedor especial para la Nota (permite salto de línea en el valor) -->
-                        <div class="detail-row detail-row-note flex-col items-start pt-1 pb-2">
-                            <p class="detail-label">${field.label}</p>
-                            <!-- El valor de la nota utiliza CSS para permitir el salto de línea y ocupar todo el ancho -->
-                            <p class="detail-value text-sm text-yellow-400 font-normal italic w-full">${value}</p>
-                        </div>
-                    `;
-                } else {
-                    // Contenedor estándar de dos columnas (etiqueta | valor)
-                    detailsHtml += `
-                        <div class="detail-row">
-                            <p class="detail-label">${field.label}</p>
-                            <!-- El valor estándar utiliza CSS para forzar nowrap y habilitar overflow-x: auto -->
-                            <p class="detail-value text-right font-bold">${value}</p>
-                        </div>
-                    `;
-                }
-            });
-
-            detailsContainer.innerHTML = detailsHtml;
+            // Renderizar el modo vista y llamar a toggleEditMode(false) para establecer el título y los botones
+            toggleEditMode(false); 
             
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+        
+        /**
+         * Inicializa y abre el modal en modo EDICIÓN/CREACIÓN de un nuevo registro.
+         */
+        function openNewEmployeeModal() {
+            // 1. Limpiar el empleado seleccionado (indica que es un nuevo registro)
+            currentSelectedEmployee = null; 
+            isEditMode = true; // Forzar el modo edición
+
+            const modal = document.getElementById('details-employee-modal');
+            
+            // 2. Renderizar directamente en modo edición (Creación)
+            toggleEditMode(true); 
+
+            // 3. Mostrar el modal
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             lucide.createIcons();
@@ -830,8 +1112,124 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             currentSelectedEmployee = null; // Limpiar la referencia al cerrar
+            isEditMode = false; // Resetear estado de edición
+        }
+        
+        /**
+         * Cancela el modo de edición y vuelve al modo de vista.
+         */
+        function cancelEditMode() {
+            const isNewRecord = currentSelectedEmployee === null;
+            if (isNewRecord) {
+                // Si es nuevo, cerrar el modal completamente
+                closeDetailsModal();
+            } else {
+                // Revertir al modo de vista con los datos originales
+                toggleEditMode(false); 
+            }
         }
 
+        /**
+         * Recoge los datos del formulario de edición y simula el envío.
+         */
+        function saveEmployeeDetails() {
+            const isNewRecord = currentSelectedEmployee === null;
+
+            const form = document.getElementById('employee-edit-form');
+            if (!form) return;
+
+            const updatedData = {};
+            let hasError = false;
+
+            // Recoger solo los campos editables
+            DETAIL_FIELDS.filter(f => f.editable || (isNewRecord && f.isKey)).forEach(field => {
+                const key = field.key;
+                const inputId = `edit-${key.toLowerCase()}`;
+                const inputElement = document.getElementById(inputId);
+                
+                if (inputElement) {
+                    const value = inputElement.value.trim();
+                    updatedData[key] = value;
+                    
+                    // Validación simple para campos clave en nuevo registro
+                    if (isNewRecord && field.isKey && key !== 'CEDULA' && value === '') {
+                        showTemporaryAlert(`Error: El campo ${field.label.replace(':', '')} es obligatorio.`, 'red');
+                        hasError = true;
+                    }
+                    if (isNewRecord && key === 'CEDULA') {
+                        // Validación de cédula vacía y duplicada
+                        if (value === '') {
+                             showTemporaryAlert('Error: La Cédula es un campo obligatorio y clave.', 'red');
+                             hasError = true;
+                        } else if (allEmployeeData.some(e => String(e.CEDULA) === value)) {
+                             showTemporaryAlert('Error: Ya existe un trabajador con esa Cédula.', 'red');
+                             hasError = true;
+                        }
+                    }
+                }
+            });
+            
+            if (hasError) return;
+
+
+            // --- Lógica de Simulación de POST/PUT ---
+            if (isNewRecord) {
+                // 1. Simulación de CREACIÓN (POST)
+                updatedData.ID = allEmployeeData.length + 1; // Asignar un ID temporal para el frontend
+                updatedData.EMPRESA = updatedData.EMPRESA || 'N/A';
+                updatedData.NOMINA = updatedData.NOMINA || 'N/A';
+                updatedData.INGRESO = updatedData.INGRESO || new Date().toISOString().split('T')[0]; // Fecha de hoy si está vacía
+                updatedData.NACIMIENTO = updatedData.NACIMIENTO || 'N/A';
+                updatedData.CTRL2 = updatedData.CTRL2 === '' ? 'N/A' : updatedData.CTRL2;
+                updatedData.CTRL1 = updatedData.CTRL1 === '' ? 'N/A' : updatedData.CTRL1;
+                
+                // Actualizar arrays de datos
+                allEmployeeData.push(updatedData);
+                
+                showTemporaryAlert('¡Nuevo registro creado simuladamente con éxito! (Necesita integrar el POST real)', 'green');
+                currentSelectedEmployee = updatedData; // El nuevo registro pasa a ser el seleccionado.
+                
+            } else {
+                // 2. Simulación de EDICIÓN (PUT)
+                console.log("Datos a guardar (Simulación de PUT a GAS):", updatedData);
+                showTemporaryAlert('Guardado simulado: Datos recogidos con éxito. ¡Necesita integrar el PUT real!', 'green');
+
+                // Actualizar la vista (simulación exitosa)
+                const index = allEmployeeData.findIndex(e => String(e.CEDULA) === String(currentSelectedEmployee.CEDULA));
+                
+                if (index !== -1) {
+                    const originalEmployee = allEmployeeData[index];
+                    
+                    // Fusionar los datos actualizados con el objeto original
+                    Object.keys(updatedData).forEach(key => {
+                        if (key !== 'CEDULA') { 
+                            // Convertir a número si es el campo CTRL2 (Días Vacaciones)
+                            if (key === 'CTRL2' && !isNaN(Number(updatedData[key])) && updatedData[key].trim() !== '') {
+                                originalEmployee[key] = Number(updatedData[key]);
+                            } else {
+                                originalEmployee[key] = updatedData[key];
+                            }
+                        }
+                    });
+                    
+                    currentSelectedEmployee = originalEmployee; 
+                }
+            }
+            
+            // Forzar la re-renderización de la tabla y métricas
+            filterEmployees(document.getElementById('search-input').value); 
+            updateMetrics(allEmployeeData);
+            
+            // Volver al modo de vista después de la simulación de guardado
+            toggleEditMode(false); 
+        }
+
+        // --- FUNCIONES DE DETALLE DE VACACIONES (existente) ---
+        function showVacationDetailModal() {
+             // Redirección a la página de vacaciones
+             window.location.href = 'Vacaciones.html';
+             return;
+        }
 
         /**
          * Maneja el evento de doble clic en una fila de trabajador.
@@ -997,8 +1395,6 @@
 
             // Restablecer filtro (lo que activará el renderizado sin ordenación)
             filterEmployees(''); 
-            
-            // La alerta de confirmación ha sido eliminada por solicitud del usuario
         }
         
         /**
@@ -1013,7 +1409,6 @@
             // Limpiar filtro después de la recarga
             clearSearch();
         }
-
 
         /**
          * Carga datos desde la caché local o Google Apps Script.
@@ -1151,17 +1546,7 @@
             }
         }
         
-        // --- FUNCIÓN DE DETALLE DE VACACIONES (existente) ---
-        function showVacationDetailModal() {
-             // Muestra la alerta de que la funcionalidad no está lista (dummy)
-             // showCustomAlert("Funcionalidad de detalle de vacaciones aún no implementada.");
-             window.location.href = 'Vacaciones.html';
-             return;
-        }
-       
-        // =================================================================
         // --- FUNCIONES DE NAVEGACIÓN Y UI ---
-        // =================================================================
 
         // Función principal para cargar el contenido de la sección y manejar la navegación MPA (Multi-Page Application)
         function loadContent(section) {
@@ -1200,7 +1585,6 @@
             const clearBtn = document.getElementById('clear-search-btn');
             const reloadBtn = document.getElementById('reload-icon');
             const detailsModal = document.getElementById('details-employee-modal');
-            const closeDetailsBtn = detailsModal.querySelector('button[onclick="closeDetailsModal()"]'); // Selecciona el botón de la X
             
             // Escuchador para el campo de búsqueda con Debounce (300ms)
             if (searchInput) {
@@ -1222,15 +1606,11 @@
                 reloadBtn.addEventListener('click', reloadData);
             }
 
-            // Escuchador para cerrar el modal de detalles a través del botón (X)
-            if (detailsModal) {
-                closeDetailsBtn.addEventListener('click', closeDetailsModal);
-            }
-
             // Escuchador para cerrar el modal de detalles haciendo clic en el overlay
             if (detailsModal) {
                 detailsModal.addEventListener('click', (event) => {
-                    if (event.target.id === 'details-employee-modal') {
+                    // Cierra solo si se hace clic directamente en el overlay (el fondo gris oscuro)
+                    if (event.target.id === 'details-employee-modal' && !isEditMode) {
                         closeDetailsModal();
                     }
                 });
