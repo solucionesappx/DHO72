@@ -50,7 +50,7 @@
             left: 50%;
             transform: translateX(-50%);
         }
-
+       
         /* Estilos específicos para header y footer en modo oscuro */
         .dark header, .dark footer { 
             background-color: var(--color-surface-dark); 
@@ -217,6 +217,17 @@
         .light .footer-btn.active {
             color: var(--color-primary-light);
         }
+
+        /* Clase para deshabilitar visual y funcionalmente el botón Agregar */
+        .add-action-button.disabled-action {
+            opacity: 0.4; /* Reduce la opacidad para hacerlo opaco */
+            pointer-events: none; /* 🛑 Deshabilita clics, hover y todos los eventos del cursor */
+            cursor: default; /* Muestra el cursor por defecto, no el de "clic" */
+            
+            /* Opcional: Anula cualquier estilo de hover heredado */
+            transform: none !important; 
+            box-shadow: none !important;
+        }
         
         /* --- ESTILOS DEL MODAL --- */
         .modal-overlay {
@@ -261,6 +272,9 @@
         .disabled-nav:hover {
              background-color: inherit;
         }
+
+
+
         
     </style>
 </head>
@@ -1414,28 +1428,39 @@
         
         // --- INICIALIZACIÓN DE LA APLICACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Lógica para mostrar solo el primer nombre del usuario si existe en localStorage
+            // Lógica para mostrar solo el primer nombre del usuario si está disponible en localStorage
             const usuarioNombreCompleto = localStorage.getItem('Usuario_Nombre');
             const headerTitle = document.querySelector('#app-header h1');
             
             if (usuarioNombreCompleto && headerTitle) {
+                // Extraer el primer nombre y capitalizar la primera letra
                 const primerNombre = usuarioNombreCompleto.trim().split(' ')[0];
-                headerTitle.textContent = `¡Hola, ${primerNombre}!`;
+                const capitalizedFirstName = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
+                
+                headerTitle.textContent = `¡Hola, ${capitalizedFirstName}!`;
             }
 
-            // Agrega event listeners para la navegación MPA, llamando a loadContent
+            // Comenzar a cargar los datos de la Hoja de Google
+            loadData();
+            
+            // Inicializar escuchadores de UI (búsqueda, recarga, controles de modal)
+            initializeHomeListeners();
+
+            // Añadir escuchadores de eventos para la navegación MPA
             const footerButtons = document.querySelectorAll('.footer-btn');
+            const defaultSection = 'Inicio'; // Asumir la sección inicial (actualizar según Sección.html)   
+
             footerButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const section = button.getAttribute('data-section');
-                    loadContent(section);
+                    loadContent(section);          // 1. Cargar el contenido (asumiendo que esta función existe)
+                    updateAddButtonState(section); // 2. 🚨 ACTUALIZAR EL ESTADO DEL BOTÓN DESPUÉS DE LA NAVEGACIÓN
                 });
             });
-            
-            // 4. Llama a la función de inicialización para cargar los datos al iniciar (no forzado)
-            initVacacionesView(false);
 
-            // Inicializa los íconos de Lucide nuevamente.
+            updateAddButtonState(defaultSection);  // 3. 🚨 LLAMADA INICIAL: Establecer el estado del botón al cargar la página
+            
+            // Volver a inicializar los íconos al cargar
             lucide.createIcons();
         });
         
