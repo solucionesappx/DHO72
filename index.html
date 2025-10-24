@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -488,8 +487,8 @@
                             localStorage.setItem('Usuario_Primer_Nombre', result.userData.Usuario_Primer_Nombre);
                         }
                             loginForm.reset();
-                            // Redireccionamiento directo a dashboard.html al cerrar el modal de éxito
-                            showCustomModal("¡Inicio de sesión exitoso!", null, 'dashboard.html');
+                            // Redireccionamiento directo a Inicio.html al cerrar el modal de éxito
+                            showCustomModal("¡Inicio de sesión exitoso!", null, 'Inicio.html');
                         } else {
                         showCustomModal(result.message || "Credenciales incorrectas. Por favor, inténtalo de nuevo.");
                        }
