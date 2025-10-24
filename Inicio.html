@@ -85,6 +85,17 @@
 
         .footer-btn.active { color: var(--color-primary-dark); }
 
+        /* Clase para deshabilitar visual y funcionalmente el botón Agregar */
+        .add-action-button.disabled-action {
+            opacity: 0.4; /* Reduce la opacidad para hacerlo opaco */
+            pointer-events: none; /* 🛑 Deshabilita clics, hover y todos los eventos del cursor */
+            cursor: default; /* Muestra el cursor por defecto, no el de "clic" */
+            
+            /* Opcional: Anula cualquier estilo de hover heredado */
+            transform: none !important; 
+            box-shadow: none !important;
+        }
+
         /* ========================================================== */
         /* --- REGLA CSS REUTILIZABLE PARA TARJETAS DE MÉTRICAS --- */
         /* ========================================================== */
@@ -1016,7 +1027,7 @@
                     inputElement = `<input type="number" id="${inputId}" class="edit-input" data-key="${field.key}" value="${currentValue}" style="width: 50%;" ${isFieldEditable ? '' : 'disabled'} />`;
                 } else {
                     // Campo de texto simple (text)
-                    inputElement = `<input type="text" id="${inputId}" class="edit-input" data-key="${field.key}" value="${currentValue}" ${isFieldEditable ? '' : 'disabled'} />`;
+                    inputElement = `<input type="text" id="${inputId}" class="edit-input" data-key="${field.key}" value="${currentValue}" autocomplete="off" ${isFieldEditable ? '' : 'disabled'} />`;
                 }
                 
                 // Para el modo de creación, la clase para el label debería ser de edición
@@ -1779,6 +1790,31 @@
             
             console.error(`ERROR: Sección no mapeada para navegación: ${section}`);
         }
+
+        /**
+         * Actualiza el estado visual y funcional del botón "Agregar" basado en la sección activa.
+         * * NOTA: Asumimos que el botón "Agregar" tiene el ID 'add-action-button'.
+         * Si su botón tiene otro ID o clase, ajústelo aquí.
+         */
+        function updateAddButtonState(activeSection) {
+            const addButton = document.getElementById('add-action-button');
+            if (!addButton) return;
+            
+            const requiredSection = 'Vacaciones';
+            
+            if (activeSection === requiredSection) {
+                // Habilitar: Permitir clics y restaurar apariencia normal
+                addButton.classList.remove('disabled-action');
+                addButton.removeAttribute('disabled');
+                // Eliminar estilo de opacidad si se aplica localmente
+                addButton.style.opacity = ''; 
+            } else {
+                // Deshabilitar: Aplicar clase de opacidad y deshabilitar interacción
+                addButton.classList.add('disabled-action');
+                // Usar el atributo 'disabled' para mayor robustez, aunque CSS ya lo maneja
+                addButton.setAttribute('disabled', 'true'); 
+            }
+        }
         
         /**
          * Inicializa los escuchadores DOM específicos de la página de Inicio (búsqueda, recarga).
@@ -1854,13 +1890,18 @@
 
             // Añadir escuchadores de eventos para la navegación MPA
             const footerButtons = document.querySelectorAll('.footer-btn');
+            const defaultSection = 'Inicio'; // Asumir la sección inicial (actualizar según Sección.html)   
+
             footerButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const section = button.getAttribute('data-section');
-                    loadContent(section);
+                    loadContent(section);          // 1. Cargar el contenido (asumiendo que esta función existe)
+                    updateAddButtonState(section); // 2. 🚨 ACTUALIZAR EL ESTADO DEL BOTÓN DESPUÉS DE LA NAVEGACIÓN
                 });
             });
 
+            updateAddButtonState(defaultSection);  // 3. 🚨 LLAMADA INICIAL: Establecer el estado del botón al cargar la página
+            
             // Volver a inicializar los íconos al cargar
             lucide.createIcons();
         });
