@@ -220,7 +220,7 @@
             padding-top: 0.25rem; 
             padding-bottom: 0.25rem;
             white-space: nowrap; 
-            transition: background-color 0.15s, color: 0.15s, border-color 0.15s;
+            transition: background-color 0.15s, color 0.15s, border-color 0.15s;
             border-bottom: 1px solid #4b5563; 
             height: 32px; 
             /* Propiedades eliminadas: display: flex y align-items: center */
@@ -612,11 +612,13 @@
         // =================================================================
         // URL de la API para Google Apps Script
         const GET_URL = 'https://script.google.com/macros/s/AKfycbx87WvxA9ca1KyGMA1wsw1npZw5vPtjoItomhF823BICXScNrWGFh5m0Dj6Veb24CtHXQ/exec';
+        const POST_URL = 'https://script.google.com/macros/s/AKfycbxjneZ_WpBjmIEAqtutJgk0m3oqsa0-OsmHjfPxBqZNfDb9gYzWV4kQ8hoXXIK5EAVnSA/exec'; 
         const TARGET_SHEET_NAME = 'BD_Personal2'; // Nombre de la hoja
         const CACHE_KEY = 'employeeDataCache_BD_Personal2';
         const CACHE_EXPIRATION_MS = 15 * 60 * 1000; // 15 minutos
         
         let debounceTimer; // Temporizador de retardo para la búsqueda
+        let alertTimeoutId; // 
         
         // Mapeo de columnas a mostrar en la tabla (Solo las columnas visibles en la tabla)
         const TABLE_COLUMNS = [
@@ -1130,108 +1132,6 @@
         }
 
         /**
-         * Recoge los datos del formulario de edición y simula el envío.
-         */
-        function saveEmployeeDetails() {
-            const isNewRecord = currentSelectedEmployee === null;
-
-            const form = document.getElementById('employee-edit-form');
-            if (!form) return;
-
-            const updatedData = {};
-            let hasError = false;
-
-            // Recoger solo los campos editables
-            DETAIL_FIELDS.filter(f => f.editable || (isNewRecord && f.isKey)).forEach(field => {
-                const key = field.key;
-                const inputId = `edit-${key.toLowerCase()}`;
-                const inputElement = document.getElementById(inputId);
-                
-                if (inputElement) {
-                    const value = inputElement.value.trim();
-                    updatedData[key] = value;
-                    
-                    // Validación simple para campos clave en nuevo registro
-                    if (isNewRecord && field.isKey && key !== 'CEDULA' && value === '') {
-                        showTemporaryAlert(`Error: El campo ${field.label.replace(':', '')} es obligatorio.`, 'red');
-                        hasError = true;
-                    }
-                    if (isNewRecord && key === 'CEDULA') {
-                        // Validación de cédula vacía y duplicada
-                        if (value === '') {
-                             showTemporaryAlert('Error: La Cédula es un campo obligatorio y clave.', 'red');
-                             hasError = true;
-                        } else if (allEmployeeData.some(e => String(e.CEDULA) === value)) {
-                             showTemporaryAlert('Error: Ya existe un trabajador con esa Cédula.', 'red');
-                             hasError = true;
-                        }
-                    }
-                }
-            });
-            
-            if (hasError) return;
-
-
-            // --- Lógica de Simulación de POST/PUT ---
-            if (isNewRecord) {
-                // 1. Simulación de CREACIÓN (POST)
-                updatedData.ID = allEmployeeData.length + 1; // Asignar un ID temporal para el frontend
-                updatedData.EMPRESA = updatedData.EMPRESA || 'N/A';
-                updatedData.NOMINA = updatedData.NOMINA || 'N/A';
-                updatedData.INGRESO = updatedData.INGRESO || new Date().toISOString().split('T')[0]; // Fecha de hoy si está vacía
-                updatedData.NACIMIENTO = updatedData.NACIMIENTO || 'N/A';
-                updatedData.CTRL2 = updatedData.CTRL2 === '' ? 'N/A' : updatedData.CTRL2;
-                updatedData.CTRL1 = updatedData.CTRL1 === '' ? 'N/A' : updatedData.CTRL1;
-                
-                // Actualizar arrays de datos
-                allEmployeeData.push(updatedData);
-                
-                showTemporaryAlert('¡Nuevo registro creado simuladamente con éxito! (Necesita integrar el POST real)', 'green');
-                currentSelectedEmployee = updatedData; // El nuevo registro pasa a ser el seleccionado.
-                
-            } else {
-                // 2. Simulación de EDICIÓN (PUT)
-                console.log("Datos a guardar (Simulación de PUT a GAS):", updatedData);
-                showTemporaryAlert('Guardado simulado: Datos recogidos con éxito. ¡Necesita integrar el PUT real!', 'green');
-
-                // Actualizar la vista (simulación exitosa)
-                const index = allEmployeeData.findIndex(e => String(e.CEDULA) === String(currentSelectedEmployee.CEDULA));
-                
-                if (index !== -1) {
-                    const originalEmployee = allEmployeeData[index];
-                    
-                    // Fusionar los datos actualizados con el objeto original
-                    Object.keys(updatedData).forEach(key => {
-                        if (key !== 'CEDULA') { 
-                            // Convertir a número si es el campo CTRL2 (Días Vacaciones)
-                            if (key === 'CTRL2' && !isNaN(Number(updatedData[key])) && updatedData[key].trim() !== '') {
-                                originalEmployee[key] = Number(updatedData[key]);
-                            } else {
-                                originalEmployee[key] = updatedData[key];
-                            }
-                        }
-                    });
-                    
-                    currentSelectedEmployee = originalEmployee; 
-                }
-            }
-            
-            // Forzar la re-renderización de la tabla y métricas
-            filterEmployees(document.getElementById('search-input').value); 
-            updateMetrics(allEmployeeData);
-            
-            // Volver al modo de vista después de la simulación de guardado
-            toggleEditMode(false); 
-        }
-
-        // --- FUNCIONES DE DETALLE DE VACACIONES (existente) ---
-        function showVacationDetailModal() {
-             // Redirección a la página de vacaciones
-             window.location.href = 'Vacaciones.html';
-             return;
-        }
-
-        /**
          * Maneja el evento de doble clic en una fila de trabajador.
          */
         function handleRowDoubleClick(event) {
@@ -1545,7 +1445,279 @@
                 updateMetrics([]); // Limpiar métricas en caso de error
             }
         }
-        
+
+
+        // --- FUNCIONES MANEJO DE NUEVOS DATOS Y ENVIO A GAS ---
+
+        /**
+         * Convierte un objeto JavaScript a formato URL-encoded (a=1&b=2).
+         * Esto es necesario para la comunicación POST con Google Apps Script (doPost(e)).
+         * @param {object} obj - El objeto de datos.
+         * @returns {string} La cadena de consulta codificada.
+         */
+        function urlEncodeObject(data) {
+            const parts = [];
+            for (const key in data) { // FIX: Usar 'data' en lugar de 'obj'
+                if (data.hasOwnProperty(key)) {
+                    // Se usa encodeURIComponent para manejar espacios y caracteres especiales
+                    parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key] || ''));
+                }
+            }
+            return parts.join('&');
+        }
+
+        /**
+         * Oculta el modal de alerta y limpia el temporizador.
+         */
+        function closeCustomAlert() {
+            const container = document.getElementById('custom-alert-container');
+            
+            // Ocultar el contenedor principal
+            if (container) {
+                // En lugar de 'display = none', lo más limpio es eliminarlo del DOM
+                // para que no interfiera con otros elementos y por ser dinámico.
+                container.remove(); 
+            }
+            
+            // Limpiar el temporizador global de cierre automático
+            if (alertTimeoutId) {
+                clearTimeout(alertTimeoutId);
+                alertTimeoutId = null; 
+            }
+        }        
+
+        /**
+         * Muestra un modal de alerta/carga personalizado.
+         * @param {string} message - El mensaje a mostrar.
+         * @param {'loading'|'info'|'error'} type - El tipo de alerta.
+         */
+        function showCustomAlert(message, type) {
+            // 1. Obtener o crear el contenedor principal del modal
+            let container = document.getElementById('custom-alert-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'custom-alert-container';
+                // Estilos para el contenedor: Z-index alto, centrado, fondo transparente total.
+                // Tailwind: fixed top-0 left-0 w-full h-full flex items-center justify-center z-[1000] backdrop-blur-sm
+                container.className = 'fixed inset-0 flex justify-center z-[1000] bg-transparent items-start';
+                document.body.appendChild(container);
+            }
+    
+            // Limpiar temporizador anterior
+            if (alertTimeoutId) {
+                clearTimeout(alertTimeoutId);
+                alertTimeoutId = null;
+            }
+
+            // Definir estilos y contenido según el tipo
+            let title = '';
+            let iconHtml = '';
+            let bgColorClass = '';
+            let showCloseButton = false;
+            let autoclose = false;
+    
+            switch (type) {
+                case 'loading':
+                    title = 'Procesando...';
+                    // Icono de carga giratorio (asumiendo Lucide icons)
+                    iconHtml = '<i data-lucide="loader-circle" class="w-10 h-10 animate-spin text-blue-400"></i>';
+                    bgColorClass = 'bg-gray-800/95'; // Fondo oscuro semitransparente para la carga
+                    showCloseButton = false;
+                    break;
+                case 'info':
+                    title = '¡Éxito!';
+                    iconHtml = '<i data-lucide="check-circle" class="w-10 h-10 text-green-400"></i>';
+                    bgColorClass = 'bg-gray-800/95';
+                    showCloseButton = false; // Se cerrará automáticamente o con closeModal()
+                    autoclose = true;
+                    break;
+                case 'error':
+                    title = 'Error de Operación';
+                    iconHtml = '<i data-lucide="alert-triangle" class="w-10 h-10 text-red-500"></i>';
+                    bgColorClass = 'bg-red-900/95'; // Fondo rojo oscuro para el error
+                    showCloseButton = true; // REQUERIMIENTO: Mostrar botón de cierre solo en error
+                    break;
+            }
+
+            // 2. Generar el contenido HTML del modal
+            container.innerHTML = `
+                <div class="p-6 rounded-xl shadow-2xl max-w-sm w-full transition-all duration-300 ${bgColorClass} mt-40"> 
+                    <div class="flex flex-col items-center space-y-4 mb-40">
+                
+                        ${showCloseButton ? `
+                            <button class="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors"
+                                    onclick="closeCustomAlert()">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        `: ''}
+
+                        <div class="pt-4">${iconHtml}</div>
+                
+                        <h3 class="text-xl font-bold text-white">${title}</h3>
+                        <p class="text-sm text-center text-gray-200">${message}</p>
+                
+                        ${showCloseButton ? `
+                            <button class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg mt-4 transition-colors"
+                                    onclick="closeCustomAlert()">
+                                Cerrar
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            // 3. Mostrar el contenedor
+            container.style.display = 'flex';
+            lucide.createIcons();
+
+            // 4. Configurar cierre automático (solo para 'info' breve)
+            if (autoclose) {
+                alertTimeoutId = setTimeout(closeCustomAlert, 1500); // 1.5 segundos
+            }
+        }
+
+
+        /**
+         * Recopila, valida y prepara los datos del formulario para su envío a GAS.
+         * Llama a sendDataToGAS para realizar la operación POST (crear o editar).
+         */
+        function saveEmployeeDetails() {
+            const form = document.getElementById('employee-edit-form');
+            if (!form) return;
+
+            const isNewRecord = currentSelectedEmployee === null;
+            const employeeData = {};
+            let isValid = true;
+            let missingFields = [];
+
+            // 1. Recolectar datos del formulario
+            DETAIL_FIELDS.forEach(field => {
+                const inputId = `edit-${field.key.toLowerCase()}`;
+                const inputElement = document.getElementById(inputId);
+                
+                if (inputElement) {
+                    let value = inputElement.value.trim();
+                    
+                    // Manejo especial para CÉDULA: eliminar puntos si los hay
+                    if (field.key === 'CEDULA') {
+                        value = value.replace(/\./g, ''); 
+                    }
+
+                    employeeData[field.key] = value;
+                    
+                    // Validación de campos obligatorios
+                    if (isNewRecord && field.isKey && !value) {
+                        isValid = false;
+                        missingFields.push(field.label.replace(':', ''));
+                    }
+                } else if (!isNewRecord && !field.editable && currentSelectedEmployee) {
+                    employeeData[field.key] = currentSelectedEmployee[field.key] || '';
+                }
+            });
+
+            // 2. Agregar información del usuario de auditoría
+            // Usamos 'Usuario_Nombre' (asumiendo que es la clave que almacena el nombre completo)
+            const USUARIO_NOMBRE_KEY = 'Usuario_Nombre'; // Define la clave si no es global
+            const registroUser = localStorage.getItem(USUARIO_NOMBRE_KEY) || 'Usuario Desconocido';
+            
+            // ➡️ INCLUIMOS LA VARIABLE EN LOS DATOS ENVIADOS
+            employeeData.registroUser = registroUser; 
+
+            // 3. Agregar metadatos de la operación y la acción requerida por GAS
+            employeeData.action = 'update_personal'; 
+            employeeData.mode = isNewRecord ? 'INSERT' : 'UPDATE'; 
+            employeeData.sheetName = TARGET_SHEET_NAME;
+
+            // Para UPDATE, necesitamos enviar la CÉDULA original
+            if (!isNewRecord && currentSelectedEmployee && currentSelectedEmployee.CEDULA) {
+                employeeData.recordKey = String(currentSelectedEmployee.CEDULA); 
+            }
+
+            // 4. Detener si la validación falla
+            if (!isValid) {
+                const message = `Faltan campos obligatorios para un nuevo registro: ${missingFields.join(', ')}.`;
+                showCustomAlert(message, 'error');
+                return;
+            }
+
+            // 🧪 VALIDACIÓN DE DATOS ANTES DEL ENVÍO (DEBUGGING) 🧪
+            console.log("=======================================");
+            console.log("✅ Datos y Operación Final para GAS:");
+            console.log(`➡️  Usuario de Auditoría: ${employeeData.registroUser}`); // <-- Se añade la visualización
+            console.log(`➡️  Operación: ${employeeData.mode}`);
+            console.log("➡️  Cuerpo de Datos Enviados:", employeeData);
+            console.log("=======================================");
+
+            // 5. Enviar a GAS
+            sendDataToGAS(employeeData);
+        }
+
+        /**
+         * Envía los datos al script de Google Apps (GAS) a través de una solicitud POST.
+         * Se ha modificado para esperar 'success: true/false' del servidor.
+         * @param {Object} data - Los datos a enviar (incluyendo action y mode).
+         */
+        async function sendDataToGAS(data) {
+            // Mostrar modal de carga
+            showCustomAlert('Enviando datos al servidor...', 'loading');
+
+            try {
+                const encodedData = urlEncodeObject(data);
+                console.log("datos enviandos a GAS: ",encodedData);
+
+
+                const response = await fetch(POST_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: encodedData,
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error de red: ${response.status} ${response.statusText || 'Error desconocido'}`);
+                }
+
+                const result = await response.json();
+                
+                // 1. Verificar la clave 'success' del backend de GAS
+                if (result.success === true) { 
+                    
+                    // 1. Manejo del éxito
+                    // Mostrar mensaje de éxito (usando el mensaje exacto que vino de GAS)
+                    const successMessage = result.message; 
+                    
+                    showCustomAlert(successMessage, 'info'); // Mostrar la alerta de éxito
+
+                    // Recargar datos y cerrar modal de detalles tras un breve retraso
+                    setTimeout(() => {
+                        closeDetailsModal();
+                        reloadData(); 
+                    }, 1500); 
+                    
+                    // Salir del try block, la operación fue exitosa
+                    return; 
+
+                } else {
+                    // 2. Manejo de error de GAS (success: false)
+                    // El mensaje de error viene en result.error (según tu código de GAS)
+                    const errorMessage = result.error || 'La operación falló sin un mensaje de error específico del servidor.';
+                    console.error("Fallo reportado por GAS:", result);
+                    // Lanzar un error para ser capturado por el catch, llevando el mensaje de GAS.
+                    throw new Error(errorMessage); 
+                }
+
+            } catch (error) {
+                // 3. Manejo de errores de red o errores lanzados por el bloque 'else'
+                console.error("Fallo al enviar datos a GAS:", error);
+                
+                // Mostrar alerta de error
+                // Ahora, el mensaje que se muestra en la alerta será el error real.
+                showCustomAlert(`Error al guardar: ${error.message}.`, 'error'); 
+            }
+        }
+
+ 
         // --- FUNCIONES DE NAVEGACIÓN Y UI ---
 
         // Función principal para cargar el contenido de la sección y manejar la navegación MPA (Multi-Page Application)
@@ -1585,6 +1757,16 @@
             const clearBtn = document.getElementById('clear-search-btn');
             const reloadBtn = document.getElementById('reload-icon');
             const detailsModal = document.getElementById('details-employee-modal');
+
+            const saveBtn = document.getElementById('save-icon-button'); 
+            const cancelBtn = document.getElementById('cancel-icon-button'); 
+
+            if (saveBtn) {
+                saveBtn.addEventListener('click', saveEmployeeDetails); 
+            }
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', cancelEditMode);
+            }
             
             // Escuchador para el campo de búsqueda con Debounce (300ms)
             if (searchInput) {
