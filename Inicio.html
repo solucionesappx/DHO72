@@ -1486,7 +1486,7 @@
             }
         }        
 
-        /**
+/**
          * Muestra un modal de alerta/carga personalizado.
          * @param {string} message - El mensaje a mostrar.
          * @param {'loading'|'info'|'error'} type - El tipo de alerta.
@@ -1514,39 +1514,43 @@
             let iconHtml = '';
             let bgColorClass = '';
             let showCloseButton = false;
-            let autoclose = false;
+            let autoclose = false; 
+            let successCloseAction = 'closeCustomAlert()'; // Acción de cierre por defecto
     
             switch (type) {
                 case 'loading':
                     title = 'Procesando...';
                     // Icono de carga giratorio (asumiendo Lucide icons)
                     iconHtml = '<i data-lucide="loader-circle" class="w-10 h-10 animate-spin text-blue-400"></i>';
-                    bgColorClass = 'bg-gray-800/95'; // Fondo oscuro semitransparente para la carga
+                    bgColorClass = 'bg-gray-800/95';
                     showCloseButton = false;
                     break;
                 case 'info':
                     title = '¡Éxito!';
                     iconHtml = '<i data-lucide="check-circle" class="w-10 h-10 text-green-400"></i>';
                     bgColorClass = 'bg-gray-800/95';
-                    showCloseButton = false; // Se cerrará automáticamente o con closeModal()
-                    autoclose = true;
+                    showCloseButton = true; // ⚠️ CAMBIO: Mostrar botón de cierre
+                    autoclose = false; // ⚠️ CAMBIO: No autocerrar
+                    successCloseAction = 'handlePostSuccessActions()'; // ⚠️ CAMBIO: Usar la nueva función
                     break;
                 case 'error':
                     title = 'Error de Operación';
                     iconHtml = '<i data-lucide="alert-triangle" class="w-10 h-10 text-red-500"></i>';
-                    bgColorClass = 'bg-red-900/95'; // Fondo rojo oscuro para el error
-                    showCloseButton = true; // REQUERIMIENTO: Mostrar botón de cierre solo en error
+                    bgColorClass = 'bg-red-900/95';
+                    showCloseButton = true; // Mostrar botón de cierre siempre en error
+                    autoclose = false; // Nunca autocerrar en error
+                    successCloseAction = 'closeCustomAlert()'; // En error, solo cierra la alerta
                     break;
             }
 
-            // 2. Generar el contenido HTML del modal
+            // 2. Generar el contenido HTML del modal (Asegurarse de usar successCloseAction)
             container.innerHTML = `
-                <div class="p-6 rounded-xl shadow-2xl max-w-sm w-full transition-all duration-300 ${bgColorClass} mt-40"> 
+                <div class="p-6 rounded-xl shadow-2xl max-w-sm w-full transition-all duration-300 ${bgColorClass} mt-40"> 
                     <div class="flex flex-col items-center space-y-4 mb-40">
                 
                         ${showCloseButton ? `
                             <button class="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors"
-                                    onclick="closeCustomAlert()">
+                                    onclick="${successCloseAction}">
                                 <i data-lucide="x" class="w-6 h-6"></i>
                             </button>
                         `: ''}
@@ -1557,9 +1561,9 @@
                         <p class="text-sm text-center text-gray-200">${message}</p>
                 
                         ${showCloseButton ? `
-                            <button class="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg mt-4 transition-colors"
-                                    onclick="closeCustomAlert()">
-                                Cerrar
+                            <button class="w-full py-2 px-4 ${type === 'error' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'} text-white font-semibold rounded-lg mt-4 transition-colors"
+                                    onclick="${successCloseAction}">
+                                ${type === 'error' ? 'Cerrar' : 'Aceptar'}
                             </button>
                         ` : ''}
                     </div>
@@ -1570,16 +1574,16 @@
             container.style.display = 'flex';
             lucide.createIcons();
 
-            // 4. Configurar cierre automático (solo para 'info' breve)
+            // 4. Configurar cierre automático (solo si autoclose es true)
             if (autoclose) {
-                alertTimeoutId = setTimeout(closeCustomAlert, 1500); // 1.5 segundos
+                alertTimeoutId = setTimeout(closeCustomAlert, 1500); 
             }
         }
 
 
         /**
          * Recopila, valida y prepara los datos del formulario para su envío a GAS.
-         * Llama a sendDataToGAS para realizar la operación POST (crear o editar).
+         * Incluye validación de unicidad de CEDULA para nuevos registros, usando allEmployeeData.
          */
         function saveEmployeeDetails() {
             const form = document.getElementById('employee-edit-form');
@@ -1589,7 +1593,12 @@
             const employeeData = {};
             let isValid = true;
             let missingFields = [];
-
+            let cedulaValue = '';
+            
+            // Definir clave y obtener usuario para auditoría
+            const USUARIO_NOMBRE_KEY = 'Usuario_Nombre'; 
+            const registroUser = localStorage.getItem(USUARIO_NOMBRE_KEY) || 'Usuario Desconocido';
+            
             // 1. Recolectar datos del formulario
             DETAIL_FIELDS.forEach(field => {
                 const inputId = `edit-${field.key.toLowerCase()}`;
@@ -1598,9 +1607,10 @@
                 if (inputElement) {
                     let value = inputElement.value.trim();
                     
-                    // Manejo especial para CÉDULA: eliminar puntos si los hay
+                    // Manejo especial para CÉDULA: eliminar puntos si los hay y guardar valor limpio
                     if (field.key === 'CEDULA') {
                         value = value.replace(/\./g, ''); 
+                        cedulaValue = value; // Guardamos el valor limpio para la validación
                     }
 
                     employeeData[field.key] = value;
@@ -1615,15 +1625,41 @@
                 }
             });
 
-            // 2. Agregar información del usuario de auditoría
-            // Usamos 'Usuario_Nombre' (asumiendo que es la clave que almacena el nombre completo)
-            const USUARIO_NOMBRE_KEY = 'Usuario_Nombre'; // Define la clave si no es global
-            const registroUser = localStorage.getItem(USUARIO_NOMBRE_KEY) || 'Usuario Desconocido';
-            
-            // ➡️ INCLUIMOS LA VARIABLE EN LOS DATOS ENVIADOS
-            employeeData.registroUser = registroUser; 
+            // 2. Detener si la validación de campos obligatorios falla
+            if (!isValid) {
+                const message = `Faltan campos obligatorios para un nuevo registro: ${missingFields.join(', ')}.`;
+                showCustomAlert(message, 'error');
+                return;
+            }
 
-            // 3. Agregar metadatos de la operación y la acción requerida por GAS
+            // ==========================================================
+            // 🚨 VALIDACIÓN DE UNICIDAD DE CÉDULA (SOLO EN CREACIÓN) 🚨
+            // ==========================================================
+            if (isNewRecord && cedulaValue) {
+                
+                // ⚠️ USO DE allEmployeeData como lista de empleados
+                const employeeList = (typeof allEmployeeData !== 'undefined' && Array.isArray(allEmployeeData)) ? allEmployeeData : [];
+                
+                if (employeeList.length > 0) {
+                    const exists = employeeList.some(employee => 
+                        // Buscamos la coincidencia, normalizando ambas cédulas (limpiando puntos)
+                        String(employee.CEDULA).replace(/\./g, '') === String(cedulaValue)
+                    );
+                    
+                    if (exists) {
+                        const message = `El número de CÉDULA ${cedulaValue} ya existe en el registro. No se puede crear un nuevo empleado con la misma cédula.`;
+                        console.error(message);
+                        showCustomAlert(message, 'error');
+                        return; // Bloquea el envío a GAS
+                    }
+                } else {
+                    console.warn("ADVERTENCIA: La variable global 'allEmployeeData' no está disponible o está vacía. La validación de unicidad de CÉDULA no se pudo realizar en el frontend.");
+                }
+            }
+
+
+            // 3. Agregar metadatos
+            employeeData.registroUser = registroUser; 
             employeeData.action = 'update_personal'; 
             employeeData.mode = isNewRecord ? 'INSERT' : 'UPDATE'; 
             employeeData.sheetName = TARGET_SHEET_NAME;
@@ -1633,39 +1669,31 @@
                 employeeData.recordKey = String(currentSelectedEmployee.CEDULA); 
             }
 
-            // 4. Detener si la validación falla
-            if (!isValid) {
-                const message = `Faltan campos obligatorios para un nuevo registro: ${missingFields.join(', ')}.`;
-                showCustomAlert(message, 'error');
-                return;
-            }
-
-            // 🧪 VALIDACIÓN DE DATOS ANTES DEL ENVÍO (DEBUGGING) 🧪
+            // 🧪 DEBUGGING
             console.log("=======================================");
-            console.log("✅ Datos y Operación Final para GAS:");
-            console.log(`➡️  Usuario de Auditoría: ${employeeData.registroUser}`); // <-- Se añade la visualización
-            console.log(`➡️  Operación: ${employeeData.mode}`);
+            console.log(`➡️  Operación final: ${employeeData.mode}`);
             console.log("➡️  Cuerpo de Datos Enviados:", employeeData);
             console.log("=======================================");
 
-            // 5. Enviar a GAS
+            // 4. Enviar a GAS
             sendDataToGAS(employeeData);
         }
 
-        /**
-         * Envía los datos al script de Google Apps (GAS) a través de una solicitud POST.
-         * Se ha modificado para esperar 'success: true/false' del servidor.
-         * @param {Object} data - Los datos a enviar (incluyendo action y mode).
-         */
         async function sendDataToGAS(data) {
+            // 1. OBTENER Y DESHABILITAR EL BOTÓN
+            const saveBtn = document.getElementById('save-icon-button');
+            if (saveBtn) {
+                saveBtn.disabled = true; // Deshabilitar inmediatamente
+                saveBtn.classList.add('opacity-50', 'cursor-not-allowed'); 
+            }
+
             // Mostrar modal de carga
             showCustomAlert('Enviando datos al servidor...', 'loading');
 
             try {
                 const encodedData = urlEncodeObject(data);
-                console.log("datos enviandos a GAS: ",encodedData);
-
-
+                console.log("➡️ Datos enviados a GAS (URL-Encoded): ", encodedData); 
+                
                 const response = await fetch(POST_URL, {
                     method: 'POST',
                     headers: {
@@ -1680,43 +1708,44 @@
 
                 const result = await response.json();
                 
-                // 1. Verificar la clave 'success' del backend de GAS
                 if (result.success === true) { 
                     
-                    // 1. Manejo del éxito
-                    // Mostrar mensaje de éxito (usando el mensaje exacto que vino de GAS)
                     const successMessage = result.message; 
+                    showCustomAlert(successMessage, 'info');
                     
-                    showCustomAlert(successMessage, 'info'); // Mostrar la alerta de éxito
-
-                    // Recargar datos y cerrar modal de detalles tras un breve retraso
-                    setTimeout(() => {
-                        closeDetailsModal();
-                        reloadData(); 
-                    }, 1500); 
-                    
-                    // Salir del try block, la operación fue exitosa
                     return; 
 
                 } else {
-                    // 2. Manejo de error de GAS (success: false)
-                    // El mensaje de error viene en result.error (según tu código de GAS)
                     const errorMessage = result.error || 'La operación falló sin un mensaje de error específico del servidor.';
                     console.error("Fallo reportado por GAS:", result);
-                    // Lanzar un error para ser capturado por el catch, llevando el mensaje de GAS.
                     throw new Error(errorMessage); 
                 }
 
             } catch (error) {
-                // 3. Manejo de errores de red o errores lanzados por el bloque 'else'
                 console.error("Fallo al enviar datos a GAS:", error);
-                
-                // Mostrar alerta de error
-                // Ahora, el mensaje que se muestra en la alerta será el error real.
                 showCustomAlert(`Error al guardar: ${error.message}.`, 'error'); 
+
+            } finally {
+                // 2. RE-HABILITAR EL BOTÓN (se ejecuta siempre al finalizar el try/catch)
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
             }
         }
 
+        /**
+         * Ejecuta las acciones necesarias después de un registro/actualización exitosa
+         * y después de que el usuario ha aceptado el mensaje de éxito.
+         */
+        function handlePostSuccessActions() {
+            // Cierre del modal de edición
+            closeDetailsModal();
+            // Recarga de datos para mostrar el nuevo registro/actualización
+            reloadData();
+            // Cierre de la alerta personalizada
+            closeCustomAlert();
+        }
  
         // --- FUNCIONES DE NAVEGACIÓN Y UI ---
 
