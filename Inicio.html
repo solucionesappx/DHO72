@@ -85,17 +85,6 @@
 
         .footer-btn.active { color: var(--color-primary-dark); }
 
-        /* Clase para deshabilitar visual y funcionalmente el botón Agregar */
-        .add-action-button.disabled-action {
-            opacity: 0.4; /* Reduce la opacidad para hacerlo opaco */
-            pointer-events: none; /* 🛑 Deshabilita clics, hover y todos los eventos del cursor */
-            cursor: default; /* Muestra el cursor por defecto, no el de "clic" */
-            
-            /* Opcional: Anula cualquier estilo de hover heredado */
-            transform: none !important; 
-            box-shadow: none !important;
-        }
-
         /* ========================================================== */
         /* --- REGLA CSS REUTILIZABLE PARA TARJETAS DE MÉTRICAS --- */
         /* ========================================================== */
@@ -438,7 +427,7 @@
                 Mi Aplicación Móvil ZXC
             </h1>
             <div class="flex space-x-3">
-                <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="window.location.href = 'index.html'">
+                <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="logoutAndClearCache()">
                     <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
                 </button>
             </div>
@@ -530,7 +519,7 @@
                 <i data-lucide="calendar-days" class="w-6 h-6"></i> 
                 <span>Vacaciones</span>
             </button>
-            <button class="footer-btn" data-section="Agregar">
+            <button class="footer-btn hidden" data-section="Agregar">
                 <i data-lucide="calendar-plus" class="w-6 h-6"></i>
                 <span>Agregar</span>
             </button>
@@ -626,9 +615,17 @@
         // URL de la API para Google Apps Script
         const GET_URL = 'https://script.google.com/macros/s/AKfycbx87WvxA9ca1KyGMA1wsw1npZw5vPtjoItomhF823BICXScNrWGFh5m0Dj6Veb24CtHXQ/exec';
         const POST_URL = 'https://script.google.com/macros/s/AKfycbxjneZ_WpBjmIEAqtutJgk0m3oqsa0-OsmHjfPxBqZNfDb9gYzWV4kQ8hoXXIK5EAVnSA/exec'; 
-        const TARGET_SHEET_NAME = 'BD_Personal2'; // Nombre de la hoja
+        const TARGET_SHEET_NAME = 'BD_Personal2'; // Nombre de la hoja Principal
         const CACHE_KEY = 'employeeDataCache_BD_Personal2';
         const CACHE_EXPIRATION_MS = 15 * 60 * 1000; // 15 minutos
+
+        // 🛑 Nuevas constantes para la segunda tabla
+        const VACACIONES2_SHEET_NAME = 'Vacaciones2'; 
+        const VACACIONES2_CACHE_KEY = 'vacaciones2DataCache'; 
+
+        let allEmployeeData = [];       // Datos de BD_Personal2
+        let allVacaciones2Data = [];    // 🎯 Variable global para Vacaciones2
+        let filteredEmployeeData = [];
         
         let debounceTimer; // Temporizador de retardo para la búsqueda
         let alertTimeoutId; // 
@@ -646,6 +643,7 @@
             { key: 'UNIDAD', label: 'UNIDAD' },
             { key: 'CARGO', label: 'CARGO' },
             { key: 'CTRL2', label: 'Días Vacaciones' }, 
+            { key: 'CTRL3', label: 'Días Bono Vacacional' }, 
         ];
 
         // Mapeo de todos los campos de detalle para la vista y edición
@@ -664,12 +662,10 @@
             { key: 'INGRESO', label: 'Ingreso:', editable: false, format: formatDate, type: 'date' , isKey: true }, 
             { key: 'NACIMIENTO', label: 'F. Nacimiento:',  editable: false, format: formatDate, type: 'date' },
             { key: 'CTRL2', label: 'D. Vacaciones:',  editable: false, type: 'text' },
+            { key: 'CTRL3', label: 'D. Bono Vac.:',  editable: false, type: 'text' },
             { key: 'CTRL1', label: 'Nota/Alerta:',  editable: true, type: 'textarea', isNote: true }
         ];
-
-        let allEmployeeData = [];
-        let filteredEmployeeData = [];
-        
+       
         // Inicializar variables de ordenación - AHORA NULAS POR DEFECTO
         let currentSortColumn = null; 
         let currentSortDirection = null; 
@@ -876,16 +872,29 @@
                         <td class="table-data-cell sticky-id-cell" style="min-width: ${narrowIdWidth}; max-width: ${narrowIdWidth};">${rowId}</td>
                         ${TABLE_COLUMNS.map(col => {
                             const value = row[col.key] || '';
-                            let formattedValue = String(value); 
-                            
+                            let formattedValue = String(value);
+                            //let formattedValue = value; // Iniciamos con el valor original para evitar conversiones prematuras
                             if (col.key === 'CEDULA') {
                                 formattedValue = formatNumberWithDots(value);
                             } else if (col.key === 'INGRESO' || col.key === 'NACIMIENTO') {
                                 formattedValue = formatDate(value);
                             } else if (col.key === 'CTRL2') {
-                                formattedValue = value === '' ? 'N/A' : value;
+                                if (value === null || value === undefined || value === '') {
+                                    formattedValue = '0';
+                                } else {
+                                    formattedValue = value;
+                                }
+                            } else if (col.key === 'CTRL3') {
+                                if (value === null || value === undefined || value === '') {
+                                    formattedValue = '0';
+                                } else {
+                                    formattedValue = value;
+                                }
+                            }    
+                            if (formattedValue === 'N/A') {
+                                formattedValue = String(formattedValue);
                             }
-                            
+
                             let alignmentClass;
                             // Clases de alineación de celda para TD
                             if (col.key === 'EMPRESA') {
@@ -894,8 +903,8 @@
                             } else if (['NOMBRES', 'APELLIDOS', 'PERFIL', 'SECTOR', 'UNIDAD', 'CARGO'].includes(col.key)) {
                                 // 2. Columnas alineadas a la izquierda
                                 alignmentClass = 'text-left px-2';
-                            } else if (col.key === 'CTRL2') { 
-                                // 3. Días de Vacaciones (Números) Alineados a la derecha
+                            } else if (['CTRL2', 'CTRL3'].includes(col.key)) { 
+                                // 3. Días de Vacaciones y Bono Vacacional (Números) Alineados a la derecha
                                 alignmentClass = 'text-right px-2 font-semibold';
                             } else {
                                 // 4. El resto (CEDULA, NOMINA, INGRESO) centrado por defecto
@@ -1309,6 +1318,59 @@
             // Restablecer filtro (lo que activará el renderizado sin ordenación)
             filterEmployees(''); 
         }
+
+
+        /**
+         * Función genérica para cargar datos de CUALQUIER hoja, usando su caché.
+         * @param {string} sheetName - El nombre de la hoja a cargar.
+         * @param {string} cacheKey - La clave del caché local.
+         * @param {boolean} forceReload - Omitir caché.
+         * @returns {Promise<Array<Object>>} Los datos de la hoja.
+         */
+        async function fetchSheetData(sheetName, cacheKey, forceReload = false) {
+            const cachedData = localStorage.getItem(cacheKey);
+
+            // Lógica de caché (reutilizando la que ya tienes)
+            if (cachedData && !forceReload) {
+                try {
+                    const parsedCache = JSON.parse(cachedData);
+                    const now = new Date().getTime();
+                    if (now < parsedCache.expiry && Array.isArray(parsedCache.data)) {
+                        console.log(`Cargando datos desde el CACHÉ local para: ${sheetName}`);
+                        return parsedCache.data;
+                    } else {
+                        localStorage.removeItem(cacheKey);
+                    }
+                } catch (e) {
+                    console.error(`Error al parsear el caché local para ${sheetName}:`, e);
+                    localStorage.removeItem(cacheKey);
+                }
+            }
+
+            // Lógica de carga desde GAS (reutilizando buildGasApiUrl(sheetName))
+            try {
+                const apiUrl = buildGasApiUrl(sheetName);
+                const response = await fetch(apiUrl, { method: 'GET' });
+                const result = await response.json();
+                
+                const data = result.data || result;
+
+                if (!Array.isArray(data)) {
+                    throw new Error(`Datos no válidos para ${sheetName}.`);
+                }
+
+                // Guardar en caché
+                const expiry = new Date().getTime() + CACHE_EXPIRATION_MS;
+                localStorage.setItem(cacheKey, JSON.stringify({ data: data, expiry: expiry }));
+                
+                console.log(`Nuevos datos obtenidos para: ${sheetName}.`);
+                return data;
+
+            } catch (error) {
+                console.error(`Fallo al obtener datos de ${sheetName}:`, error);
+                return []; // Retornar array vacío en caso de error para no bloquear la aplicación
+            }
+        }
         
         /**
          * Recarga los datos de la fuente de datos (GAS), forzando la omisión de la caché.
@@ -1458,6 +1520,75 @@
                 updateMetrics([]); // Limpiar métricas en caso de error
             }
         }
+
+        /**
+         * REEMPLAZO DE loadData(): Carga todos los datos de forma paralela (BD_Personal2 y Vacaciones2).
+         * Gestiona el indicador de carga global de principio a fin.
+         */
+        async function loadAllData(forceReload = false) {
+            const statusElement = document.getElementById('table-loading-status');
+            const dataViewContainer = document.getElementById('data-view-container');
+            const mainTableWrapper = document.getElementById('employee-table-wrapper');
+            
+            // 1. 🟢 INICIO: MOSTRAR INDICADOR GLOBAL Y OCULTAR VISTAS
+            if (statusElement) {
+                statusElement.innerHTML = `
+                    <div class="py-8">
+                        <i data-lucide="loader-circle" class="w-8 h-8 mx-auto animate-spin text-blue-500"></i> 
+                        <p class="mt-2 text-sm text-gray-400">Cargando todas las fuentes de datos...</p>
+                    </div>
+                `;
+                statusElement.style.display = 'block';
+            }
+            if (dataViewContainer) dataViewContainer.style.display = 'none';
+            if (mainTableWrapper) mainTableWrapper.style.display = 'none';
+            lucide.createIcons();
+            
+            // 2. Definir las Promesas de Carga (se ejecutan inmediatamente y en paralelo)
+            const personalPromise = fetchSheetData(TARGET_SHEET_NAME, CACHE_KEY, forceReload);
+            const vacaciones2Promise = fetchSheetData(VACACIONES2_SHEET_NAME, VACACIONES2_CACHE_KEY, forceReload);
+            
+            try {
+                // 3. 🛑 ESPERAR: Bloquea hasta que AMBAS promesas se resuelvan (éxito o fallo)
+                const [personalData, vacaciones2Data] = await Promise.all([
+                    personalPromise, 
+                    vacaciones2Promise
+                ]);
+
+                // 4. Asignar resultados a las variables globales
+                allEmployeeData = personalData;
+                allVacaciones2Data = vacaciones2Data;
+
+                // 5. 🟢 FIN: OCULTAR INDICADOR Y MOSTRAR VISTAS
+                if (statusElement) statusElement.style.display = 'none';
+                if (dataViewContainer) dataViewContainer.style.display = 'block';
+                if (mainTableWrapper) mainTableWrapper.style.display = 'block';
+                
+                // 6. Renderizar la tabla principal y actualizar métricas
+                updateMetrics(allEmployeeData); // Usamos allEmployeeData para el total si no hay filtro activo
+                filterEmployees(''); 
+                
+                // 7. ✅ Mensaje de confirmación final (Solo para la Consola)
+                console.log(`Carga completa. Personal: ${allEmployeeData.length} registros. Vacaciones2: ${allVacaciones2Data.length} registros.`);
+
+            } catch (error) {
+                // Este bloque catch solo se activaría si falla Promise.all (lo cual es improbable 
+                // porque fetchSheetData ya maneja sus propios errores y devuelve []).
+                console.error("Fallo inesperado durante la espera de Promise.all:", error);
+                
+                // Mostrar un error general si algo salió muy mal
+                if (statusElement) {
+                    statusElement.innerHTML = `<div class="bg-red-800 p-4 rounded-xl shadow-lg text-white mt-4">
+                        <strong>Error Crítico:</strong> No se pudo cargar una o más tablas. Detalles en consola.
+                    </div>`;
+                    statusElement.style.display = 'block';
+                }
+                if (dataViewContainer) dataViewContainer.style.display = 'none';
+                if (mainTableWrapper) mainTableWrapper.style.display = 'none';
+            }
+        }
+
+
 
 
         // --- FUNCIONES MANEJO DE NUEVOS DATOS Y ENVIO A GAS ---
@@ -1792,30 +1923,28 @@
         }
 
         /**
-         * Actualiza el estado visual y funcional del botón "Agregar" basado en la sección activa.
-         * * NOTA: Asumimos que el botón "Agregar" tiene el ID 'add-action-button'.
-         * Si su botón tiene otro ID o clase, ajústelo aquí.
+         * Limpia todas las claves de caché de datos de la aplicación antes de cerrar sesión.
+         * Incluye las claves de BD_Personal2 y Vacaciones2, y limpia cualquier dato de usuario.
          */
-        function updateAddButtonState(activeSection) {
-            const addButton = document.getElementById('add-action-button');
-            if (!addButton) return;
-            
-            const requiredSection = 'Vacaciones';
-            
-            if (activeSection === requiredSection) {
-                // Habilitar: Permitir clics y restaurar apariencia normal
-                addButton.classList.remove('disabled-action');
-                addButton.removeAttribute('disabled');
-                // Eliminar estilo de opacidad si se aplica localmente
-                addButton.style.opacity = ''; 
-            } else {
-                // Deshabilitar: Aplicar clase de opacidad y deshabilitar interacción
-                addButton.classList.add('disabled-action');
-                // Usar el atributo 'disabled' para mayor robustez, aunque CSS ya lo maneja
-                addButton.setAttribute('disabled', 'true'); 
-            }
+        function logoutAndClearCache() {
+            // Definir las claves que deben ser eliminadas
+            const cacheKeys = [
+                'employeeDataCache_BD_Personal2', // Caché de BD_Personal2
+                'vacaciones2DataCache',           // Caché de Vacaciones2
+                'Usuario_Nombre',                 // Opcional: limpiar datos de sesión como el nombre
+                // Agrega aquí cualquier otra clave de localStorage que desees limpiar
+            ];
+
+            // Limpiar cada clave
+            cacheKeys.forEach(key => {
+                localStorage.removeItem(key);
+                console.log(`Caché limpia: ${key}`);
+            });
+
+            // Redirigir al usuario a la página de inicio (index.html)
+            window.location.href = 'index.html';
         }
-        
+     
         /**
          * Inicializa los escuchadores DOM específicos de la página de Inicio (búsqueda, recarga).
          */
@@ -1882,26 +2011,21 @@
                 headerTitle.textContent = `¡Hola, ${capitalizedFirstName}!`;
             }
 
-            // Comenzar a cargar los datos de la Hoja de Google
-            loadData();
+            // Comenzar a cargar los datos de las hojas Google Sheets
+            loadAllData();
             
             // Inicializar escuchadores de UI (búsqueda, recarga, controles de modal)
             initializeHomeListeners();
 
             // Añadir escuchadores de eventos para la navegación MPA
             const footerButtons = document.querySelectorAll('.footer-btn');
-            const defaultSection = 'Inicio'; // Asumir la sección inicial (actualizar según Sección.html)   
-
             footerButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const section = button.getAttribute('data-section');
-                    loadContent(section);          // 1. Cargar el contenido (asumiendo que esta función existe)
-                    updateAddButtonState(section); // 2. 🚨 ACTUALIZAR EL ESTADO DEL BOTÓN DESPUÉS DE LA NAVEGACIÓN
-                });
+                    loadContent(section);          
+                  });
             });
-
-            updateAddButtonState(defaultSection);  // 3. 🚨 LLAMADA INICIAL: Establecer el estado del botón al cargar la página
-            
+           
             // Volver a inicializar los íconos al cargar
             lucide.createIcons();
         });
