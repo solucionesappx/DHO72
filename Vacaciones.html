@@ -102,6 +102,10 @@
             text-align: right !important; 
         }
 
+        .text-left {
+            text-align: left !important; 
+        }
+
         .text-center {
             text-align: center !important;
         }
@@ -275,9 +279,7 @@
                 Mi Aplicación Móvil ZXC
             </h1>
             <div class="flex space-x-3">
-                
-                <!-- Botón de Cerrar Sesión con redirección a index.html -->
-                <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="window.location.href = 'index.html'">
+                <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="logoutAndClearCache()">
                     <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
                 </button>
             </div>
@@ -713,34 +715,45 @@
             // *** ESTRUCTURA DE LA TARJETA (MODIFICADA SEGÚN SOLICITUD) ***
             const cardHTML = `
                 <div class="employee-card p-4 rounded-xl shadow-xl transition duration-300">
-                    
-                    <!-- 1RA FILA: NOMBRE Y EMPRESA (Ambos justificados a la IZQUIERDA) -->
-                    <div class="pb-3">
-                        
-                        <!-- Nombre del Empleado -->
-                        <div class="flex items-center space-x-2 flex-grow min-w-0 pr-4">
-                            <!-- Ícono de Usuario (circle-user-round) en azul claro -->
-                            <i data-lucide="circle-user-round" class="w-6 h-6 text-blue-300 flex-shrink-0"></i>
-                            <!-- Nombre: Prominente, mayúsculas, justificado a la izquierda -->
-                            <p class="text-lg font-extrabold text-gray-100 leading-snug break-words max-w-full">
-                                ${nombreFormateado.toUpperCase()}
-                            </p>
-                        </div>
-                        
-                        <!-- EMPRESA (Justificado a la izquierda, debajo del nombre) -->
-                        <div class="flex items-center text-sm text-gray-400 space-x-2">
-                            <i data-lucide="factory" class="w-6 h-6 text-gray-400 flex-shrink-0"></i>
-                            <span class="whitespace-normal">${empresa || 'Empresa ZXC'}</span>
-                        </div>
-                    </div>
-
-                    <!-- 2DA FILA: CÉDULA E INGRESO (Alineados a la derecha, en formato de texto simple) -->
-                        <div class="text-right">
-                            <div class="flex flex-col items-end">
-                                <span class="text-sm text-white font-semibold">Cédula: ${formatNumberWithDots(cedula)}</span>
-                                <span class="text-sm text-white font-semibold">Ingreso: ${formatDate(fechaIngreso)}</span>
+                    <div class="grid grid-cols-2 gap-1">
+                        <!-- 1RA FILA: NOMBRE Y EMPRESA (Ambos justificados a la IZQUIERDA) -->
+                        <div class="pb-3">
+                            
+                            <!-- Nombre del Empleado -->
+                            <div class="flex items-center space-x-2 flex-grow min-w-0 pr-4">
+                                <!-- Ícono de Usuario (circle-user-round) en azul claro -->
+                                <i data-lucide="circle-user-round" class="w-6 h-6 text-blue-300 flex-shrink-0"></i>
+                                <!-- Nombre: Prominente, mayúsculas, justificado a la izquierda -->
+                                <p class="text-lg font-extrabold text-gray-100 leading-snug break-words max-w-full">
+                                    ${nombreFormateado.toUpperCase()}
+                                </p>
+                            </div>
+                            
+                            <!-- EMPRESA (Justificado a la izquierda, debajo del nombre) -->
+                            <div class="flex items-center text-sm text-gray-400 space-x-2">
+                                <i data-lucide="factory" class="w-6 h-6 text-gray-400 flex-shrink-0"></i>
+                                <span class="whitespace-normal">${empresa || 'Empresa ZXC'}</span>
                             </div>
                         </div>
+
+                            <!-- 2da Columna: CÉDULA E INGRESO (Alineados a la derecha, en formato de texto simple) -->
+                            <div class="pb-3">
+                                <div class="text-right">
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-sm text-white font-semibold">Cédula: ${formatNumberWithDots(cedula)}</span>
+                                        <span class="text-sm text-white font-semibold">Ingreso: ${formatDate(fechaIngreso)}</span>
+                                    </div>
+                                </div>    
+                            </div>                              
+                    </div>    
+                        <!-- 2DA FILA: Botón Otro Trabajador -->
+                            <div class="flex flex-row items-center justify-center p-1 rounded-xl border border-gray-600 bg-gray-600/80 hover:bg-gray-500 transition-colors cursor-pointer"
+                                title="Otro Trabajador" onclick="loadContent('Buscar')">
+                                <i data-lucide="user-search" class="w-6 h-6 text-blue-400 flex-shrink-0"></i>
+                                <span class="text-xm text-gray-300 ml-2">Buscar otro Empleado</span>
+                            </div>                            
+
+                    </div>
 
                     <!-- LÍNEA SEPARADORA (Ahora entre detalles fijos y totales) -->
                     <div class="border-b border-gray-600 mt-2 mb-2"></div>
@@ -1412,6 +1425,29 @@
             
             console.error(`ERROR: Sección no mapeada para navegación: ${section}`);
         }
+
+         /**
+         * Limpia todas las claves de caché de datos de la aplicación antes de cerrar sesión.
+         * Incluye las claves de BD_Personal2 y Vacaciones2, y limpia cualquier dato de usuario.
+         */
+        function logoutAndClearCache() {
+            // Definir las claves que deben ser eliminadas
+            const cacheKeys = [
+                'employeeDataCache_BD_Personal2', // Caché de BD_Personal2
+                'vacaciones2DataCache',           // Caché de Vacaciones2
+                'Usuario_Nombre',                 // Opcional: limpiar datos de sesión como el nombre
+                // Agrega aquí cualquier otra clave de localStorage que desees limpiar
+            ];
+
+            // Limpiar cada clave
+            cacheKeys.forEach(key => {
+                localStorage.removeItem(key);
+                console.log(`Caché limpia: ${key}`);
+            });
+
+            // Redirigir al usuario a la página de inicio (index.html)
+            window.location.href = 'index.html';
+        }        
         
         // --- INICIALIZACIÓN DE LA APLICACIÓN ---
         document.addEventListener('DOMContentLoaded', () => {
