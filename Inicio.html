@@ -883,7 +883,7 @@
                             } else if (col.key === 'INGRESO' || col.key === 'NACIMIENTO') {
                                 formattedValue = formatDate(value);
                             } else if (col.key === 'CTRL2') {
-                                formattedValue = value === '' ? '' : value;
+                                formattedValue = value === '' ? 'N/A' : value;
                             }
                             
                             let alignmentClass;
