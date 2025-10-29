@@ -523,10 +523,6 @@
                 <i data-lucide="calendar-plus" class="w-6 h-6"></i>
                 <span>Agregar</span>
             </button>
-            <button class="footer-btn hidden" data-section="Editar">
-                <i data-lucide="Edit" class="w-6 h-6"></i>
-                <span>Editar</span>
-            </button>
             <button class="footer-btn" data-section="Perfil">
                 <i data-lucide="user" class="w-6 h-6"></i>
                 <span>Perfil</span>
@@ -628,7 +624,7 @@
         const VACACIONES2_CACHE_KEY = 'vacaciones2DataCache'; 
 
         let allEmployeeData = [];       // Datos de BD_Personal2
-        let allVacaciones2Data = [];    // 🎯 Variable global para Vacaciones2
+        let vacationData = [];    // 🎯 Variable global para Vacaciones2
         let filteredEmployeeData = [];
         
         let debounceTimer; // Temporizador de retardo para la búsqueda
@@ -1158,6 +1154,57 @@
         }
 
         /**
+         * Función con nombre para manejar el clic en el encabezado de ordenación (utilizada para la eliminación segura de escuchadores).
+         */
+        function handleSortHeaderClick() {
+            const columnKey = this.getAttribute('data-key');
+            if (columnKey) {
+                sortData(columnKey);
+            }
+        }
+
+        /**
+         * Maneja el evento de clic en una fila de la tabla de empleados.
+         * Guarda los datos del empleado seleccionado en localStorage.
+         * @param {Event} event - El evento de clic.
+         */
+        function handleRowClick(event) {
+            const row = event.target.closest('.worker-row');
+            if (!row) return;
+
+            // Lógica visual: Quitar selección previa de resaltado y añadir la actual
+            document.querySelectorAll('.worker-row.bg-indigo-700').forEach(r => r.classList.remove('bg-indigo-700'));
+            row.classList.add('bg-indigo-700');
+            
+            // Obtener datos
+            const rowIndex = Number(row.getAttribute('data-index')); 
+            const workerData = filteredEmployeeData[rowIndex]; 
+            
+            if (workerData) {
+                // Formatear el campo INGRESO
+                const formattedIngreso = formatDate(workerData.INGRESO);
+                
+                // Construir el JSON requerido
+                const requiredJson = {
+                    CEDULA: workerData.CEDULA,
+                    INGRESO: formattedIngreso, 
+                    NOMBRES: workerData.NOMBRES,
+                    APELLIDOS: workerData.APELLIDOS,
+                };
+
+                // Guardar el JSON en localStorage
+                const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
+                const employeeDataJSON = JSON.stringify(requiredJson);
+                localStorage.setItem(EMPLOYEE_TRANSFER_KEY, employeeDataJSON);
+                
+                console.log("Datos del trabajador guardados en localStorage:", requiredJson.CEDULA);
+                console.log("Datos incluidos en requiredJson:", requiredJson);
+            } else {
+                console.error("No se encontraron datos del trabajador para la fila clickeada.");
+            }
+        }
+
+        /**
          * Maneja el evento de doble clic en una fila de trabajador.
          */
         function handleRowDoubleClick(event) {
@@ -1181,51 +1228,81 @@
         }
 
         /**
-         * Inicializa los escuchadores de acciones de la tabla (ej. clic en encabezado, clic/doble clic en fila).
+         * Inicializa todos los escuchadores de eventos para la tabla de datos.
+         * Incluye 'click' simple para seleccionar y guardar en localStorage, y 'dblclick' para abrir el modal.
          */
         function initializeTableListeners() {
-            // Asignar escuchadores a los encabezados para la ordenación
+            // 1. Escuchador para la ordenación de columnas (encabezados)
             document.querySelectorAll('.sortable-header').forEach(header => {
-                header.removeEventListener('click', handleSortHeaderClick); 
-                header.addEventListener('click', handleSortHeaderClick);
+                header.addEventListener('click', () => {
+                    const columnKey = header.getAttribute('data-key');
+                    if (columnKey) {
+                        sortData(columnKey); // sortData es la función que maneja la lógica de ordenación
+                    }
+                });
             });
 
-            // Añadir escuchadores a las filas para detalles
+            // 2. Escuchadores para las filas de la tabla (.worker-row)
             document.querySelectorAll('.worker-row').forEach(row => {
-                // Limpiar escuchadores previos
-                row.removeEventListener('click', handleRowClick);
-                row.removeEventListener('dblclick', handleRowDoubleClick);
-
-                // Añadir nuevos escuchadores
-                row.addEventListener('click', handleRowClick);
-                row.addEventListener('dblclick', handleRowDoubleClick);
+                // Evento 'click': Para seleccionar la fila, guardar datos en localStorage, y resaltar.
+                // Esto llama a la función handleRowClick que acabamos de definir.
+                row.addEventListener('click', handleRowClick); 
+                
+                // Evento 'dblclick': Para abrir el modal de detalles del trabajador (se mantiene sin cambios).
+                row.addEventListener('dblclick', (event) => {
+                    const rowIndex = Number(row.getAttribute('data-index'));
+                    // Suponiendo que filteredEmployeeData y openDetailsModal son accesibles globalmente
+                    const workerData = filteredEmployeeData[rowIndex]; 
+                    openDetailsModal(workerData);
+                });
             });
+        }
+
+        /**
+         * Abre la vista de detalles de vacaciones.
+         * Obtiene los datos de vacaciones de la variable en memoria (caché de sesión), 
+         * los filtra por la cédula del trabajador seleccionado y guarda el resultado filtrado en localStorage.
+         */
+        function showVacationDetailModal() {
+            // Claves de control en localStorage
+            const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit'; // Clave para la cédula seleccionada
+            const VACATION_TRANSFER_KEY = 'filteredVacationData'; // Clave para guardar los datos filtrados
+            
+            // 1. Obtener la CÉDULA del trabajador seleccionado desde localStorage
+            const workerInfoJSON = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
+            if (!workerInfoJSON) {
+                console.error("Error: No hay un trabajador seleccionado en localStorage ('userInfoToEdit').");
+                return; 
+            }
+            const workerInfo = JSON.parse(workerInfoJSON);
+            const cedulaSeleccionada = String(workerInfo.CEDULA); 
+
+            // 2. Obtener TODOS los datos de vacaciones desde la variable de MEMORIA (caché de sesión)
+            // NOTA CLAVE: Asumimos que la variable global de JavaScript se llama 'vacationData'.
+            if (typeof vacationData === 'undefined' || !Array.isArray(vacationData)) {
+                console.error("Error: La variable global 'vacationData' (caché en memoria de Vacaciones2) no está definida o no es un array. Es necesario cargarla primero.");
+                return;
+            }
+
+            // 3. Filtrar los datos de Vacaciones por la CEDULA del trabajador
+            // Se usa la variable 'vacationData' de la memoria del navegador.
+            const filteredVacations = vacationData.filter(registro => 
+                // Comparamos asegurando que ambos valores sean tratados como string
+                String(registro.CEDULA) === cedulaSeleccionada
+            );
+
+            // 4. Guardar los datos filtrados en localStorage
+            // Esta es la información que consumirá la página Vacaciones.html.
+            const filteredVacationsJSON = JSON.stringify(filteredVacations);
+            localStorage.setItem(VACATION_TRANSFER_KEY, filteredVacationsJSON);
+            
+            console.log(`Vacaciones filtradas (${filteredVacations.length} registros) para la Cédula ${cedulaSeleccionada} guardadas en '${VACATION_TRANSFER_KEY}'.`);
+
+            // 5. Redirigir a la vista de detalles
+            window.location.href = 'Vacaciones.html';
+            return;
         }
         
-        /**
-         * Función con nombre para manejar el clic en el encabezado de ordenación (utilizada para la eliminación segura de escuchadores).
-         */
-        function handleSortHeaderClick() {
-            const columnKey = this.getAttribute('data-key');
-            if (columnKey) {
-                sortData(columnKey);
-            }
-        }
-
-        /**
-         * Maneja el clic simple en una fila.
-         */
-        function handleRowClick(event) {
-            // Lógica para seleccionar/resaltar la fila con un solo clic (opcional)
-            const row = event.currentTarget;
-            
-            // Quitar selección previa de resaltado
-            document.querySelectorAll('.worker-row.bg-indigo-700').forEach(r => r.classList.remove('bg-indigo-700'));
-            
-            // Añadir selección a la fila actual
-            row.classList.add('bg-indigo-700');
-        }
-
         /**
          * Actualiza las métricas principales basadas en los datos cargados.
          * Recuentos: Total de Registros, 'Dados de Baja' (PERFIL = 'DADO DE BAJA'), y Advertencias (CTRL1 no vacío).
@@ -1534,6 +1611,10 @@
             const dataViewContainer = document.getElementById('data-view-container');
             const mainTableWrapper = document.getElementById('employee-table-wrapper');
             
+            // Se asume que las claves son constantes globales:
+            // const CACHE_KEY = 'personalDataCache'; 
+            // const VACACIONES2_CACHE_KEY = 'vacaciones2DataCache';
+
             // 1. 🟢 INICIO: MOSTRAR INDICADOR GLOBAL Y OCULTAR VISTAS
             if (statusElement) {
                 statusElement.innerHTML = `
@@ -1542,58 +1623,94 @@
                         <p class="mt-2 text-sm text-gray-400">Cargando todas las fuentes de datos...</p>
                     </div>
                 `;
-                statusElement.style.display = 'block';
+                // Hacemos el spinner visible inmediatamente.
+                statusElement.style.display = 'block'; 
             }
+            // Ocultamos el contenido previo para evitar "parpadeo"
             if (dataViewContainer) dataViewContainer.style.display = 'none';
             if (mainTableWrapper) mainTableWrapper.style.display = 'none';
-            lucide.createIcons();
+            lucide.createIcons(); 
+
+            // --------------------------------------------------------------------------
+            // PASO 2: INTENTAR CARGAR DESDE CACHÉ LOCAL
+            // --------------------------------------------------------------------------
+            if (!forceReload) {
+                const cachedPersonalDataJSON = localStorage.getItem(CACHE_KEY); 
+                const cachedVacationDataJSON = localStorage.getItem(VACACIONES2_CACHE_KEY); 
+
+                if (cachedPersonalDataJSON && cachedVacationDataJSON) {
+                    try {
+                        // Asignar a las variables globales
+                        allEmployeeData = JSON.parse(cachedPersonalDataJSON);
+                        vacationData = JSON.parse(cachedVacationDataJSON);
+
+                        console.log("✅ Datos cargados exitosamente desde localStorage (Caché).");
+                        
+                        // 3. 🟢 FIN DE CACHÉ: OCULTAR INDICADOR Y MOSTRAR VISTAS
+                        if (statusElement) statusElement.style.display = 'none';
+                        if (dataViewContainer) dataViewContainer.style.display = 'block';
+                        if (mainTableWrapper) mainTableWrapper.style.display = 'block';
+                        
+                        // 4. Renderizar la tabla principal y actualizar métricas
+                        updateMetrics(allEmployeeData); 
+                        filterEmployees(''); // Esto carga la tabla de BD_Personal2
+                        
+                        // 5. Mensaje de confirmación final
+                        console.log(`Carga completa desde caché. Personal: ${allEmployeeData.length} registros. Vacaciones2: ${vacationData.length} registros.`);
+                        return; // 🛑 DETENER LA EJECUCIÓN
+                    } catch (e) {
+                        console.error("Error al parsear datos de caché. Forzando recarga de API.", e);
+                        // Si falla el parseo, el código continuará al PASO 3 (API)
+                    }
+                }
+            }
             
-            // 2. Definir las Promesas de Carga (se ejecutan inmediatamente y en paralelo)
+            // --------------------------------------------------------------------------
+            // PASO 3: FALLBACK - CARGAR DESDE LA API (Si no hay caché o forceReload es true)
+            // --------------------------------------------------------------------------
+            
+            // Se asume que TARGET_SHEET_NAME y VACACIONES2_SHEET_NAME son constantes globales.
             const personalPromise = fetchSheetData(TARGET_SHEET_NAME, CACHE_KEY, forceReload);
             const vacaciones2Promise = fetchSheetData(VACACIONES2_SHEET_NAME, VACACIONES2_CACHE_KEY, forceReload);
-            
+
             try {
-                // 3. 🛑 ESPERAR: Bloquea hasta que AMBAS promesas se resuelvan (éxito o fallo)
+                // 🛑 ESPERAR: Bloquea hasta que AMBAS promesas se resuelvan
                 const [personalData, vacaciones2Data] = await Promise.all([
                     personalPromise, 
                     vacaciones2Promise
                 ]);
 
-                // 4. Asignar resultados a las variables globales
+                // Asignar resultados a las variables globales
                 allEmployeeData = personalData;
-                allVacaciones2Data = vacaciones2Data;
+                vacationData = vacaciones2Data;
+                
+                // ✅ Guardar AMBOS conjuntos de datos en localStorage
+                localStorage.setItem(CACHE_KEY, JSON.stringify(personalData)); // BD_Personal2
+                localStorage.setItem(VACACIONES2_CACHE_KEY, JSON.stringify(vacaciones2Data)); // Vacaciones2
+                console.log(`💾 Guardados ${personalData.length} registros de BD_Personal2 y ${vacaciones2Data.length} de Vacaciones2 en localStorage.`);
 
-                // 5. 🟢 FIN: OCULTAR INDICADOR Y MOSTRAR VISTAS
+
+                // 5. 🟢 FIN DE API: OCULTAR INDICADOR Y MOSTRAR VISTAS
                 if (statusElement) statusElement.style.display = 'none';
                 if (dataViewContainer) dataViewContainer.style.display = 'block';
                 if (mainTableWrapper) mainTableWrapper.style.display = 'block';
                 
                 // 6. Renderizar la tabla principal y actualizar métricas
-                updateMetrics(allEmployeeData); // Usamos allEmployeeData para el total si no hay filtro activo
+                updateMetrics(allEmployeeData);
                 filterEmployees(''); 
                 
-                // 7. ✅ Mensaje de confirmación final (Solo para la Consola)
-                console.log(`Carga completa. Personal: ${allEmployeeData.length} registros. Vacaciones2: ${allVacaciones2Data.length} registros.`);
+                // 7. ✅ Mensaje de confirmación final
+                console.log(`Carga completa desde API. Personal: ${allEmployeeData.length} registros. Vacaciones2: ${vacationData.length} registros.`);
 
             } catch (error) {
-                // Este bloque catch solo se activaría si falla Promise.all (lo cual es improbable 
-                // porque fetchSheetData ya maneja sus propios errores y devuelve []).
-                console.error("Fallo inesperado durante la espera de Promise.all:", error);
-                
-                // Mostrar un error general si algo salió muy mal
+                // 5. 🔴 ERROR: OCULTAR INDICADOR Y MOSTRAR MENSAJE DE ERROR
                 if (statusElement) {
-                    statusElement.innerHTML = `<div class="bg-red-800 p-4 rounded-xl shadow-lg text-white mt-4">
-                        <strong>Error Crítico:</strong> No se pudo cargar una o más tablas. Detalles en consola.
-                    </div>`;
+                    statusElement.innerHTML = `<div class="p-4 text-center text-red-400">Error al cargar datos. Consulte la consola.</div>`;
                     statusElement.style.display = 'block';
                 }
-                if (dataViewContainer) dataViewContainer.style.display = 'none';
-                if (mainTableWrapper) mainTableWrapper.style.display = 'none';
+                console.error("Error en la carga de datos de la API:", error);
             }
         }
-
-
-
 
         // --- FUNCIONES MANEJO DE NUEVOS DATOS Y ENVIO A GAS ---
 
@@ -1905,7 +2022,6 @@
             const navigationMap = {
                 'Inicio': 'Inicio.html',
                 'Vacaciones': 'Vacaciones.html', 
-                'Editar': 'Editar.html', 
                 'Agregar': 'AgregarDat.html',
                 'Perfil': 'PerfilUser.html',
                 'Configuración': 'ConfigApp.html'
