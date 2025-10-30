@@ -1190,8 +1190,10 @@
                     INGRESO: formattedIngreso, 
                     NOMBRES: workerData.NOMBRES,
                     APELLIDOS: workerData.APELLIDOS,
+                    EMPRESA: workerData.EMPRESA,
                 };
 
+                
                 // Guardar el JSON en localStorage
                 const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
                 const employeeDataJSON = JSON.stringify(requiredJson);
