@@ -288,10 +288,10 @@
          */
         function getEmployeeInfo() {
             const defaultInfo = {
-                CEDULA: 13105322, 
+                CEDULA: 11222333, 
                 INGRESO: '13/10/2015',
-                NOMBRES: 'YSABEL LUISANA',
-                APELLIDOS: 'OJEDA CASTILLO',
+                NOMBRES: 'YXUISANA',
+                APELLIDOS: 'HASTIYO',
             };
             
             try {
@@ -335,11 +335,10 @@
                 <!-- SECCIÓN 1: DATOS DEL TRABAJADOR (DISPLAY READ-ONLY) -->
                 <div class="p-5 bg-gray-800 rounded-xl shadow-lg border border-gray-700 mt-4">
                     
-                    <!-- ENCABEZADO CON TÍTULO Y BOTÓN DE CIERRE -->
+                    <!-- INICIO DEL NUEVO DISEÑO DE DATOS DEL TRABAJADOR -->
                     <div class="flex justify-between items-start mb-3 pb-2 border-b border-gray-700">
-                        <h3 class="text-lg font-bold text-blue-300 flex items-center">
-                            <i data-lucide="user-check" class="w-5 h-5 mr-2"></i>
-                            Trabajador Seleccionado
+                        <h3 class="text-xl font-extrabold text-white leading-tight" id="display-employee-name">
+                            {{EMPLOYEE_NAME}}
                         </h3>
                         <!-- Botón de Cierre de Modal (Implementado según la solicitud) -->
                         <!-- Aquí cerramos el formulario y volvemos a la vista de inicio. -->
@@ -348,17 +347,16 @@
                             <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-4 -mr-4"></i> 		
                         </button>
                     </div>
-                    
-                    <!-- INICIO DEL NUEVO DISEÑO DE DATOS DEL TRABAJADOR -->
+
                     <div class="grid grid-cols-2 gap-4">
-                        
-                        <!-- Columna 1: Nombre del Trabajador (Formato destacado) -->
-                        <div>
-                            <h3 class="text-xl font-extrabold text-white leading-tight" id="display-employee-name">
-                                {{EMPLOYEE_NAME}}
+                        <!-- Columna 1: Empresa (Formato destacado) -->
+                        <div class="flex items-start text-sm text-gray-400 space-x-1">
+                            <i data-lucide="factory" class="w-6 h-6 text-blue-400/90 flex-shrink-0"></i>
+                            <h3 class="p-1 text-sm font-extrabold text-white leading-tight" id="display-empresa">   
+                                {{EMPRESA}}
                             </h3>
                         </div>
-                        
+    
                         <!-- Columna 2: Cédula y Fecha Ingreso (Alineado a la derecha) -->
                         <div class="text-right">
                             <div class="flex flex-col items-end">
@@ -592,6 +590,7 @@
             const ingresoDisplay = document.getElementById('display-ingreso');
             const cedulaInput = document.getElementById('form-cedula'); // Campo oculto
             const periodoInput = document.getElementById('form-periodo'); // Campo PERIODO
+            const empresaDisplay = document.getElementById('display-empresa');
 
             if (!workerInfo.CEDULA) {
                 if (nameDisplay) nameDisplay.textContent = 'Error: Empleado no cargado';
@@ -602,6 +601,7 @@
             const apellidos = workerInfo.APELLIDOS || '';
             const cedula = workerInfo.CEDULA || '';
             const ingreso = workerInfo.INGRESO || 'N/A';
+            const empresa = workerInfo.EMPRESA || '';
             
             // 1. Formatear el nombre
             const formattedName = formatEmployeeName(nombres, apellidos);
@@ -613,6 +613,7 @@
             if (nameDisplay) nameDisplay.textContent = formattedName;
             if (cedulaDisplay) cedulaDisplay.textContent = formattedCedula; 
             if (ingresoDisplay) ingresoDisplay.textContent = ingreso;
+            if (empresaDisplay) empresaDisplay.textContent = empresa;
             
             // 3. Establecer el valor de la cédula en el campo oculto
             if (cedulaInput) cedulaInput.value = cedula;
