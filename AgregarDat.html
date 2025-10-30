@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación Móvil - DHO Vacaciones</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Configuración de Tailwind para usar el color de acento y la fuente Inter  */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        html {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Definición de colores base  */
+        :root {
+            --color-bg-dark: #1f2937;
+            --color-text-dark: #f3f4f6; /* Color de texto claro general */
+            --color-primary-dark: #60a5fa; /* Azul claro para acento */
+            --color-surface-dark: #374151; /* Gris oscuro para header/footer */
+            --color-form-bg: #2d3748; /* Fondo más oscuro para el cuerpo del formulario */
+            --color-input-bg: #4a5568; /* Fondo del input */
+            --color-label-gray: #d1d5db; /* Equivalente a Tailwind text-gray-300 */
+        }
+        
+        /* Estilos del cuerpo en modo oscuro */
+        .dark { background-color: var(--color-bg-dark); color: var(--color-text-dark); }
+        
+        #app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 10vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        header, footer {
+            width: 100%;
+            max-width: 500px; 
+            z-index: 50; 
+            transition: background-color 0.3s, color 0.3s;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Estilos específicos para header y footer en modo oscuro */
+        .dark header, .dark footer { 
+            background-color: var(--color-surface-dark); 
+            border-color: #4b5563; 
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-y: auto; 
+            padding-left: 1rem;
+            padding-right: 1rem;
+            transition: padding 0.3s ease-in-out;
+            padding-top: 56px; /* Para compensar la altura del header (h-14 = 56px) */
+            padding-bottom: 72px; /* Para compensar la altura del footer */
+        }
+        
+        .footer-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 4px;
+            font-size: 0.75rem;
+            line-height: 1;
+            transition: color 0.2s, background-color 0.2s;
+            border-radius: 0.5rem;
+            color: inherit;
+        }
+
+        .footer-btn.active { color: var(--color-primary-dark); }
+
+        /* Estilos para el JSON formateado dentro del modal (AJUSTADO PARA MEJOR WRAPPING) */
+        #alert-message-container-wrapper {
+            max-height: 250px; /* Aumentar ligeramente la altura máxima */
+            overflow-y: auto;
+            overflow-x: hidden; /* Asegurar que no haya scroll horizontal si el texto se ajusta */
+            padding: 1rem; /* Padding uniforme */
+        }
+        #alert-message {
+            white-space: pre-wrap; /* Mantiene saltos de línea y respeta el ancho del contenedor */
+            word-break: break-word; /* Rompe palabras largas si es necesario */
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.8rem; /* Ligeramente más grande */
+            text-align: left;
+        }
+        
+        /* * REGLA ACTUALIZADA PARA .form-label */
+        .form-label {
+            color: var(--color-label-gray); /* text-gray-300 */
+            font-weight: 500; /* font-medium */
+            font-size: 0.75rem; /* text-xs */
+            display: block; 
+            text-transform: uppercase; 
+            margin-top: 0.5rem;
+        }
+
+        .form-input {
+            margin-top: 0.25rem;
+            display: block;
+            width: 100%;
+            border-radius: 0.5rem; 
+            border-color: #4a5568; 
+            background-color: var(--color-input-bg); 
+            color: var(--color-text-dark);
+            box-shadow: none;
+            padding: 0.5rem;
+            font-size: 0.875rem; 
+            line-height: 1.25;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-input:focus {
+            border-color: var(--color-primary-dark);
+            outline: none;
+            box-shadow: 0 0 0 1px var(--color-primary-dark);
+        }
+    </style>
+</head>
+<body class="dark transition-colors duration-300">
+
+    <div id="app-container" class="shadow-xl">
+        
+        <header id="app-header" class="fixed top-0 w-full h-14 border-b border-gray-700 dark:border-gray-500 flex items-center justify-between px-4">
+           <!-- El título inicial se establecerá en JS con el nombre del usuario -->
+           <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="loadContent('Inicio');">
+                Mi Aplicación Móvil DHO <!-- Título de fallback -->
+            </h1>
+             <div class="flex space-x-3">
+                  <!-- Botón de Cerrar Sesión con redirección a index.html -->
+                <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="window.location.href = 'index.html'">
+                    <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
+                </button>
+             </div>
+        </header>
+
+        <!-- El contenido principal se carga aquí mediante JavaScript -->
+        <main id="main-content" class="flex flex-col space-y-4">
+            <!-- Contenido cargado dinámicamente -->
+        </main>
+
+        <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
+            
+            <button class="footer-btn" data-section="Inicio">
+                <i data-lucide="home" class="w-6 h-6"></i>
+                <span>Inicio</span>
+            </button>
+            
+            <button class="footer-btn" data-section="Vacaciones">
+                <i data-lucide="calendar-days" class="w-6 h-6"></i>
+                <span>Vacaciones</span>
+            </button>
+
+            <!-- BOTÓN AGREGAR: Establecido como activo por defecto -->
+            <button class="footer-btn active" data-section="Agregar">
+                <i data-lucide="calendar-plus" class="w-6 h-6"></i>
+                <span>Agregar</span>
+            </button>
+            
+            <button class="footer-btn hidden" data-section="Editar">
+                <i data-lucide="edit" class="w-6 h-6"></i>
+                <span>Editar</span>
+            </button>
+            
+            <button class="footer-btn" data-section="Perfil">
+                <i data-lucide="user" class="w-6 h-6"></i>
+                <span>Perfil</span>
+            </button>
+            
+            <button class="footer-btn" data-section="Configuración">
+                <i data-lucide="settings" class="w-6 h-6"></i>
+                <span>Config</span>
+            </button>
+        </footer>
+    </div>
+
+    <!-- 
+        VENTANA MODAL PERSONALIZADA
+    -->
+    <div id="custom-alert-modal" style="display: none;" 
+         class="fixed inset-0 z-[100] bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 scale-100 border border-gray-700">
+            
+            <!-- Encabezado del Modal -->
+            <div id="alert-title-container" class="px-5 py-3 border-b border-gray-700 bg-blue-900 rounded-t-xl">
+                <h3 id="alert-title" class="text-lg font-bold text-blue-300">Título de la Alerta</h3>
+            </div>
+            
+            <!-- Cuerpo del Mensaje -->
+            <div class="p-2">
+                <div id="alert-message-container-wrapper" class="bg-gray-700 border border-gray-600 rounded-lg text-gray-300">
+                    <pre id="alert-message" class="text-xs"></pre>
+                </div>
+            </div>
+            
+            <!-- Pie de página/Botón de Cierre -->
+            <div id="alert-footer" class="px-5 py-3 bg-gray-900 rounded-b-xl text-right border-t border-gray-700">
+                <button id="alert-close-btn" onclick="document.getElementById('custom-alert-modal').style.display = 'none';"
+                        class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 
+        ------------------------------------------------------------------------------------------
+        CÓDIGO JAVASCRIPT
+        ------------------------------------------------------------------------------------------
+    -->
+    <script>
+        // Inicialización de Lucide Icons (se llama en DOMContentLoaded y en loadContent)
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // ====================================================================================
+        // *** 1. CONFIGURACIÓN CRÍTICA: URL DE DESPLIEGUE DE GAS (ACTUALIZADA) ***
+        // ====================================================================================
+        const POST_URL = "https://script.google.com/macros/s/AKfycbxjneZ_WpBjmIEAqtutJgk0m3oqsa0-OsmHjfPxBqZNfDb9gYzWV4kQ8hoXXIK5EAVnSA/exec"; 
+
+        // ====================================================================================
+        // *** 2. CONSTANTES DE CLAVE DE USUARIO EN LOCAL STORAGE ***
+        // ====================================================================================
+        const USUARIO_TIENDA_KEY = 'Usuario_Tienda';
+        const USUARIO_NOMBRE_KEY = 'Usuario_Nombre'; 
+        const USUARIO_PERFIL_KEY = 'Usuario_Perfil';
+        const USUARIO_IDX_KEY = 'Usuario_Idx';
+        // const USUARIO_PRIMER_NOMBRE_KEY = 'Usuario_Primer_Nombre'; // Ya no se usa directamente
+
+        // ====================================================================================
+        // *** 3. OBJETO GLOBAL PARA ALMACENAR LA INFORMACIÓN DEL USUARIO LOGUEADO Y MOCK/EDICIÓN ***
+        // ====================================================================================
+        let USER_INFO = {}; // Se inicializa leyendo de localStorage en initializeUserInfo()
+
+        /**
+         * Lee los datos del usuario logueado desde localStorage y actualiza el objeto USER_INFO 
+         * y el título de la cabecera.
+         */
+        function initializeUserInfo() {
+            // Leer datos del localStorage
+            USER_INFO.usuarioTienda = localStorage.getItem(USUARIO_TIENDA_KEY);
+            USER_INFO.usuarioNombre = localStorage.getItem(USUARIO_NOMBRE_KEY);
+            USER_INFO.usuarioPerfil = localStorage.getItem(USUARIO_PERFIL_KEY);
+            USER_INFO.usuarioIdx = localStorage.getItem(USUARIO_IDX_KEY);
+
+            // Lógica para actualizar el encabezado con el primer nombre
+            const headerTitleEl = document.querySelector('#app-header .text-xl.font-bold');
+
+            if (USER_INFO.usuarioNombre && headerTitleEl) {
+                // Extraer el primer nombre (usa regex para manejar múltiples espacios)
+                const names = USER_INFO.usuarioNombre.trim().split(/\s+/).filter(p => p.length > 0);
+                const primerNombre = names[0] || '';
+                
+                if (primerNombre) {
+                    // Guardar el primer nombre para uso futuro si es necesario
+                    USER_INFO.usuarioPrimerNombre = primerNombre; 
+                    headerTitleEl.textContent = `¡Hola, ${primerNombre}!`;
+                } else {
+                    headerTitleEl.textContent = 'Mi Aplicación Móvil DHO';
+                }
+            } else if (headerTitleEl) {
+                // Fallback si no hay nombre o si no se inicializó correctamente
+                headerTitleEl.textContent = 'Mi Aplicación Móvil DHO';
+            }
+            
+            console.log("USER_INFO inicializado:", USER_INFO);
+        }
+
+        // --- LÓGICA DE CARGA DE DATOS DEL EMPLEADO (LOCALSTORAGE/MOCK) ---
+        const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
+
+        /**
+         * Carga la información del empleado desde localStorage (si existe y es válida) 
+         * o usa la información mock por defecto.
+         */
+        function getEmployeeInfo() {
+            const defaultInfo = {
+                CEDULA: 13105322, 
+                INGRESO: '13/10/2015',
+                NOMBRES: 'YSABEL LUISANA',
+                APELLIDOS: 'OJEDA CASTILLO',
+            };
+            
+            try {
+                const cachedData = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
+                if (cachedData) {
+                    const employeeInfo = JSON.parse(cachedData);
+                    console.log("✅ Datos del empleado cargados desde localStorage:", employeeInfo);
+                    // Asegurar que usamos al menos la cédula, y combinar con el mock en caso de faltar datos
+                    if (employeeInfo && employeeInfo.CEDULA) {
+                        return { ...defaultInfo, ...employeeInfo }; 
+                    }
+                }
+            } catch (error) {
+                // Si hay un error de parseo o lectura, caemos al valor por defecto
+                console.error("Error al parsear los datos del empleado desde localStorage, usando mock:", error);
+            }
+            
+            console.log("❌ Usando datos mock por defecto.");
+            return defaultInfo;
+        }
+
+        const MOCK_EMPLOYEE_INFO = getEmployeeInfo();
+        let TARGET_CEDULA = MOCK_EMPLOYEE_INFO.CEDULA; 
+        
+        // Variables de estado sin usar actualmente (mantenidas para futura implementación)
+        let filteredEmployeeData = []; 
+        let userBaseData = []; 
+        let currentSheet = 'Vacaciones2'; 
+        let currentSortColumn = null; 
+        let sortOrder = 'asc'; 
+        let currentRecordIndex = -1; 
+
+
+        // ====================================================================================
+        // *** 4. ESTRUCTURA HTML DEL FORMULARIO DE VACACIONES (ACTUALIZADA con autocomplete="off") ***
+        // ====================================================================================
+        // Se usan placeholders {{...}} que se llenarán en la función loadContent
+        const VACACIONES_FORM_STRUCTURE = `
+            <form id="vacation-form" class="space-y-4">
+                
+                <!-- SECCIÓN 1: DATOS DEL TRABAJADOR (DISPLAY READ-ONLY) -->
+                <div class="p-5 bg-gray-800 rounded-xl shadow-lg border border-gray-700 mt-4">
+                    
+                    <!-- ENCABEZADO CON TÍTULO Y BOTÓN DE CIERRE -->
+                    <div class="flex justify-between items-start mb-3 pb-2 border-b border-gray-700">
+                        <h3 class="text-lg font-bold text-blue-300 flex items-center">
+                            <i data-lucide="user-check" class="w-5 h-5 mr-2"></i>
+                            Trabajador Seleccionado
+                        </h3>
+                        <!-- Botón de Cierre de Modal (Implementado según la solicitud) -->
+                        <!-- Aquí cerramos el formulario y volvemos a la vista de inicio. -->
+                        <button type="button" onclick="loadContent('Inicio')" class="p-1 rounded-full text-red-400 hover:text-red-600 transition duration-150">
+                            <!-- CLASES AJUSTADAS: -mt-4 -mr-4 -->
+                            <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-4 -mr-4"></i> 		
+                        </button>
+                    </div>
+                    
+                    <!-- INICIO DEL NUEVO DISEÑO DE DATOS DEL TRABAJADOR -->
+                    <div class="grid grid-cols-2 gap-4">
+                        
+                        <!-- Columna 1: Nombre del Trabajador (Formato destacado) -->
+                        <div>
+                            <h3 class="text-xl font-extrabold text-white leading-tight" id="display-employee-name">
+                                {{EMPLOYEE_NAME}}
+                            </h3>
+                        </div>
+                        
+                        <!-- Columna 2: Cédula y Fecha Ingreso (Alineado a la derecha) -->
+                        <div class="text-right">
+                            <div class="flex flex-col items-end">
+                                <!-- Texto en gris más sutil para Cédula y Fecha -->
+                                <!-- CAMBIO APLICADO: Cédula ahora usa el placeholder del valor formateado -->
+                                <span class="text-sm text-gray-400 font-semibold">Cédula: <span class="text-gray-300" id="display-cedula">{{CEDULA_FORMATTED}}</span></span>
+                                <span class="text-sm text-gray-400 font-semibold">Ingreso: <span class="text-gray-300" id="display-ingreso">{{INGRESO}}</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- FIN DEL NUEVO DISEÑO -->
+
+                    <!-- CAMPOS OCULTOS para el formulario de envío (se llenan en loadContent) -->
+                    <!-- *** autocomplete="off" agregado a campos hidden *** -->
+                    <input type="hidden" id="form-nombres-apellidos" name="NOMBRE_EMPLEADO" autocomplete="off">
+                    <input type="hidden" id="form-cedula" name="CEDULA" autocomplete="off">
+                    <input type="hidden" id="form-ingreso" name="INGRESO" autocomplete="off">
+
+                </div>
+
+                <!-- SECCIÓN 2: DETALLES DE SOLICITUD -->
+                <div class="p-5 bg-gray-900 rounded-xl shadow-lg border border-gray-700">
+                    <h2 class="text-xl font-bold text-yellow-300 mb-4 pb-2 flex items-center">
+                        <i data-lucide="calendar-plus" class="w-6 h-6 mr-2"></i>
+                        Detalles de Solicitud
+                    </h2>
+                    
+                    <!-- Período -->
+                    <div>
+                        <label for="form-periodo" class="form-label">PERÍODO *</label>
+                        <!-- *** autocomplete="off" agregado *** -->
+                        <input type="text" id="form-periodo" name="PERIODO" required placeholder="Ej: 2024"
+                            autocomplete="off" class="form-input">
+                    </div>
+
+                    <!-- CAMPO: DESCRIPCION_CONCEPTO -->
+                    <div>
+                        <label for="form-concepto" class="form-label">CONCEPTO / DESCRIPCIÓN *</label>
+                        <!-- *** autocomplete="off" agregado al textarea *** -->
+                        <textarea id="form-concepto" name="DESCRIPCION_CONCEPTO" rows="2" required
+                                    placeholder="Motivo detallado de la solicitud (Ej: Días de vacaciones, Días de permiso sin goce de sueldo, etc.)"
+                                    autocomplete="off" class="form-input"></textarea>
+                    </div>
+
+                    <!-- DÍA INICIO / DÍA FIN -->
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label for="form-dia-ini" class="form-label">DÍA INICIO *</label>
+                            <!-- autocomplete="off" no es estrictamente necesario para type="date" pero se añade por consistencia -->
+                            <input type="date" id="form-dia-ini" name="DIA_INICIO" required
+                                autocomplete="off" class="form-input">
+                        </div>
+                        <div>
+                            <label for="form-dia-fin" class="form-label">DÍA FINAL *</label>
+                            <!-- autocomplete="off" no es estrictamente necesario para type="date" pero se añade por consistencia -->
+                            <input type="date" id="form-dia-fin" name="DIA_FINAL" required
+                                autocomplete="off" class="form-input">
+                        </div>
+                    </div>
+                    
+                    <!-- DÍAS VACACIONES / BONO VACACIONAL -->
+                    <div class="grid grid-cols-2 gap-4">
+                        
+                        <!-- DÍAS HÁBILES CALCULADOS (Display y campo oculto) -->
+                        <div>
+                            <label for="dias-vacaciones-display-input" class="form-label">DÍAS VACACIONES</label>
+                            <!-- *** autocomplete="off" agregado *** -->
+                            <input type="text" id="dias-vacaciones-display-input" readonly value="0"
+                                autocomplete="off" class="form-input !bg-gray-700 border-gray-600 cursor-default">
+                            
+                            <!-- Campo Oculto para enviar el valor calculado a GAS -->
+                            <!-- *** autocomplete="off" agregado a campo hidden *** -->
+                            <input type="hidden" id="form-dias" name="DIAS_VACACIONES" value="0" autocomplete="off">
+                            <p id="dias-habiles-info" class="text-xs text-gray-400 mt-1">
+                                Calculado automáticamente <br> (días hábiles).
+                            </p>
+                        </div>
+
+                        <!-- Monto del Bono -->
+                        <div>
+                            <label for="form-bono" class="form-label">BONO VACACIONAL</label>
+                            <!-- *** autocomplete="off" agregado *** -->
+                            <input type="text" id="form-bono" name="BONO_VACACIONAL" value="0"
+                                placeholder="0"
+                                autocomplete="off" class="form-input">
+                        </div>
+                    </div>
+                    
+                    <!-- Botón de Envío: RESTAURADO A w-full -->
+                    <button type="button" onclick="sendDataToGas();" 
+                            id="submit-btn"
+                            class="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-xl hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01] mt-6 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span class="flex items-center space-x-2 justify-center">
+                            <i data-lucide="save" class="w-5 h-5"></i>
+                            <span id="button-text">Guardar Registro</span>
+                        </span>
+                    </button>
+                </div>
+            </form>
+        `;
+
+        // --- 5. FUNCIONES DE UTILIDAD Y ALERTA (ACTUALIZADA con formatNumberWithDots) ---
+
+        /** * Formatea un número o string de cédula con puntos como separadores de miles. 
+         * @param {string | number} value El valor de la cédula o número a formatear. 
+         * @returns {string} El número formateado. 
+         */
+        function formatNumberWithDots(value) {
+            if (value === null || value === undefined || value === '') return '';
+            let numStr;
+            const number = Number(value);
+
+            // Intentar convertir a número si es posible, y limpiar caracteres no numéricos
+            if (!isNaN(number) && String(value).trim() !== '') {
+                numStr = String(number).replace(/\D/g, '');
+            } else {
+                numStr = String(value).replace(/\D/g, ''); 
+            }
+            
+            // Usar Intl.NumberFormat para formatear con puntos como separador de miles
+            return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 }).format(Number(numStr));
+        }
+
+
+        /**
+         * Muestra una alerta personalizada.
+         * @param {string} title - Título de la alerta.
+         * @param {string|object} message - Mensaje o datos JSON a mostrar.
+         * @param {boolean} isError - Si es un mensaje de error.
+         * @param {boolean} isDismissible - Si el modal puede cerrarse manualmente (default: true).
+         */
+        function showCustomAlert(title, message, isError = false, isDismissible = true, callback = null) {
+            const modal = document.getElementById('custom-alert-modal');
+            const titleEl = document.getElementById('alert-title');
+            const messageEl = document.getElementById('alert-message');
+            const alertFooter = document.getElementById('alert-footer');
+            const closeBtn = document.getElementById('alert-close-btn');
+
+            if (!modal || !titleEl || !messageEl || !alertFooter || !closeBtn) {
+                console.error("ERROR CRÍTICO: No se encontraron los elementos esenciales del modal.");
+                return; 
+            }
+            
+            const titleContainer = titleEl.parentElement; 
+            const messageContainerWrapper = document.getElementById('alert-message-container-wrapper');
+
+            // --- LÓGICA DE VISIBILIDAD DEL BOTÓN ---
+            if (isDismissible) {
+                alertFooter.style.display = 'block'; // Mostrar el footer y el botón
+                modal.classList.remove('pointer-events-none'); // Permitir interacción con el fondo
+            } else {
+                alertFooter.style.display = 'none'; // Ocultar el footer y el botón
+                // CRÍTICO: Evitar que el usuario cierre el modal de carga con clicks externos
+                modal.classList.add('pointer-events-none'); 
+            }
+
+            // --- LÓGICA DE ESTILOS Y CONTENIDO (igual que antes) ---
+            titleEl.textContent = title;
+            
+            // Toggling de clases de color
+            if (isError) {
+                titleContainer.classList.remove('bg-blue-900');
+                titleContainer.classList.add('bg-red-900');
+                titleEl.classList.remove('text-blue-300');
+                titleEl.classList.add('text-red-300');
+                closeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                closeBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                messageContainerWrapper.classList.remove('bg-gray-700', 'border-gray-600');
+                messageContainerWrapper.classList.add('bg-red-950', 'border-red-600');
+            } else {
+                titleContainer.classList.add('bg-blue-900');
+                titleContainer.classList.remove('bg-red-900');
+                titleEl.classList.add('text-blue-300');
+                titleEl.classList.remove('text-red-300');
+                closeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                closeBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                messageContainerWrapper.classList.add('bg-gray-700', 'border-gray-600');
+                messageContainerWrapper.classList.remove('bg-red-950', 'border-red-600');
+            }
+            
+            // LÓGICA DE VISUALIZACIÓN: Objeto JSON para errores/depuración, string para éxito.
+            if (typeof message === 'object' && message !== null) {
+                messageEl.textContent = JSON.stringify(message, null, 2);
+                messageEl.style.fontSize = '0.75rem'; 
+            } else {
+                messageEl.textContent = String(message);
+                messageEl.style.fontSize = '0.9rem'; 
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        /**
+         * Función auxiliar para cerrar el modal.
+         */
+        function hideCustomAlert() {
+             const modal = document.getElementById('custom-alert-modal');
+             if (modal) {
+                 modal.style.display = 'none';
+                 // Asegurar que se quite pointer-events-none al cerrar
+                 modal.classList.remove('pointer-events-none');
+             }
+        }
+
+        function objectToUrlEncoded(obj) {
+            const params = [];
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key) && obj[key] !== undefined && obj[key] !== null) {
+                    const encodedKey = encodeURIComponent(key);
+                    // Asegurarse de que el valor sea un string antes de trim y encode
+                    const encodedValue = encodeURIComponent(String(obj[key]).trim()); 
+                    params.push(`${encodedKey}=${encodedValue}`);
+                }
+            }
+            return params.join('&');
+        }
+
+        // --- 6. FUNCIONES AUXILIARES DE GESTIÓN DEL FORMULARIO (MANTENIDA) ---
+   
+        /**
+         * Lee la información del trabajador de localStorage y actualiza el encabezado del formulario,
+         * y establece el valor predeterminado para el campo PERIODO.
+         */
+        function renderEmployeeDetails() {
+            const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
+            const workerInfoJSON = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
+            const workerInfo = workerInfoJSON ? JSON.parse(workerInfoJSON) : {};
+
+            const nameDisplay = document.getElementById('display-employee-name');
+            const cedulaDisplay = document.getElementById('display-cedula');
+            const ingresoDisplay = document.getElementById('display-ingreso');
+            const cedulaInput = document.getElementById('form-cedula'); // Campo oculto
+            const periodoInput = document.getElementById('form-periodo'); // Campo PERIODO
+
+            if (!workerInfo.CEDULA) {
+                if (nameDisplay) nameDisplay.textContent = 'Error: Empleado no cargado';
+                return;
+            }
+
+            const nombres = workerInfo.NOMBRES || '';
+            const apellidos = workerInfo.APELLIDOS || '';
+            const cedula = workerInfo.CEDULA || '';
+            const ingreso = workerInfo.INGRESO || 'N/A';
+            
+            // 1. Formatear el nombre
+            const formattedName = formatEmployeeName(nombres, apellidos);
+            
+            // 2. Formatear la Cédula con puntos
+            const formattedCedula = formatNumberWithDots(cedula);
+
+            // Actualización de los elementos HTML visuales del encabezado
+            if (nameDisplay) nameDisplay.textContent = formattedName;
+            if (cedulaDisplay) cedulaDisplay.textContent = formattedCedula; 
+            if (ingresoDisplay) ingresoDisplay.textContent = ingreso;
+            
+            // 3. Establecer el valor de la cédula en el campo oculto
+            if (cedulaInput) cedulaInput.value = cedula;
+
+            // 🛑 4. ESTABLECER PERIODO POR DEFECTO: Año actual del sistema
+            if (periodoInput) {
+                const currentYear = new Date().getFullYear();
+                periodoInput.value = currentYear.toString();
+            }
+        }
+
+
+        /**
+         * Limpia los campos de entrada del formulario de solicitud (no los ocultos).
+         * NOTA: Esta función está diseñada para ser llamada *después* de un registro exitoso.
+         * CAMBIO: Bono vacacional ahora inicia vacío.
+         */
+        function clearFormFields() {
+            // Campos de solicitud: periodo, concepto, fechas, bono
+            const fieldsToClear = [
+                'form-periodo', 'form-concepto', 'form-dia-ini', 'form-dia-fin', 
+                'dias-vacaciones-display-input', 'form-dias'
+            ];
+            
+            fieldsToClear.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.value = '';
+            });
+
+            // Campo de bono vacacional (se mantiene el inicio en vacío)
+            document.getElementById('form-bono').value = '';
+            
+            // Restablecer la fecha de inicio al valor por defecto (hoy)
+            const inicioInput = document.getElementById('form-dia-ini');
+            if (inicioInput) {
+                inicioInput.value = getTodayDateString();
+            }
+            
+            updateDaysField(); 
+        }
+
+        function loadData() {
+            console.log("Datos de la tabla refrescados (función loadData() ejecutada).");
+        }
+        
+        function setLoadingState(isLoading) {
+            const submitBtn = document.getElementById('submit-btn');
+            const buttonText = document.getElementById('button-text');
+            
+            if (!submitBtn || !buttonText) return;
+
+            submitBtn.disabled = isLoading;
+            if (isLoading) {
+                buttonText.textContent = 'Enviando...';
+                submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                submitBtn.classList.add('bg-gray-500'); 
+            } else {
+                buttonText.textContent = 'Guardar Registro'; 
+                submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                submitBtn.classList.remove('bg-gray-500');
+            }
+        }
+        
+        // --- 7. CÁLCULO DE DÍAS HÁBILES Y UTILIDADES DE FECHA ---
+        
+        /**
+         * Obtiene la fecha de hoy en formato YYYY-MM-DD.
+         * @returns {string} Fecha actual.
+         */
+        function getTodayDateString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            // getMonth() devuelve 0-11, sumamos 1
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        /**
+         * Formatea una fecha de DD/MM/YYYY o YYYY-MM-DD a YYYY-MM-DD,
+         * el formato requerido por el input HTML <input type="hidden" type="date">.
+         * @param {string} dateString - Fecha a formatear.
+         * @returns {string} Fecha en formato YYYY-MM-DD.
+         */
+        function formatInputDate(dateString) {
+            if (!dateString) return '';
+            const parts = dateString.split(/[-\/]/); 
+            if (parts.length === 3) {
+                // Si el primer componente tiene 4 dígitos (YYYY-MM-DD)
+                if (parts[0].length === 4) {
+                    return dateString;
+                }
+                // Si es DD/MM/YYYY
+                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+            }
+            return dateString; // Devolver tal cual si no se puede parsear
+        }
+
+        /**
+         * Formatea una fecha a DD/MM/YYYY para fines de visualización.
+         * @param {string} dateString - Fecha en formato DD/MM/YYYY o YYYY-MM-DD.
+         * @returns {string} Fecha en formato DD/MM/YYYY.
+         */
+        function formatDateForDisplay(dateString) {
+            if (!dateString) return 'N/A';
+            const parts = dateString.split(/[-\/]/); 
+            if (parts.length === 3) {
+                // Si es YYYY-MM-DD
+                if (parts[0].length === 4) { 
+                    return `${parts[2]}/${parts[1]}/${parts[0]}`; 
+                }
+                // Si es DD/MM/YYYY (ej. del mock)
+                return dateString; 
+            }
+            return dateString;
+        }
+
+        /**
+         * Formatea el nombre del empleado según el esquema solicitado: 
+         * [Primer Nombre] [Inicial 2do Nombre]. [Primer Apellido] [Inicial 2do Apellido].
+         * @param {object} data - Objeto de empleado con NOMBRES y APELLIDOS.
+         * @returns {string} El nombre formateado.
+         */
+        // Nueva versión: Espera dos argumentos (nombres y apellidos)
+        function formatEmployeeName(nombres, apellidos) {
+            let formattedName = 'Empleado Desconocido';
+            
+            // 🛑 La lógica ahora comprueba los argumentos individuales
+            if (nombres && apellidos) {
+                // Normalización y split de nombres
+                // Usamos los argumentos directos 'nombres' y 'apellidos'
+                const names = String(nombres).trim().split(/\s+/).filter(p => p.length > 0);
+                const firstName = names[0] || '';
+                const middleInitial = names.length > 1 ? names[1].charAt(0) + '.' : '';
+                
+                // Normalización y split de apellidos
+                const surnames = String(apellidos).trim().split(/\s+/).filter(p => p.length > 0);
+                const firstSurname = surnames[0] || '';
+                const lastInitial = surnames.length > 1 ? surnames[1].charAt(0) + '.' : '';
+
+                // Construcción y limpieza de espacios
+                formattedName = `${firstName} ${middleInitial} ${firstSurname} ${lastInitial}`.replace(/\s{2,}/g, ' ').trim();
+            }
+            return formattedName;
+        }
+
+
+        function calculateBusinessDays(start, end) {
+            if (!start || !end) return 0;
+
+            let startDate = new Date(start + 'T00:00:00'); 
+            let endDate = new Date(end + 'T00:00:00');
+            
+            if (startDate > endDate) return 0;
+
+            let count = 0;
+            let currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                const dayOfWeek = currentDate.getDay(); 
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Lunes (1) a Viernes (5)
+                    count++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            return count;
+        };
+
+        function updateDaysField() {
+            const inicioInput = document.getElementById('form-dia-ini');
+            const finInput = document.getElementById('form-dia-fin');
+            const diasInputHidden = document.getElementById('form-dias'); 
+            const diasInputDisplay = document.getElementById('dias-vacaciones-display-input'); 
+            const infoText = document.getElementById('dias-habiles-info');
+
+            if (!inicioInput || !finInput || !diasInputHidden || !diasInputDisplay || !infoText) return;
+
+            const start = inicioInput.value;
+            const end = finInput.value;
+            
+            // Resetear estilos de texto por defecto
+            infoText.classList.remove('text-red-400');
+            infoText.classList.add('text-gray-400');
+            diasInputDisplay.classList.remove('!border-red-500');
+
+            if (start && end) {
+                const businessDays = calculateBusinessDays(start, end);
+                
+                if (businessDays > 0) {
+                    diasInputDisplay.value = businessDays;
+                    diasInputHidden.value = businessDays;
+                    infoText.textContent = 'Calculado automáticamente' <br> '(días hábiles).';
+                } else if (businessDays === 0) {
+                    diasInputDisplay.value = 0;
+                    diasInputHidden.value = 0;
+                    diasInputDisplay.classList.add('!border-red-500'); // Resaltar error en el campo
+                    
+                    if (new Date(start) > new Date(end)) {
+                        infoText.textContent = 'ERROR: Fechas invertidas o inválidas.';
+                    } else {
+                        infoText.textContent = '¡0 días hábiles! Verifica que no sean solo fines de semana.';
+                    }
+                    infoText.classList.add('text-red-400');
+                }
+
+            } else {
+                diasInputDisplay.value = 0;
+                diasInputHidden.value = 0;
+                infoText.textContent = 'Calculado automáticamente' <br> '(días hábiles).';
+            }
+        }
+
+        /**
+         * FUNCIÓN AUXILIAR para volver a la vista de inicio simulada
+         * (ahora redirige al archivo Inicio.html).
+         */
+        function closeVacationModal() {
+            // Ya no es un modal en la práctica, ahora es una navegación
+            loadContent('Inicio'); 
+        }
+
+
+        // --- 8. FUNCIÓN PRINCIPAL DE ENVÍO A GAS (ACTUALIZADA con limpieza de Bono/Período) ---
+
+        async function sendDataToGas() {
+            // 0. AISLAR LÓGICA DE DATOS DEL EMPLEADO
+            const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
+            const workerInfoJSON = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
+            const workerInfo = workerInfoJSON ? JSON.parse(workerInfoJSON) : {};
+
+            if (!workerInfo.CEDULA) {
+                setLoadingState(false);
+                showCustomAlert("Error de Datos", "No se encontró la información del empleado seleccionado. Vuelve a la vista de Vacaciones.", true);
+                return;
+            }
+            
+            const nombres = workerInfo.NOMBRES || '';
+            const apellidos = workerInfo.APELLIDOS || '';
+            const formattedEmployeeName = formatEmployeeName(nombres, apellidos); 
+            // -----------------------------------------------------------------------------------
+
+            const form = document.getElementById('vacation-form');
+            
+            // 1. VALIDACIÓN BÁSICA DEL FORMULARIO
+            if (!form.checkValidity()) {
+                form.reportValidity(); 
+                return;
+            }
+
+            // 2. VALIDACIONES DE REGLAS DE NEGOCIO EN JS
+            const periodoInput = document.getElementById('form-periodo');
+            const diasInput = document.getElementById('form-dias');
+            
+            const periodo = Number(periodoInput.value);
+            const diasVacaciones = Number(diasInput.value);
+
+            // REGLA 1: PERIODO (2020 <= PERIODO < 2040)
+            if (periodo < 2020 || periodo >= 2040) {
+                showCustomAlert("Error de Período", "El campo PERIODO debe ser un año entre 2020 y 2039.", true);
+                periodoInput.focus();
+                return;
+            }
+
+            // REGLA 3: DIAS_VACACIONES (DIAS_VACACIONES >= 1)
+            // 🛑 MENSAJE DE ERROR MEJORADO: Unifica la validación de días y la indicación de fechas.
+            if (diasVacaciones < 1) {
+                showCustomAlert("Error de Días", "El número de Días de Vacaciones calculados debe ser igual o mayor a 1. Por favor, verifica que la fecha fin sea siempre mayor a la fecha inicio.", true);
+                document.getElementById('form-dia-inicio').focus();
+                return;
+            }
+
+            setLoadingState(true);
+
+            // 3. RECOPILAR DATOS Y PREPARAR ENVÍO
+            const formData = new FormData(form);
+            const dataToSend = {};
+            
+            for (const [key, value] of formData.entries()) {
+                const trimmedValue = (typeof value === 'string') ? value.trim() : value;
+                let processedValue = trimmedValue;
+
+                if (key === 'BONO_VACACIONAL' || key === 'PERIODO') {
+                    processedValue = String(trimmedValue).replace(/\./g, '');
+                }
+
+                if (['CEDULA', 'DIAS_VACACIONES', 'BONO_VACACIONAL', 'PERIODO'].includes(key)) {
+                    dataToSend[key] = Number(processedValue) || 0;
+                } else {
+                    dataToSend[key] = processedValue;
+                }
+            }
+
+            // 4. INYECTAR DATOS DEL EMPLEADO Y DE TRAZABILIDAD
+            dataToSend['NOMBRES'] = nombres;
+            dataToSend['APELLIDOS'] = apellidos;
+            dataToSend['NOMBRE_EMPLEADO'] = formattedEmployeeName;
+            dataToSend['INGRESO'] = workerInfo.INGRESO || 'N/A';
+            dataToSend['EMPRESA'] = workerInfo.EMPRESA || ''; 
+            
+            dataToSend['VACACION_CONDICION'] = 'Registrada'; 
+            dataToSend['RegistroDate'] = new Date().toISOString().split('T')[0]; 
+            dataToSend['action'] = 'register_vacation';
+            
+            dataToSend['TIENDA'] = USER_INFO.usuarioTienda || 'N/A';
+            dataToSend['PERFIL'] = USER_INFO.usuarioPerfil || 'N/A';
+            dataToSend['IDX'] = USER_INFO.usuarioIdx || '0';
+            dataToSend['RegistroUser'] = USER_INFO.usuarioNombre || 'Usuario Desconocido'; 
+
+            console.log('Datos finales a enviar:', dataToSend);
+
+            // 5. ENVÍO REAL A GAS
+            const urlEncodedBody = objectToUrlEncoded(dataToSend);
+
+            try {
+                showCustomAlert("Enviando Datos...", "Intentando conectar con Google Apps Script. Por favor, espere.", false, false);
+
+                const response = await fetch(POST_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: urlEncodedBody 
+                });
+                
+                const gasResponseText = await response.text(); 
+                hideCustomAlert();
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP ${response.status}: ${gasResponseText}`);
+                }
+
+                try {
+                    const result = JSON.parse(gasResponseText);
+                    if (result.success) {
+                        // Éxito: Muestra alerta y espera la aceptación para redirigir
+                        showCustomAlert("¡Éxito en el Registro!", 
+                            result.message || 'Los datos se han registrado correctamente en la hoja de cálculo.',
+                            false, // isError
+                            true,  // isDismissible (Fuerza la aceptación)
+                            () => {
+                                // Callback: Redirige con forceReload al aceptar la alerta
+                                window.location.href = 'Vacaciones.html?reload=true';
+                            }
+                        ); 
+                    } else {
+                        // Error de lógica en GAS
+                        showCustomAlert("Error de Lógica en GAS", {
+                            'STATUS': 'ERROR INTERNO',
+                            'MENSAJE': result.message || 'El script de Google Apps Script falló en el registro.',
+                        }, true);
+                    }
+                } catch (e) {
+                    // Respuesta RAW no JSON
+                    showCustomAlert("Registro Enviado (Verificar)", {
+                        'STATUS': 'VERIFICACIÓN NECESARIA',
+                        'MENSAJE': 'La solicitud se envió, pero la respuesta del servidor no fue JSON. Verifique su hoja de cálculo.',
+                        'DETALLE_RAW': gasResponseText.substring(0, 200) + '...',
+                    });
+                    loadData();
+                    clearFormFields();
+                }
+
+            } catch (error) {
+                // Error crítico de conexión
+                hideCustomAlert(); 
+                showCustomAlert("Error Crítico de Conexión", {
+                    'STATUS': 'ERROR CRÍTICO',
+                    'MENSAJE': `No se pudo conectar. Verifica la URL de GAS o tu conexión de red.`,
+                    'DETALLE_ERROR': error.message,
+                }, true); 
+            } finally {
+                setLoadingState(false);
+            }
+        }
+        
+        // --- 9. LÓGICA DE NAVEGACIÓN Y MANEJO DE SECCIONES (ACTUALIZADA para formato de Cédula) ---
+        
+        /**
+         * Marca el botón activo en el footer.
+         * @param {string} sectionName - El nombre de la sección a activar.
+         */
+        function setActiveFooterButton(sectionName) {
+            document.querySelectorAll('#app-footer .footer-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-section') === sectionName) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // --- FUNCIÓN PRINCIPAL DE NAVEGACIÓN (Actualizada) ---
+        function loadContent(section) {
+            const mainContent = document.getElementById('main-content');
+            
+            // CRÍTICO: Actualizar la clase activa ANTES de la redirección
+            setActiveFooterButton(section);
+
+            // -----------------------------------------------------------
+            // REDIRECCIONES A ARCHIVOS HTML EXTERNOS
+            // -----------------------------------------------------------
+
+            if (section === 'Inicio') {
+                window.location.href = 'Inicio.html';
+                return;
+            }
+            
+            // Sección 'Vacaciones' ahora redirige
+            if (section === 'Vacaciones') {
+                window.location.href = 'Vacaciones.html';
+                return;
+            }
+
+            if (section === 'Editar') {
+                window.location.href = 'EditarDat.html';
+                return;
+            }
+
+            if (section === 'Perfil') {
+                window.location.href = 'PerfilUsuario.html';
+                return;
+            }
+
+            if (section === 'Configuración') {
+                window.location.href = 'ConfigApp.html';
+                return;
+            }
+            
+            // -----------------------------------------------------------
+            // LÓGICA DE CARGA INTERNA (SOLO 'Agregar')
+            // -----------------------------------------------------------
+
+            if (section === 'Agregar') {
+                
+                // Limpiar contenido antes de cargar el formulario
+                mainContent.innerHTML = ''; 
+
+                // 1. Formatear datos del trabajador para la vista
+                const nameDisplay = formatEmployeeName(MOCK_EMPLOYEE_INFO);
+                // CAMBIO APLICADO: Usar la función de formato para la cédula de display
+                const cedulaDisplayFormatted = formatNumberWithDots(MOCK_EMPLOYEE_INFO.CEDULA); 
+                const cedulaDisplayRaw = String(MOCK_EMPLOYEE_INFO.CEDULA || 'N/A'); // Valor raw para el campo oculto
+                const ingresoDisplay = formatDateForDisplay(MOCK_EMPLOYEE_INFO.INGRESO);
+                const fullNameForHidden = `${MOCK_EMPLOYEE_INFO.NOMBRES || ''} ${MOCK_EMPLOYEE_INFO.APELLIDOS || ''}`.trim();
+
+                // 2. Reemplazar placeholders en la plantilla
+                let contentHTML = VACACIONES_FORM_STRUCTURE
+                    .replace('{{EMPLOYEE_NAME}}', nameDisplay)
+                    .replace('{{CEDULA_FORMATTED}}', cedulaDisplayFormatted) // Usar el valor formateado
+                    .replace('{{INGRESO}}', ingresoDisplay);
+
+                mainContent.innerHTML = contentHTML;
+                
+                // 3. Establecer valores de campos ocultos y por defecto
+                document.getElementById('form-nombres-apellidos').value = fullNameForHidden;
+                document.getElementById('form-cedula').value = cedulaDisplayRaw; // Valor RAW para el envío a GAS
+                document.getElementById('form-ingreso').value = ingresoDisplay;
+                
+                
+                // *** LÓGICA DE REINICIO DE CAMPOS AL CARGAR LA PÁGINA ***
+                const todayDate = getTodayDateString();
+                
+                // 1. DÍA DE INICIO: Se mantiene con la fecha de hoy
+                document.getElementById('form-dia-ini').value = todayDate;
+                
+                // 2. CAMPOS REINICIADOS A VACÍO
+                document.getElementById('form-periodo').value = ''; 
+                document.getElementById('form-concepto').value = ''; 
+                document.getElementById('form-dia-fin').value = ''; 
+                // CAMBIO APLICADO: BONO VACACIONAL se mantiene vacío
+                document.getElementById('form-bono').value = ''; 
+                
+                
+                // Re-renderizar Lucide icons para el nuevo contenido
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                renderEmployeeDetails();
+
+                // 4. Adjuntar listeners de eventos para el cálculo de días
+                document.getElementById('form-dia-ini').addEventListener('change', updateDaysField);
+                document.getElementById('form-dia-fin').addEventListener('change', updateDaysField);
+                
+                // Llamada inicial para establecer 0 días y evitar errores (Importante tras reset)
+                updateDaysField(); 
+                
+                return;
+            }
+            
+            // Si la sección no es reconocida, cargamos el contenido de Inicio simulado
+            mainContent.innerHTML = INICIO_CONTENT;
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+        
+        // --- 10. INICIALIZACIÓN DE LA APLICACIÓN ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // PRIMERO: Inicializar USER_INFO y actualizar el encabezado de bienvenida
+            initializeUserInfo();
+
+            // SEGUNDO: Asignar listeners a los botones del footer
+            document.querySelectorAll('#app-footer .footer-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const section = button.getAttribute('data-section');
+                    if (section) {
+                        loadContent(section);
+                    }
+                });
+            });
+
+            // TERCERO: Carga inicial de la aplicación
+            const initialSection = document.querySelector('.footer-btn.active')?.getAttribute('data-section') || 'Agregar';
+            loadContent(initialSection);
+        });
+
+    </script>
+</body>
+</html>
