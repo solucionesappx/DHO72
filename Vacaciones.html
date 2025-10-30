@@ -86,7 +86,7 @@
             overflow-x: auto;
             width: 100%;
             /* AJUSTE: Altura máxima de la tabla a 450px */
-            max-height: 450px; 
+            max-height: 320px; 
             overflow-y: auto; /* Permite el scroll vertical si la tabla es más larga que el contenedor */
             /* NUEVO AJUSTE: Radio de borde para el contenedor */
             border-radius: 0.75rem; 
@@ -337,14 +337,14 @@
                             <i data-lucide="x-circle" class="w-7 h-7"></i> 
                         </button>
                         <!-- BOTÓN DE RECARGA: Llama a loadVacacionesData(true) para FORZAR la recarga, omitiendo el caché -->
-                        <button id="reload-btn" class="p-2 rounded-full text-blue-400 hover:bg-gray-700 transition duration-150" 
+                        <button id="reload-btn" 
+                                class="p-2.5 rounded-full text-blue-400 hover:bg-gray-700 shadow-md transition duration-150"  
                                 title="Forzar Recarga de Datos (Omitir Caché)"
                                 onclick="initVacacionesView(true)">
                             <i data-lucide="refresh-cw" class="w-6 h-6" id="reload-icon"></i>
                         </button> 
                     </div>
                 </div>
-
 
                 <!-- Contenedor donde se insertará la tabla de datos -->
                 <div id="vacaciones-table-view" class="table-container">
@@ -708,8 +708,8 @@
             
             // Define las clases dinámicas para la tarjeta Total (Gris si >= 0, Rojo si < 0)
             const totalCardClasses = totalDays >= 0 
-                ? 'bg-gray-600/80 border-gray-500 hover:bg-gray-500' // Gris para >= 0
-                : 'bg-red-700/80 border-red-500 hover:bg-red-600';
+                ? 'bg-gray-600/80 border-gray-500 hover:bg-gray-600/80' // Gris para >= 0
+                : 'bg-red-700/80 border-red-500 hover:bg-red-700/80';
 
             // *** ESTRUCTURA DE LA TARJETA (MODIFICADA SEGÚN SOLICITUD) ***
             const cardHTML = `
@@ -1345,57 +1345,78 @@
         }
 
         function initVacacionesView(forceReload = false) {
+            const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit'; // Clave de localStorage para el empleado seleccionado
+            
             // Limpia el contenido de la tarjeta antes de la carga
             const cardContainer = document.getElementById('employee-card-container');
             if (cardContainer) {
-                 cardContainer.innerHTML = `
+                cardContainer.innerHTML = `
                     <div class="employee-card p-4 rounded-xl shadow-lg border border-gray-700">
                         <p class="text-center text-gray-400">Cargando información del trabajador...</p>
                     </div>
-                 `;
+                `;
             }
 
-            // Reiniciar el estado de ordenamiento
+            // 🛑 PASO 1: CARGAR LA INFO DEL TRABAJADOR DE LOCALSTORAGE (BD_Personal2)
+            const workerInfoJSON = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
+            if (!workerInfoJSON) {
+                console.error("Error: No hay trabajador seleccionado en 'userInfoToEdit'.");
+                renderEmployeeCard(null, {});
+                return; 
+            }
+            
+            let workerInfo;
+            try {
+                workerInfo = JSON.parse(workerInfoJSON);
+            } catch (e) {
+                console.error("Error al parsear workerInfo:", e);
+                renderEmployeeCard(null, {});
+                return;
+            }
+            
+            // 🛑 PASO 2: CONSTRUIR employeeFixedDetails USANDO workerInfo
+            // Usamos los campos NOMBRES, APELLIDOS, CEDULA, EMPRESA e INGRESO de BD_Personal2.
+            const formattedName = formatEmployeeName(workerInfo.NOMBRES, workerInfo.APELLIDOS);
+
+            employeeFixedDetails = {
+                // La fuente es workerInfo (BD_Personal2)
+                nombreFormateado: formattedName,
+                empresa: workerInfo.EMPRESA,
+                cedula: workerInfo.CEDULA,
+                fechaIngreso: workerInfo.INGRESO 
+            };
+
+            // Reiniciar el estado de ordenamiento y filtros
             currentSortColumn = null;
             sortOrder = 'asc';
-            
-            // Resetear el filtro de búsqueda y el modo de filtro
             const searchInput = document.getElementById('search-input');
             const checkbox = document.getElementById('filterByPeriodCheckbox');
             if (searchInput) searchInput.value = '';
             if (checkbox) checkbox.checked = false;
-             
-            // Se llama a updateFilterPlaceholder para establecer el modo 'all' y el placeholder inicial,
-            // y luego se llama a applyAllFilters (esto se hace internamente en updateFilterPlaceholder).
-            // NOTA: updateFilterPlaceholder llamará a applyAllFilters -> sortData
-            // sortData(null) es lo que finalmente desencadena la actualización de la tarjeta y la tabla.
-            
+                
+            // 🛑 PASO 3: Ejecutar la carga de datos de vacaciones (Vacaciones2)
             loadVacacionesData(forceReload).then(fetchedData => {
-                 if (fetchedData.length > 0) {
+                if (fetchedData && fetchedData.length > 0) {
                     originalVacacionesData = fetchedData;
                     
-                    // PASO CLAVE 1: Inicializar los detalles fijos del empleado
-                    const rowData = fetchedData[0];
-                    const formattedName = formatEmployeeName(rowData['NOMBRES'], rowData['APELLIDOS']);
-
-                    employeeFixedDetails = {
-                        nombreFormateado: formattedName,
-                        empresa: rowData['EMPRESA'],
-                        cedula: rowData['CEDULA'],
-                        fechaIngreso: rowData['INGRESO'] 
-                    };
-
-                    // PASO CLAVE 2: Renderizar la ESTRUCTURA de la tarjeta con los detalles y los totales COMPLETOS
+                    // PASO CLAVE 4: Renderizar la ESTRUCTURA de la tarjeta con los detalles de BD_Personal2
+                    // y los totales calculados de Vacaciones2
                     const initialTotals = calculateVacationTotals(fetchedData);
-                    renderEmployeeCard(employeeFixedDetails, initialTotals);
+                    renderEmployeeCard(employeeFixedDetails, initialTotals); // <- employeeFixedDetails ya está listo
 
-                    // PASO CLAVE 3: Aplicar filtros/ordenamiento inicial (que recalcula las métricas)
-                    updateFilterPlaceholder(); // Esto llama a applyAllFilters -> sortData
+                    // PASO CLAVE 5: Aplicar filtros/ordenamiento inicial
+                    updateFilterPlaceholder(); 
                 } else {
                     originalVacacionesData = [];
-                    employeeFixedDetails = null;
-                    // Si no hay datos, renderizar la tarjeta vacía también
-                    renderEmployeeCard(null, {});
+                    employeeFixedDetails = { // Definir los detalles aunque no haya data de vacaciones
+                        nombreFormateado: formattedName,
+                        empresa: workerInfo.EMPRESA,
+                        cedula: workerInfo.CEDULA,
+                        fechaIngreso: workerInfo.INGRESO
+                    };
+                    
+                    // Renderizar la tarjeta con los datos de BD_Personal2 pero con totales vacíos
+                    renderEmployeeCard(employeeFixedDetails, {}); 
                 }
             });
         }
@@ -1469,8 +1490,14 @@
             });
             
             // 4. Llama a la función de inicialización para cargar los datos al iniciar (no forzado)
-            initVacacionesView(false);
+            const urlParams = new URLSearchParams(window.location.search);
+            const forceReload = urlParams.get('reload') === 'true';
+            initVacacionesView(forceReload);
 
+            if (forceReload) {
+            history.replaceState(null, '', window.location.pathname);
+            }
+            
             // Inicializa los íconos de Lucide nuevamente.
             lucide.createIcons();
         });
