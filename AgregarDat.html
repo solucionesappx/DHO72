@@ -307,9 +307,8 @@
         const MOCK_EMPLOYEE_INFO = getEmployeeInfo();
 
         // ====================================================================================
-        // *** 4. ESTRUCTURA HTML DEL FORMULARIO DE VACACIONES (ACTUALIZADA LA NAVEGACIÓN) ***
+        // *** 4. ESTRUCTURA HTML DEL FORMULARIO DE VACACIONES (SIN CAMBIOS) ***
         // ====================================================================================
-        // Se cambia loadContent('Inicio') a loadContent('Vacaciones')
         const VACACIONES_FORM_STRUCTURE = `
             <form id="vacation-form" class="space-y-4">
                 
@@ -426,7 +425,6 @@
         }
         
         function showCustomAlert(title, message, isError = false, isDismissible = true, callback = null) {
-            // ... (Lógica de showCustomAlert) ...
             const modal = document.getElementById('custom-alert-modal');
             const titleEl = document.getElementById('alert-title');
             const messageEl = document.getElementById('alert-message');
@@ -517,12 +515,8 @@
             return params.join('&');
         }
 
-        // --- 5. FUNCIONES AUXILIARES DE GESTIÓN DE ESTADO ---
+        // --- 5. FUNCIONES AUXILIARES DE GESTIÓN DE ESTADO (MANTENIDAS) ---
 
-        /**
-         * Rellena los campos del formulario con los datos de un registro (para edición o restauración).
-         * @param {object} record - El registro de vacaciones a usar.
-         */
         function fillFormFieldsFromRecord(record) {
             // Periodo, Concepto
             document.getElementById('form-periodo').value = record.PERIODO || '';
@@ -536,16 +530,11 @@
             document.getElementById('form-dia-ini').value = formatInputDate(record.DIA_INICIO); 
             document.getElementById('form-dia-fin').value = formatInputDate(record.DIA_FINAL);
             
-            // 🛑 CRÍTICO: Días de Vacaciones se rellena con el valor almacenado.
-            // Esto evita el cálculo automático al cargar el formulario.
+            // Días de Vacaciones se rellena con el valor almacenado.
             document.getElementById('dias-vacaciones-display-input').value = record.DIAS_VACACIONES || 0;
             document.getElementById('form-dias').value = record.DIAS_VACACIONES || 0;
         }
 
-        /**
-         * Actualiza el icono de candado basado en la condición.
-         * @param {string} condicion - Valor de VACACION_CONDICION ('Bloqueada' o 'Registrada'/'Actualizada').
-         */
         function updateLockIconUI(condicion) {
             const condicionIconEl = document.getElementById('vacacion-condicion-icon');
 
@@ -567,26 +556,14 @@
             }
         }
 
-        /**
-         * Aplica el estado de solo lectura (readonly) a todos los campos editables del formulario.
-         * @param {boolean} isLocked - Si el formulario debe estar bloqueado.
-         */
         function applyFormReadonlyState(isLocked) {
             const fieldsToLock = [
                 'form-periodo', 'form-concepto', 'form-dia-ini', 'form-dia-fin', 'form-bono'
             ];
             
-            // Controlar el botón de envío
-            const submitBtn = document.getElementById('submit-btn');
-            if (submitBtn) {
-                // Deshabilita el botón si está bloqueado. (Se usa también en setLoadingState)
-                submitBtn.disabled = isLocked; 
-            }
-
             fieldsToLock.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
-                    // Siempre removemos antes de añadir para evitar duplicidad de listeners
                     if (id === 'form-dia-ini' || id === 'form-dia-fin') {
                         el.removeEventListener('change', updateDaysField); 
                     }
@@ -597,7 +574,6 @@
                     } else {
                         el.removeAttribute('readonly');
                         el.classList.remove('cursor-not-allowed', 'opacity-50', 'bg-gray-700/50');
-                        // Restaurar listeners de cálculo de días para campos de fecha solo si se desbloquea
                         if (id === 'form-dia-ini' || id === 'form-dia-fin') {
                             el.addEventListener('change', updateDaysField);
                         }
@@ -606,20 +582,14 @@
             });
         }
 
-        /**
-         * Inicializa el formulario en Modo Edición.
-         * @param {object} record - El registro de vacaciones a editar.
-         */
         function fillFormForEditing(record) {
             console.log("Rellenando formulario para edición.");
 
-            // Referencias a UI
             const buttonTextEl = document.getElementById('button-text');
             const formTitleTextEl = document.getElementById('form-title-text');
             const condicionButton = document.getElementById('vacacion-condicion-button');
             const diasDisplayInput = document.getElementById('dias-vacaciones-display-input');
 
-            // 1. Cambiar UI de modo
             if (buttonTextEl) buttonTextEl.textContent = 'Actualizar Registro';
             if (formTitleTextEl) {
                 formTitleTextEl.textContent = 'Actualizar Solicitud';
@@ -627,35 +597,25 @@
                 formTitleTextEl.classList.add('text-blue-400');
             }
             
-            // 2. Mostrar el botón de candado/bloqueo
             if (condicionButton) condicionButton.classList.remove('hidden');
 
-            // 3. Rellenar campos (Esto pone el valor guardado de DIAS_VACACIONES)
             fillFormFieldsFromRecord(record);
             
-            // 4. Lógica de bloqueo/solo lectura
             const isInitiallyBlocked = record.VACACION_CONDICION === 'Bloqueada';
             
-            // Aplicar el estado de solo lectura a todos los campos y configura/desconfigura listeners
             applyFormReadonlyState(isInitiallyBlocked);
             
-            // Actualizar el icono de bloqueo inicial
             updateLockIconUI(record.VACACION_CONDICION);
             
-            // CRÍTICO: El campo DIAS_VACACIONES es siempre read-only en modo edición
             if (diasDisplayInput) {
                 diasDisplayInput.setAttribute('readonly', true);
                 diasDisplayInput.classList.add('cursor-not-allowed', 'opacity-75'); 
                 diasDisplayInput.classList.remove('bg-gray-700/50'); 
             }
 
-            // CRÍTICO: Limpiar la clave de transferencia después de usarla.
             localStorage.removeItem(REGISTER_TRANSFER_KEY); 
         }
 
-        /**
-         * Toggles the 'Bloqueada' condition.
-         */
         function toggleVacationLock() {
             if (!currentVacationRecordToEdit) {
                 console.error("No se puede bloquear/desbloquear: No está en modo edición.");
@@ -666,20 +626,15 @@
             let newCondition;
             let originalCondition = currentVacationRecordToEdit.ORIGINAL_CONDICION || 'Registrada';
 
-            // Determinar la nueva condición
             if (currentCondition !== 'Bloqueada') {
-                // --- LÓGICA DE BLOQUEO (LIBRE) ---
                 currentVacationRecordToEdit.ORIGINAL_CONDICION = currentCondition;
                 newCondition = 'Bloqueada';
-                showCustomAlert("Solicitud Bloqueada 🔒", "El registro ha sido marcado como **Bloqueado** y los campos se han restablecido a los valores originales para evitar modificaciones.", false);
+                showCustomAlert("Solicitud Bloqueada 🔒", "El registro ha sido marcado como **Bloqueado**. Los campos han sido restablecidos y solo un Administrador puede Desbloquear.", false);
                 
             } else {
-                // --- LÓGICA DE DESBLOQUEO (Requiere validación de Admin) ---
-                
                 const userProfile = USER_INFO.usuarioPerfil;
                 const userIdx = USER_INFO.usuarioIdx;
 
-                // 1. Validar Perfil de Administrador
                 if (userProfile !== 'Admin') {
                     showCustomAlert("Acceso Denegado ❌", "Solo los usuarios con perfil **'Admin'** pueden desbloquear las solicitudes.", true);
                     applyFormReadonlyState(true);
@@ -687,7 +642,6 @@
                     return;
                 }
 
-                // 2. Solicitar y Validar Clave
                 const adminKey = prompt("Por favor, ingrese su clave de administrador para desbloquear (USUARIO_IDX_KEY):");
                 
                 if (adminKey !== userIdx) {
@@ -697,41 +651,33 @@
                     return;
                 }
 
-                // 3. Si pasa la validación: Desbloquear
                 newCondition = originalCondition; 
                 showCustomAlert("Solicitud Desbloqueada 🔓", "El registro ha sido **Desbloqueado** por un Administrador. Ahora puedes modificar los campos.", false);
             }
 
-            // 1. Actualizar la variable de estado
             currentVacationRecordToEdit.VACACION_CONDICION = newCondition;
 
-            // 2. Aplicar el estado de solo lectura
             const isLocked = newCondition === 'Bloqueada';
             applyFormReadonlyState(isLocked);
             
-            // 3. Restaurar los valores originales del formulario si se está BLOQUEANDO
             if (isLocked) {
-                // Inyectar los datos originales y restaurar el valor de DIAS_VACACIONES
                 fillFormFieldsFromRecord(currentVacationRecordToEdit); 
             } else {
-                // Si se desbloquea, disparamos el cálculo de días para reflejar
-                // cualquier cambio que haya podido ocurrir en los campos de fecha antes de grabar
                 updateDaysField();
             }
             
-            // 4. Actualizar el icono de bloqueo/desbloqueo en la UI
             updateLockIconUI(newCondition);
         }
 
         // --- CÁLCULO DE DÍAS HÁBILES Y UTILIDADES DE FECHA (SIN CAMBIOS) ---
-        function getTodayDateString() { /* ... */
+        function getTodayDateString() { 
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-        function formatInputDate(dateString) { /* ... */
+        function formatInputDate(dateString) { 
             if (!dateString) return '';
             const parts = dateString.split(/[-\/]/); 
             if (parts.length === 3) {
@@ -742,7 +688,7 @@
             }
             return dateString;
         }
-        function formatDateForDisplay(dateString) { /* ... */
+        function formatDateForDisplay(dateString) { 
             if (!dateString) return 'N/A';
             const parts = dateString.split(/[-\/]/); 
             if (parts.length === 3) {
@@ -753,7 +699,7 @@
             }
             return dateString;
         }
-        function formatEmployeeName(nombres, apellidos) { /* ... */
+        function formatEmployeeName(nombres, apellidos) { 
             let formattedName = 'Empleado Desconocido';
             if (nombres && apellidos) {
                 const names = String(nombres).trim().split(/\s+/).filter(p => p.length > 0);
@@ -767,7 +713,7 @@
             return formattedName;
         }
 
-        function calculateBusinessDays(start, end) { /* ... */
+        function calculateBusinessDays(start, end) { 
             if (!start || !end) return 0;
             let startDate = new Date(start + 'T00:00:00'); 
             let endDate = new Date(end + 'T00:00:00');
@@ -784,7 +730,7 @@
             return count;
         };
 
-        function updateDaysField() { /* ... */
+        function updateDaysField() { 
             const inicioInput = document.getElementById('form-dia-ini');
             const finInput = document.getElementById('form-dia-fin');
             const diasInputHidden = document.getElementById('form-dias'); 
@@ -793,7 +739,6 @@
 
             if (!inicioInput || !finInput || !diasInputHidden || !diasInputDisplay || !infoText) return;
             
-            // Si los campos están en modo readonly, salimos (excepto para inicializar en modo 'new')
             if (inicioInput.hasAttribute('readonly') || finInput.hasAttribute('readonly')) {
                 return;
             }
@@ -832,7 +777,7 @@
             }
         }
         
-        function setLoadingState(isLoading) { /* ... */
+        function setLoadingState(isLoading) { 
             const submitBtn = document.getElementById('submit-btn');
             const buttonText = document.getElementById('button-text');
             
@@ -844,31 +789,23 @@
                 submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 submitBtn.classList.add('bg-gray-500'); 
             } else {
-                // Restaurar el estado y el texto correcto (considerando el estado de bloqueo)
                 const isEditMode = currentVacationRecordToEdit !== null;
-                const isLocked = isEditMode && currentVacationRecordToEdit.VACACION_CONDICION === 'Bloqueada';
                 
                 buttonText.textContent = isEditMode ? 'Actualizar Registro' : 'Guardar Registro'; 
                 submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 submitBtn.classList.remove('bg-gray-500');
                 
-                if (isLocked) {
-                    submitBtn.disabled = true;
-                }
+                submitBtn.disabled = false;
             }
         }
 
 
-        // --- 6. FUNCIÓN PRINCIPAL DE ENVÍO A GAS (SIN CAMBIOS) ---
+        // --- 6. FUNCIÓN PRINCIPAL DE ENVÍO A GAS (CORRECCIÓN DE 'action') ---
 
         async function sendDataToGas() {
-            // 0. Validación de estado de bloqueo
             const isEditMode = currentVacationRecordToEdit !== null;
-            if (isEditMode && currentVacationRecordToEdit.VACACION_CONDICION === 'Bloqueada') {
-                showCustomAlert("Acción Bloqueada", "No se puede actualizar el registro. Primero debes **Desbloquear** la solicitud para realizar cambios.", true);
-                return;
-            }
-
+            const isBlocked = isEditMode && currentVacationRecordToEdit.VACACION_CONDICION === 'Bloqueada';
+            
             const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
             const workerInfoJSON = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
             const workerInfo = workerInfoJSON ? JSON.parse(workerInfoJSON) : {};
@@ -885,31 +822,35 @@
 
             const form = document.getElementById('vacation-form');
             
-            if (!form.checkValidity()) {
-                form.reportValidity(); 
-                return;
-            }
+            // 1. VALIDACIONES DE FORMULARIO (Se salta si está Bloqueada)
+            if (!isBlocked) {
+                if (!form.checkValidity()) {
+                    form.reportValidity(); 
+                    return;
+                }
 
-            const periodoInput = document.getElementById('form-periodo');
-            const diasInput = document.getElementById('form-dias');
-            
-            const periodo = Number(periodoInput.value);
-            const diasVacaciones = Number(diasInput.value);
+                const periodoInput = document.getElementById('form-periodo');
+                const diasInput = document.getElementById('form-dias');
+                
+                const periodo = Number(periodoInput.value);
+                const diasVacaciones = Number(diasInput.value);
 
-            if (periodo < 2020 || periodo >= 2040) {
-                showCustomAlert("Error de Período", "El campo PERÍODO debe ser un año entre 2020 y 2039.", true);
-                periodoInput.focus();
-                return;
-            }
-
-            if (diasVacaciones < 1) {
-                showCustomAlert("Error de Días", "El número de Días de Vacaciones calculados debe ser igual o mayor a 1. Por favor, verifica que la fecha fin sea siempre mayor a la fecha inicio.", true);
-                document.getElementById('form-dia-ini').focus(); 
-                return;
+                if (periodo < 2020 || periodo >= 2040) {
+                    showCustomAlert("Error de Período", "El campo PERÍODO debe ser un año entre 2020 y 2039.", true);
+                    periodoInput.focus();
+                    return;
+                }
+                
+                if (diasVacaciones < 1) {
+                    showCustomAlert("Error de Días", "El número de Días de Vacaciones calculados debe ser igual o mayor a 1. Por favor, verifica que la fecha fin sea siempre mayor a la fecha inicio.", true);
+                    document.getElementById('form-dia-ini').focus(); 
+                    return;
+                }
             }
             
             setLoadingState(true);
 
+            // 2. CONSTRUCCIÓN DE DATA
             const formData = new FormData(form);
             const dataToSend = {};
             
@@ -933,36 +874,47 @@
             dataToSend['NOMBRE_EMPLEADO'] = formattedEmployeeName;
             dataToSend['INGRESO'] = workerInfo.INGRESO || 'N/A';
             dataToSend['EMPRESA'] = workerInfo.EMPRESA || ''; 
-            
             dataToSend['RegistroDate'] = new Date().toISOString().split('T')[0]; 
-            
             dataToSend['TIENDA'] = USER_INFO.usuarioTienda || 'N/A';
             dataToSend['PERFIL'] = USER_INFO.usuarioPerfil || 'N/A';
             dataToSend['IDX'] = USER_INFO.usuarioIdx || '0';
             dataToSend['RegistroUser'] = USER_INFO.usuarioNombre || 'Usuario Desconocido'; 
+            
+            // 🛑 CORRECCIÓN CRÍTICA: Se unifica la acción a 'register_vacation'
+            dataToSend['action'] = 'register_vacation';
 
             let successMessage;
 
+            // 3. LÓGICA DE ACTUALIZACIÓN VS NUEVO (DIFERENCIADO POR CAMPOS ADICIONALES)
             if (isEditMode) {
-                dataToSend['action'] = 'update_vacation';
                 dataToSend['ROW_INDEX'] = currentVacationRecordToEdit.ROW_INDEX || ''; 
                 dataToSend['ORIGINAL_PERIODO'] = currentVacationRecordToEdit.PERIODO;
                 dataToSend['ORIGINAL_DIA_INICIO'] = currentVacationRecordToEdit.DIA_INICIO;
 
-                dataToSend['VACACION_CONDICION'] = 'Actualizada'; // Siempre se actualiza a 'Actualizada' al grabar
+                const currentCondition = currentVacationRecordToEdit.VACACION_CONDICION;
+                
+                if (currentCondition === 'Bloqueada') {
+                    // Si está Bloqueada, se mantiene 'Bloqueada' al actualizar
+                    dataToSend['VACACION_CONDICION'] = 'Bloqueada'; 
+                } else {
+                    // Si no está Bloqueada, se marca como 'Actualizada' al actualizar
+                    dataToSend['VACACION_CONDICION'] = 'Actualizada';
+                }
+                
                 dataToSend['ORIGINAL_CONDICION'] = currentVacationRecordToEdit.ORIGINAL_CONDICION || 'Registrada'; 
                 
                 successMessage = 'Los datos se han **actualizado** correctamente en la hoja de cálculo.';
                 
             } else {
-                dataToSend['action'] = 'register_vacation';
+                // Lógica de Nuevo Registro
+                dataToSend['ROW_INDEX'] = ''; // Asegurar que no se envía índice para nuevo registro
                 dataToSend['VACACION_CONDICION'] = 'Registrada'; 
                 successMessage = 'Los datos se han **registrado** correctamente en la hoja de cálculo.';
             }
 
             console.log('Datos finales a enviar:', dataToSend);
 
-            // 5. ENVÍO REAL A GAS
+            // 4. ENVÍO REAL A GAS
             const urlEncodedBody = objectToUrlEncoded(dataToSend);
 
             try {
@@ -1019,9 +971,9 @@
             }
         }
         
-        // --- 7. LÓGICA DE NAVEGACIÓN Y CARGA (ACTUALIZADA) ---
+        // --- 7. LÓGICA DE NAVEGACIÓN Y CARGA (SIN CAMBIOS FUNCIONALES) ---
         
-        function setActiveFooterButton(sectionName) { /* ... */
+        function setActiveFooterButton(sectionName) { 
             document.querySelectorAll('#app-footer .footer-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.getAttribute('data-section') === sectionName) {
@@ -1110,9 +1062,6 @@
                 if (isEditMode) {
                     fillFormForEditing(currentVacationRecordToEdit); 
                     
-                    // 🛑 CORRECCIÓN: Volvemos a añadir los listeners. Si el registro está bloqueado, 
-                    // applyFormReadonlyState los quitará inmediatamente. Si no está bloqueado, se mantienen activos.
-                    // NO llamamos a updateDaysField(), ya que fillFormForEditing ya estableció el valor guardado.
                     document.getElementById('form-dia-ini').addEventListener('change', updateDaysField);
                     document.getElementById('form-dia-fin').addEventListener('change', updateDaysField);
 
@@ -1144,10 +1093,9 @@
                     document.getElementById('form-dia-fin').value = ''; 
                     document.getElementById('form-bono').value = ''; 
                     
-                    // Asegurar que el cálculo de días funciona en modo normal y hacer el cálculo inicial
                     document.getElementById('form-dia-ini').addEventListener('change', updateDaysField);
                     document.getElementById('form-dia-fin').addEventListener('change', updateDaysField);
-                    updateDaysField(); // 🛑 Solo se llama aquí para inicializar el valor en modo "Nuevo"
+                    updateDaysField();
                 }
                 
                 return;
