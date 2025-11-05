@@ -355,20 +355,31 @@
         </main>
 
                 <!-- MODAL DE DETALLE DE VACACIONES (READ-ONLY) -->
-        <div id="VacationDetailModal" class="modal-overlay" onclick="closeVacationModal(event)">
-            <div id="vacation-modal-content-wrapper" 
-                 class="mx-auto" 
-                 onclick="event.stopPropagation()">
-                
-                <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full dark:bg-gray-700">
-                    
-                    <!-- Encabezado del Modal -->
-                    <div class="flex justify-between items-center pb-3 mb-4">
-                        <h3 class="text-xl font-bold text-yellow-400">Detalle de Vacaciones</h3>
-                        <!-- Botón de Cierre -->
-                        <button onclick="closeVacationModal()" class="p-1 rounded-full text-red-400 hover:text-red-600 transition duration-150">
-                            <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-8 -mr-6"></i> 		
-                        </button>
+                <div id="VacationDetailModal" class="modal-overlay" onclick="closeVacationModal(event)">
+                    <div id="vacation-modal-content-wrapper" 
+                        class="mx-auto" 
+                        onclick="event.stopPropagation()">
+                        
+                        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full dark:bg-gray-700 relative">
+                            
+                            <button onclick="closeVacationModal()" 
+                                class="absolute top-1 right-1 p-0 rounded-full text-red-400 hover:text-red-700 transition duration-150 z-10" 
+                                aria-label="Cerrar">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                            
+                            <div class="flex items-center pb-3 mb-4">
+                                
+                                <div class="flex items-center space-x-2">
+                                    <h3 class="text-xl font-bold text-yellow-400">Detalle de Vacaciones</h3>
+                                    
+                                    <button id="edit-button" 
+                                        onclick="loadContent('Agregar')" 
+                                        class="p-1 rounded-full text-blue-400 hover:text-blue-600 transition duration-150" 
+                                        title="Editar Registro">
+                                        <i data-lucide="pencil" class="w-5 h-5"></i>
+                                    </button>
+                            </div>
                     </div>
                     
                     <!-- Contador y Navegación -->
@@ -474,8 +485,9 @@
         // const CEDULA = '13105322'; // Cédula para filtrar los datos en el GAS
 
 
-                // --- LÓGICA DE CARGA DE DATOS DEL EMPLEADO (LOCALSTORAGE/MOCK) ---
+        // --- LÓGICA DE CARGA DE DATOS DEL EMPLEADO (LOCALSTORAGE/MOCK) ---
         const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
+        const REGISTER_TRANSFER_KEY = 'registerInfoToEdit';  
 
         /**
          * Carga la información del empleado desde localStorage (si existe y es válida) 
@@ -483,10 +495,10 @@
          */
         function getEmployeeInfo() {
             const defaultInfo = {
-                CEDULA: 13105322, 
+                CEDULA: 11222333, 
                 INGRESO: '13/10/2015',
-                NOMBRES: 'YSABEL XUISANA',
-                APELLIDOS: 'HOJEDA CASTILLO',
+                NOMBRES: 'YXUISANA',
+                APELLIDOS: 'HASTIYO',
             };
             
             try {
@@ -542,7 +554,7 @@
         let filterMode = 'all'; // 'all' (Periodo o Concepto) o 'period' (Solo Periodo)
         
         // ESTADO GLOBAL DEL MODAL: Almacena los datos actualmente filtrados y *ordenados*
-        let currentFilteredData = [];       
+        let currentFilteredData = [];   
 
         // --- FUNCIONES DE FORMATEO (sin cambios) ---
         
@@ -861,7 +873,84 @@
             totalCardClasses.split(' ').forEach(cls => totalCard.classList.add(cls));
         }
 
+        // --- FUNCIONES DE MODAL DE DETALLE (NUEVAS) ---
+        
+        /**
+         * Carga los datos de un registro en el modal y lo muestra.
+         * También almacena el registro completo en localStorage para una posible edición/vista detallada.
+         * @param {number} index - El índice (0-based) del registro dentro de `currentFilteredData` (que ahora está ordenado).
+         */
+        function openVacationModal(index) {
+            // Clave de localStorage para el registro seleccionado
+            const REGISTER_TRANSFER_KEY = 'registerInfoToEdit';
+            
+            // Asegurarse de que el índice es válido
+            if (index < 0 || index >= currentFilteredData.length) {
+                console.error('Índice de registro no válido:', index);
+                // Si el índice es inválido, limpia el localStorage
+                localStorage.removeItem(REGISTER_TRANSFER_KEY);
+                return;
+            }
 
+            // 1. Actualizar el estado global del índice
+            currentRecordIndex = index;
+            
+            // 2. Obtener los datos del registro (Ahora usa el índice correcto de la lista ORDENADA)
+            const record = currentFilteredData[currentRecordIndex];
+            
+            // 🛑 NUEVA LÓGICA: Guardar el registro completo en localStorage
+            try {
+                localStorage.setItem(REGISTER_TRANSFER_KEY, JSON.stringify(record));
+                console.log("✅ Registro completo guardado en localStorage:", REGISTER_TRANSFER_KEY);
+                console.log("✅ Datos:", record);
+            } catch (e) {
+                console.error("Error al guardar el registro en localStorage:", e);
+            }
+            
+            // 3. Rellenar los campos del modal
+            document.getElementById('detail-periodo').textContent = record['PERIODO'] || 'N/A';
+            document.getElementById('detail-concepto').textContent = record['DESCRIPCION_CONCEPTO'] || 'N/A';
+            document.getElementById('detail-dia-ini').textContent = formatDate(record['DIA_INICIO']);
+            document.getElementById('detail-dia-fin').textContent = formatDate(record['DIA_FINAL']);
+            
+            const diasVacaciones = formatNumberWithDots(record['DIAS_VACACIONES']);
+            document.getElementById('detail-dias').textContent = diasVacaciones;
+            
+            const bonoVacacional = formatNumberWithDots(record['BONO_VACACIONAL']);
+            document.getElementById('detail-bono').textContent = bonoVacacional;
+            
+            // 4. Actualizar el contador de navegación
+            const totalRecords = currentFilteredData.length;
+            document.getElementById('registro-count').textContent = `Registro ${currentRecordIndex + 1} de ${totalRecords}`;
+            
+            // 5. Habilitar/Deshabilitar botones de navegación
+            updateNavigationButtons();
+
+            // 6. Mostrar el modal
+            const modal = document.getElementById('VacationDetailModal');
+            modal.classList.add('open');
+            // Inicializa los íconos de Lucide dentro del modal por si acaso
+            lucide.createIcons();
+        }
+        
+        /**
+         * Cierra el modal de detalle de vacaciones.
+         * @param {Event} event - El evento (opcional, si se dispara al hacer clic fuera).
+         */
+        function closeVacationModal(event) {
+            // Si el evento existe y el clic no fue directamente en el overlay, ignorar.
+            // Esto evita que el clic en el contenido del modal lo cierre.
+            if (event && event.target.id !== 'VacationDetailModal') {
+                return;
+            }
+            
+            const modal = document.getElementById('VacationDetailModal');
+            modal.classList.remove('open');
+            currentRecordIndex = -1; // Resetear el índice al cerrar
+            
+            // 🛑 Lógica: Opcional, pero buena práctica: Limpiar el localStorage al cerrar el modal
+            localStorage.removeItem('registerInfoToEdit');
+        }
 
         // --- FUNCIONES DE FILTRO Y ORDENAMIENTO (ACTUALIZADAS) ---
 
@@ -1044,67 +1133,7 @@
         }
 
 
-        // --- FUNCIONES DE MODAL DE DETALLE (NUEVAS) ---
-        
-        /**
-         * Carga los datos de un registro en el modal y lo muestra.
-         * @param {number} index - El índice (0-based) del registro dentro de `currentFilteredData` (que ahora está ordenado).
-         */
-        function openVacationModal(index) {
-            // Asegurarse de que el índice es válido
-            if (index < 0 || index >= currentFilteredData.length) {
-                console.error('Índice de registro no válido:', index);
-                return;
-            }
-
-            // 1. Actualizar el estado global del índice
-            currentRecordIndex = index;
-            
-            // 2. Obtener los datos del registro (Ahora usa el índice correcto de la lista ORDENADA)
-            const record = currentFilteredData[currentRecordIndex];
-            
-            // 3. Rellenar los campos del modal
-            document.getElementById('detail-periodo').textContent = record['PERIODO'] || 'N/A';
-            document.getElementById('detail-concepto').textContent = record['DESCRIPCION_CONCEPTO'] || 'N/A';
-            document.getElementById('detail-dia-ini').textContent = formatDate(record['DIA_INICIO']);
-            document.getElementById('detail-dia-fin').textContent = formatDate(record['DIA_FINAL']);
-            
-            const diasVacaciones = formatNumberWithDots(record['DIAS_VACACIONES']);
-            document.getElementById('detail-dias').textContent = diasVacaciones;
-            
-            const bonoVacacional = formatNumberWithDots(record['BONO_VACACIONAL']);
-            document.getElementById('detail-bono').textContent = bonoVacacional;
-            
-            // 4. Actualizar el contador de navegación
-            const totalRecords = currentFilteredData.length;
-            document.getElementById('registro-count').textContent = `Registro ${currentRecordIndex + 1} de ${totalRecords}`;
-            
-            // 5. Habilitar/Deshabilitar botones de navegación
-            updateNavigationButtons();
-
-            // 6. Mostrar el modal
-            const modal = document.getElementById('VacationDetailModal');
-            modal.classList.add('open');
-            // Inicializa los íconos de Lucide dentro del modal por si acaso
-            lucide.createIcons();
-        }
-        
-        /**
-         * Cierra el modal de detalle de vacaciones.
-         * @param {Event} event - El evento (opcional, si se dispara al hacer clic fuera).
-         */
-        function closeVacationModal(event) {
-            // Si el evento existe y el clic no fue directamente en el overlay, ignorar.
-            // Esto evita que el clic en el contenido del modal lo cierre.
-            if (event && event.target.id !== 'VacationDetailModal') {
-                return;
-            }
-            
-            const modal = document.getElementById('VacationDetailModal');
-            modal.classList.remove('open');
-            currentRecordIndex = -1; // Resetear el índice al cerrar
-        }
-        
+       
         /**
          * Navega al registro anterior o siguiente y recarga el modal.
          * @param {number} direction - -1 para anterior, 1 para siguiente.
