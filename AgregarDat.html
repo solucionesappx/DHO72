@@ -669,7 +669,7 @@
             updateLockIconUI(newCondition);
         }
 
-        // --- CÁLCULO DE DÍAS HÁBILES Y UTILIDADES DE FECHA (SIN CAMBIOS) ---
+        // --- CÁLCULO DE DÍAS HÁBILES Y UTILIDADES DE FECHA ---
         function getTodayDateString() { 
             const today = new Date();
             const year = today.getFullYear();
@@ -713,18 +713,36 @@
             return formattedName;
         }
 
+        /**
+         * CORRECCIÓN DE LA FUNCIÓN: Se modificó para usar el constructor de componentes Date(Y, M-1, D)
+         * en lugar de parsear la cadena 'YYYY-MM-DD' para evitar el desplazamiento de zona horaria 
+         * en el lado del cliente.
+         */
         function calculateBusinessDays(start, end) { 
             if (!start || !end) return 0;
-            let startDate = new Date(start + 'T00:00:00'); 
-            let endDate = new Date(end + 'T00:00:00');
+            
+            // 1. Parsear los componentes de la fecha del input 'YYYY-MM-DD'
+            let [startY, startM, startD] = start.split('-').map(n => parseInt(n, 10));
+            let [endY, endM, endD] = end.split('-').map(n => parseInt(n, 10));
+
+            // 2. Crear objetos Date a medianoche en la zona horaria local. (M-1 es crucial)
+            let startDate = new Date(startY, startM - 1, startD); 
+            let endDate = new Date(endY, endM - 1, endD);
+
             if (startDate > endDate) return 0;
+            
             let count = 0;
             let currentDate = new Date(startDate);
+            
+            // 3. Iterar día por día
             while (currentDate <= endDate) {
-                const dayOfWeek = currentDate.getDay(); 
+                const dayOfWeek = currentDate.getDay(); // 0 (Sunday) to 6 (Saturday)
+                
+                // Si no es Domingo (0) ni Sábado (6), es un día hábil
                 if (dayOfWeek !== 0 && dayOfWeek !== 6) { 
                     count++;
                 }
+                // Mover al siguiente día. setDate() es seguro contra desbordamiento de mes.
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             return count;
@@ -800,7 +818,7 @@
         }
 
 
-        // --- 6. FUNCIÓN PRINCIPAL DE ENVÍO A GAS (CORRECCIÓN DE 'action') ---
+        // --- 6. FUNCIÓN PRINCIPAL DE ENVÍO A GAS (CORRECCIÓN DE 'action' MANTENIDA) ---
 
         async function sendDataToGas() {
             const isEditMode = currentVacationRecordToEdit !== null;
@@ -880,7 +898,7 @@
             dataToSend['IDX'] = USER_INFO.usuarioIdx || '0';
             dataToSend['RegistroUser'] = USER_INFO.usuarioNombre || 'Usuario Desconocido'; 
             
-            // 🛑 CORRECCIÓN CRÍTICA: Se unifica la acción a 'register_vacation'
+            // 🛑 ACCIÓN UNIFICADA: Siempre 'register_vacation'
             dataToSend['action'] = 'register_vacation';
 
             let successMessage;
