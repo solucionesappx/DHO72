@@ -818,12 +818,13 @@
         }
 
 
-        // --- 6. FUNCIÓN PRINCIPAL DE ENVÍO A GAS (CORRECCIÓN DE 'action' MANTENIDA) ---
+        // --- 6. FUNCIÓN PRINCIPAL DE ENVÍO A GAS (ACTUALIZADA para mostrar VacationID) ---
 
         async function sendDataToGas() {
             const isEditMode = currentVacationRecordToEdit !== null;
             const isBlocked = isEditMode && currentVacationRecordToEdit.VACACION_CONDICION === 'Bloqueada';
             
+            // Obtener la información del empleado
             const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
             const workerInfoJSON = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
             const workerInfo = workerInfoJSON ? JSON.parse(workerInfoJSON) : {};
@@ -834,13 +835,14 @@
                 return;
             }
             
+            // Definir nombres y apellidos ANTES de que se usen en dataToSend
             const nombres = workerInfo.NOMBRES || '';
             const apellidos = workerInfo.APELLIDOS || '';
             const formattedEmployeeName = formatEmployeeName(nombres, apellidos); 
 
             const form = document.getElementById('vacation-form');
             
-            // 1. VALIDACIONES DE FORMULARIO (Se salta si está Bloqueada)
+            // 1. VALIDACIONES DE FORMULARIO
             if (!isBlocked) {
                 if (!form.checkValidity()) {
                     form.reportValidity(); 
@@ -870,7 +872,7 @@
 
             // 2. CONSTRUCCIÓN DE DATA
             const formData = new FormData(form);
-            const dataToSend = {};
+            const dataToSend = {}; // 🛑 DECLARACIÓN E INICIALIZACIÓN DE dataToSend (Solución al error)
             
             for (const [key, value] of formData.entries()) {
                 const trimmedValue = (typeof value === 'string') ? value.trim() : value;
@@ -887,6 +889,7 @@
                 }
             }
 
+            // El error 'dataToSend is not defined' ocurría si la línea const dataToSend = {}; se saltaba.
             dataToSend['NOMBRES'] = nombres;
             dataToSend['APELLIDOS'] = apellidos;
             dataToSend['NOMBRE_EMPLEADO'] = formattedEmployeeName;
@@ -912,22 +915,20 @@
                 const currentCondition = currentVacationRecordToEdit.VACACION_CONDICION;
                 
                 if (currentCondition === 'Bloqueada') {
-                    // Si está Bloqueada, se mantiene 'Bloqueada' al actualizar
                     dataToSend['VACACION_CONDICION'] = 'Bloqueada'; 
                 } else {
-                    // Si no está Bloqueada, se marca como 'Actualizada' al actualizar
                     dataToSend['VACACION_CONDICION'] = 'Actualizada';
                 }
                 
                 dataToSend['ORIGINAL_CONDICION'] = currentVacationRecordToEdit.ORIGINAL_CONDICION || 'Registrada'; 
                 
-                successMessage = 'Los datos se han **actualizado** correctamente en la hoja de cálculo.';
+                successMessage = 'Los datos se han actualizado correctamente en la hoja de cálculo.';
                 
             } else {
                 // Lógica de Nuevo Registro
-                dataToSend['ROW_INDEX'] = ''; // Asegurar que no se envía índice para nuevo registro
+                dataToSend['ROW_INDEX'] = ''; 
                 dataToSend['VACACION_CONDICION'] = 'Registrada'; 
-                successMessage = 'Los datos se han **registrado** correctamente en la hoja de cálculo.';
+                successMessage = 'Los datos se han registrado correctamente ';
             }
 
             console.log('Datos finales a enviar:', dataToSend);
@@ -954,9 +955,17 @@
 
                 try {
                     const result = JSON.parse(gasResponseText);
+                    
                     if (result.success) {
+                        
+                        let finalMessage = successMessage;
+                        // Agregamos el ID de vacaciones si se devuelve desde GAS
+                        if (result.vacationId) {
+                            finalMessage += `en el documento ${result.vacationId}`;
+                        }
+
                         showCustomAlert("¡Éxito en la Operación!", 
-                            successMessage,
+                            finalMessage,
                             false, 
                             true, 
                             () => {
