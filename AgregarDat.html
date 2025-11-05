@@ -227,65 +227,61 @@
         }
 
         // ====================================================================================
-        // *** 1. CONFIGURACIÓN CRÍTICA: URL DE DESPLIEGUE DE GAS (ACTUALIZADA) ***
+        // *** 1. CONFIGURACIÓN CRÍTICA: URL DE DESPLIEGUE DE GAS ***
         // ====================================================================================
         const POST_URL = "https://script.google.com/macros/s/AKfycbxjneZ_WpBjmIEAqtutJgk0m3oqsa0-OsmHjfPxBqZNfDb9gYzWV4kQ8hoXXIK5EAVnSA/exec"; 
 
         // ====================================================================================
-        // *** 2. CONSTANTES DE CLAVE DE USUARIO EN LOCAL STORAGE ***
+        // *** 2. CONSTANTES DE CLAVE DE USUARIO Y TRANSFERENCIA EN LOCAL STORAGE ***
         // ====================================================================================
         const USUARIO_TIENDA_KEY = 'Usuario_Tienda';
         const USUARIO_NOMBRE_KEY = 'Usuario_Nombre'; 
         const USUARIO_PERFIL_KEY = 'Usuario_Perfil';
         const USUARIO_IDX_KEY = 'Usuario_Idx';
-        // const USUARIO_PRIMER_NOMBRE_KEY = 'Usuario_Primer_Nombre'; // Ya no se usa directamente
+        
+        // CLAVES DE TRANSFERENCIA COMPARTIDAS
+        const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
+        const REGISTER_TRANSFER_KEY = 'registerInfoToEdit'; // Registro de vacaciones a editar
 
         // ====================================================================================
-        // *** 3. OBJETO GLOBAL PARA ALMACENAR LA INFORMACIÓN DEL USUARIO LOGUEADO Y MOCK/EDICIÓN ***
+        // *** 3. OBJETOS GLOBALES DE ESTADO ***
         // ====================================================================================
-        let USER_INFO = {}; // Se inicializa leyendo de localStorage en initializeUserInfo()
+        let USER_INFO = {}; 
+        
+        /**
+         * Variable que almacena el registro de vacaciones completo. 
+         * En modo edición, se asume que contiene los datos originales del localStorage.
+         */
+        let currentVacationRecordToEdit = null;
 
         /**
-         * Lee los datos del usuario logueado desde localStorage y actualiza el objeto USER_INFO 
-         * y el título de la cabecera.
+         * Lee los datos del usuario logueado desde localStorage.
          */
         function initializeUserInfo() {
-            // Leer datos del localStorage
             USER_INFO.usuarioTienda = localStorage.getItem(USUARIO_TIENDA_KEY);
             USER_INFO.usuarioNombre = localStorage.getItem(USUARIO_NOMBRE_KEY);
             USER_INFO.usuarioPerfil = localStorage.getItem(USUARIO_PERFIL_KEY);
             USER_INFO.usuarioIdx = localStorage.getItem(USUARIO_IDX_KEY);
 
-            // Lógica para actualizar el encabezado con el primer nombre
             const headerTitleEl = document.querySelector('#app-header .text-xl.font-bold');
 
             if (USER_INFO.usuarioNombre && headerTitleEl) {
-                // Extraer el primer nombre (usa regex para manejar múltiples espacios)
                 const names = USER_INFO.usuarioNombre.trim().split(/\s+/).filter(p => p.length > 0);
                 const primerNombre = names[0] || '';
                 
                 if (primerNombre) {
-                    // Guardar el primer nombre para uso futuro si es necesario
                     USER_INFO.usuarioPrimerNombre = primerNombre; 
                     headerTitleEl.textContent = `¡Hola, ${primerNombre}!`;
                 } else {
                     headerTitleEl.textContent = 'Mi Aplicación Móvil DHO';
                 }
             } else if (headerTitleEl) {
-                // Fallback si no hay nombre o si no se inicializó correctamente
                 headerTitleEl.textContent = 'Mi Aplicación Móvil DHO';
             }
             
             console.log("USER_INFO inicializado:", USER_INFO);
         }
 
-        // --- LÓGICA DE CARGA DE DATOS DEL EMPLEADO (LOCALSTORAGE/MOCK) ---
-        const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
-
-        /**
-         * Carga la información del empleado desde localStorage (si existe y es válida) 
-         * o usa la información mock por defecto.
-         */
         function getEmployeeInfo() {
             const defaultInfo = {
                 CEDULA: 11222333, 
@@ -298,154 +294,118 @@
                 const cachedData = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
                 if (cachedData) {
                     const employeeInfo = JSON.parse(cachedData);
-                    console.log("✅ Datos del empleado cargados desde localStorage:", employeeInfo);
-                    // Asegurar que usamos al menos la cédula, y combinar con el mock en caso de faltar datos
                     if (employeeInfo && employeeInfo.CEDULA) {
                         return { ...defaultInfo, ...employeeInfo }; 
                     }
                 }
             } catch (error) {
-                // Si hay un error de parseo o lectura, caemos al valor por defecto
                 console.error("Error al parsear los datos del empleado desde localStorage, usando mock:", error);
             }
-            
-            console.log("❌ Usando datos mock por defecto.");
             return defaultInfo;
         }
 
         const MOCK_EMPLOYEE_INFO = getEmployeeInfo();
-        let TARGET_CEDULA = MOCK_EMPLOYEE_INFO.CEDULA; 
-        
-        // Variables de estado sin usar actualmente (mantenidas para futura implementación)
-        let filteredEmployeeData = []; 
-        let userBaseData = []; 
-        let currentSheet = 'Vacaciones2'; 
-        let currentSortColumn = null; 
-        let sortOrder = 'asc'; 
-        let currentRecordIndex = -1; 
-
 
         // ====================================================================================
-        // *** 4. ESTRUCTURA HTML DEL FORMULARIO DE VACACIONES (ACTUALIZADA con autocomplete="off") ***
+        // *** 4. ESTRUCTURA HTML DEL FORMULARIO DE VACACIONES (ACTUALIZADA LA NAVEGACIÓN) ***
         // ====================================================================================
-        // Se usan placeholders {{...}} que se llenarán en la función loadContent
+        // Se cambia loadContent('Inicio') a loadContent('Vacaciones')
         const VACACIONES_FORM_STRUCTURE = `
             <form id="vacation-form" class="space-y-4">
                 
-                <!-- SECCIÓN 1: DATOS DEL TRABAJADOR (DISPLAY READ-ONLY) -->
                 <div class="p-5 bg-gray-800 rounded-xl shadow-lg border border-gray-700 mt-4">
                     
-                    <!-- INICIO DEL NUEVO DISEÑO DE DATOS DEL TRABAJADOR -->
                     <div class="flex justify-between items-start mb-3 pb-2 border-b border-gray-700">
                         <h3 class="text-xl font-extrabold text-white leading-tight" id="display-employee-name">
                             {{EMPLOYEE_NAME}}
                         </h3>
-                        <!-- Botón de Cierre de Modal (Implementado según la solicitud) -->
-                        <!-- Aquí cerramos el formulario y volvemos a la vista de inicio. -->
-                        <button type="button" onclick="loadContent('Inicio')" class="p-1 rounded-full text-red-400 hover:text-red-600 transition duration-150">
-                            <!-- CLASES AJUSTADAS: -mt-4 -mr-4 -->
+                        <button type="button" onclick="loadContent('Vacaciones')" class="p-1 rounded-full text-red-400 hover:text-red-600 transition duration-150">
                             <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-4 -mr-4"></i> 		
                         </button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
-                        <!-- Columna 1: Empresa (Formato destacado) -->
                         <div class="flex items-start text-sm text-gray-400 space-x-1">
                             <i data-lucide="factory" class="w-6 h-6 text-blue-400/90 flex-shrink-0"></i>
                             <h3 class="p-1 text-sm font-extrabold text-white leading-tight" id="display-empresa">   
                                 {{EMPRESA}}
                             </h3>
                         </div>
-    
-                        <!-- Columna 2: Cédula y Fecha Ingreso (Alineado a la derecha) -->
+
                         <div class="text-right">
                             <div class="flex flex-col items-end">
-                                <!-- Texto en gris más sutil para Cédula y Fecha -->
-                                <!-- CAMBIO APLICADO: Cédula ahora usa el placeholder del valor formateado -->
                                 <span class="text-sm text-gray-400 font-semibold">Cédula: <span class="text-gray-300" id="display-cedula">{{CEDULA_FORMATTED}}</span></span>
                                 <span class="text-sm text-gray-400 font-semibold">Ingreso: <span class="text-gray-300" id="display-ingreso">{{INGRESO}}</span></span>
                             </div>
                         </div>
                     </div>
-                    <!-- FIN DEL NUEVO DISEÑO -->
 
-                    <!-- CAMPOS OCULTOS para el formulario de envío (se llenan en loadContent) -->
-                    <!-- *** autocomplete="off" agregado a campos hidden *** -->
                     <input type="hidden" id="form-nombres-apellidos" name="NOMBRE_EMPLEADO" autocomplete="off">
                     <input type="hidden" id="form-cedula" name="CEDULA" autocomplete="off">
                     <input type="hidden" id="form-ingreso" name="INGRESO" autocomplete="off">
 
                 </div>
 
-                <!-- SECCIÓN 2: DETALLES DE SOLICITUD -->
                 <div class="p-5 bg-gray-900 rounded-xl shadow-lg border border-gray-700">
-                    <h2 class="text-xl font-bold text-yellow-300 mb-4 pb-2 flex items-center">
-                        <i data-lucide="calendar-plus" class="w-6 h-6 mr-2"></i>
-                        Detalles de Solicitud
+                    
+                    <h2 class="text-xl font-bold text-yellow-300 mb-4 pb-2 flex items-center" id="form-title-wrapper"> 
+                        <span id="form-title-text">Detalles de Solicitud</span>
+                        <button type="button" 
+                                onclick="toggleVacationLock()" 
+                                class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-700 transition duration-150 hidden" 
+                                id="vacacion-condicion-button" 
+                                title="Bloquear/Desbloquear Solicitud">
+                            <i data-lucide="lock-open" class="w-6 h-6" id="vacacion-condicion-icon"></i>
+                        </button>
                     </h2>
                     
-                    <!-- Período -->
                     <div>
                         <label for="form-periodo" class="form-label">PERÍODO *</label>
-                        <!-- *** autocomplete="off" agregado *** -->
                         <input type="text" id="form-periodo" name="PERIODO" required placeholder="Ej: 2024"
                             autocomplete="off" class="form-input">
                     </div>
 
-                    <!-- CAMPO: DESCRIPCION_CONCEPTO -->
                     <div>
                         <label for="form-concepto" class="form-label">CONCEPTO / DESCRIPCIÓN *</label>
-                        <!-- *** autocomplete="off" agregado al textarea *** -->
                         <textarea id="form-concepto" name="DESCRIPCION_CONCEPTO" rows="2" required
-                                    placeholder="Motivo detallado de la solicitud (Ej: Días de vacaciones, Días de permiso sin goce de sueldo, etc.)"
+                                    placeholder="Motivo detallado de la solicitud"
                                     autocomplete="off" class="form-input"></textarea>
                     </div>
 
-                    <!-- DÍA INICIO / DÍA FIN -->
                     <div class="grid grid-cols-2 gap-4 pt-2">
                         <div>
                             <label for="form-dia-ini" class="form-label">DÍA INICIO *</label>
-                            <!-- autocomplete="off" no es estrictamente necesario para type="date" pero se añade por consistencia -->
                             <input type="date" id="form-dia-ini" name="DIA_INICIO" required
                                 autocomplete="off" class="form-input">
                         </div>
                         <div>
                             <label for="form-dia-fin" class="form-label">DÍA FINAL *</label>
-                            <!-- autocomplete="off" no es estrictamente necesario para type="date" pero se añade por consistencia -->
                             <input type="date" id="form-dia-fin" name="DIA_FINAL" required
                                 autocomplete="off" class="form-input">
                         </div>
                     </div>
                     
-                    <!-- DÍAS VACACIONES / BONO VACACIONAL -->
                     <div class="grid grid-cols-2 gap-4">
                         
-                        <!-- DÍAS HÁBILES CALCULADOS (Display y campo oculto) -->
                         <div>
                             <label for="dias-vacaciones-display-input" class="form-label">DÍAS VACACIONES</label>
-                            <!-- *** autocomplete="off" agregado *** -->
                             <input type="text" id="dias-vacaciones-display-input" readonly value="0"
                                 autocomplete="off" class="form-input !bg-gray-700 border-gray-600 cursor-default">
                             
-                            <!-- Campo Oculto para enviar el valor calculado a GAS -->
-                            <!-- *** autocomplete="off" agregado a campo hidden *** -->
                             <input type="hidden" id="form-dias" name="DIAS_VACACIONES" value="0" autocomplete="off">
                             <p id="dias-habiles-info" class="text-xs text-gray-400 mt-1">
                                 Calculado automáticamente <br> (días hábiles).
                             </p>
                         </div>
 
-                        <!-- Monto del Bono -->
                         <div>
                             <label for="form-bono" class="form-label">BONO VACACIONAL</label>
-                            <!-- *** autocomplete="off" agregado *** -->
                             <input type="text" id="form-bono" name="BONO_VACACIONAL" value="0"
                                 placeholder="0"
                                 autocomplete="off" class="form-input">
                         </div>
                     </div>
                     
-                    <!-- Botón de Envío: RESTAURADO A w-full -->
                     <button type="button" onclick="sendDataToGas();" 
                             id="submit-btn"
                             class="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-xl hover:bg-blue-700 transition duration-150 transform hover:scale-[1.01] mt-6 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -458,37 +418,15 @@
             </form>
         `;
 
-        // --- 5. FUNCIONES DE UTILIDAD Y ALERTA (ACTUALIZADA con formatNumberWithDots) ---
-
-        /** * Formatea un número o string de cédula con puntos como separadores de miles. 
-         * @param {string | number} value El valor de la cédula o número a formatear. 
-         * @returns {string} El número formateado. 
-         */
-        function formatNumberWithDots(value) {
+        // --- FUNCIONES DE UTILIDAD (SIN CAMBIOS) ---
+        function formatNumberWithDots(value) { /* ... */
             if (value === null || value === undefined || value === '') return '';
-            let numStr;
-            const number = Number(value);
-
-            // Intentar convertir a número si es posible, y limpiar caracteres no numéricos
-            if (!isNaN(number) && String(value).trim() !== '') {
-                numStr = String(number).replace(/\D/g, '');
-            } else {
-                numStr = String(value).replace(/\D/g, ''); 
-            }
-            
-            // Usar Intl.NumberFormat para formatear con puntos como separador de miles
+            let numStr = String(value).replace(/\D/g, '');
             return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 }).format(Number(numStr));
         }
-
-
-        /**
-         * Muestra una alerta personalizada.
-         * @param {string} title - Título de la alerta.
-         * @param {string|object} message - Mensaje o datos JSON a mostrar.
-         * @param {boolean} isError - Si es un mensaje de error.
-         * @param {boolean} isDismissible - Si el modal puede cerrarse manualmente (default: true).
-         */
+        
         function showCustomAlert(title, message, isError = false, isDismissible = true, callback = null) {
+            // ... (Lógica de showCustomAlert) ...
             const modal = document.getElementById('custom-alert-modal');
             const titleEl = document.getElementById('alert-title');
             const messageEl = document.getElementById('alert-message');
@@ -505,18 +443,22 @@
 
             // --- LÓGICA DE VISIBILIDAD DEL BOTÓN ---
             if (isDismissible) {
-                alertFooter.style.display = 'block'; // Mostrar el footer y el botón
-                modal.classList.remove('pointer-events-none'); // Permitir interacción con el fondo
+                alertFooter.style.display = 'block'; 
+                modal.classList.remove('pointer-events-none'); 
+                
+                closeBtn.onclick = () => {
+                    hideCustomAlert();
+                    if (callback) callback();
+                };
+                
             } else {
-                alertFooter.style.display = 'none'; // Ocultar el footer y el botón
-                // CRÍTICO: Evitar que el usuario cierre el modal de carga con clicks externos
+                alertFooter.style.display = 'none'; 
                 modal.classList.add('pointer-events-none'); 
             }
 
-            // --- LÓGICA DE ESTILOS Y CONTENIDO (igual que antes) ---
+            // --- LÓGICA DE ESTILOS Y CONTENIDO ---
             titleEl.textContent = title;
             
-            // Toggling de clases de color
             if (isError) {
                 titleContainer.classList.remove('bg-blue-900');
                 titleContainer.classList.add('bg-red-900');
@@ -537,7 +479,6 @@
                 messageContainerWrapper.classList.remove('bg-red-950', 'border-red-600');
             }
             
-            // LÓGICA DE VISUALIZACIÓN: Objeto JSON para errores/depuración, string para éxito.
             if (typeof message === 'object' && message !== null) {
                 messageEl.textContent = JSON.stringify(message, null, 2);
                 messageEl.style.fontSize = '0.75rem'; 
@@ -549,16 +490,19 @@
             modal.style.display = 'flex';
         }
         
-        /**
-         * Función auxiliar para cerrar el modal.
-         */
         function hideCustomAlert() {
-             const modal = document.getElementById('custom-alert-modal');
-             if (modal) {
-                 modal.style.display = 'none';
-                 // Asegurar que se quite pointer-events-none al cerrar
-                 modal.classList.remove('pointer-events-none');
-             }
+            const modal = document.getElementById('custom-alert-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('pointer-events-none');
+                
+                const closeBtn = document.getElementById('alert-close-btn');
+                if(closeBtn) {
+                    closeBtn.onclick = () => {
+                        document.getElementById('custom-alert-modal').style.display = 'none';
+                    };
+                }
+            }
         }
 
         function objectToUrlEncoded(obj) {
@@ -566,7 +510,6 @@
             for (const key in obj) {
                 if (obj.hasOwnProperty(key) && obj[key] !== undefined && obj[key] !== null) {
                     const encodedKey = encodeURIComponent(key);
-                    // Asegurarse de que el valor sea un string antes de trim y encode
                     const encodedValue = encodeURIComponent(String(obj[key]).trim()); 
                     params.push(`${encodedKey}=${encodedValue}`);
                 }
@@ -574,207 +517,266 @@
             return params.join('&');
         }
 
-        // --- 6. FUNCIONES AUXILIARES DE GESTIÓN DEL FORMULARIO (MANTENIDA) ---
-   
+        // --- 5. FUNCIONES AUXILIARES DE GESTIÓN DE ESTADO ---
+
         /**
-         * Lee la información del trabajador de localStorage y actualiza el encabezado del formulario,
-         * y establece el valor predeterminado para el campo PERIODO.
+         * Rellena los campos del formulario con los datos de un registro (para edición o restauración).
+         * @param {object} record - El registro de vacaciones a usar.
          */
-        function renderEmployeeDetails() {
-            const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
-            const workerInfoJSON = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
-            const workerInfo = workerInfoJSON ? JSON.parse(workerInfoJSON) : {};
+        function fillFormFieldsFromRecord(record) {
+            // Periodo, Concepto
+            document.getElementById('form-periodo').value = record.PERIODO || '';
+            document.getElementById('form-concepto').value = record.DESCRIPCION_CONCEPTO || '';
+            
+            // Bono Vacacional (Quitar separadores de miles antes de ponerlo en el input)
+            const rawBono = String(record.BONO_VACACIONAL || 0).replace(/\./g, '').replace(/,/g, '');
+            document.getElementById('form-bono').value = rawBono; 
 
-            const nameDisplay = document.getElementById('display-employee-name');
-            const cedulaDisplay = document.getElementById('display-cedula');
-            const ingresoDisplay = document.getElementById('display-ingreso');
-            const cedulaInput = document.getElementById('form-cedula'); // Campo oculto
-            const periodoInput = document.getElementById('form-periodo'); // Campo PERIODO
-            const empresaDisplay = document.getElementById('display-empresa');
+            // Fechas (Convertir a formato YYYY-MM-DD)
+            document.getElementById('form-dia-ini').value = formatInputDate(record.DIA_INICIO); 
+            document.getElementById('form-dia-fin').value = formatInputDate(record.DIA_FINAL);
+            
+            // 🛑 CRÍTICO: Días de Vacaciones se rellena con el valor almacenado.
+            // Esto evita el cálculo automático al cargar el formulario.
+            document.getElementById('dias-vacaciones-display-input').value = record.DIAS_VACACIONES || 0;
+            document.getElementById('form-dias').value = record.DIAS_VACACIONES || 0;
+        }
 
-            if (!workerInfo.CEDULA) {
-                if (nameDisplay) nameDisplay.textContent = 'Error: Empleado no cargado';
+        /**
+         * Actualiza el icono de candado basado en la condición.
+         * @param {string} condicion - Valor de VACACION_CONDICION ('Bloqueada' o 'Registrada'/'Actualizada').
+         */
+        function updateLockIconUI(condicion) {
+            const condicionIconEl = document.getElementById('vacacion-condicion-icon');
+
+            if (!condicionIconEl) return;
+
+            if (condicion === 'Bloqueada') {
+                condicionIconEl.setAttribute('data-lucide', 'lock');
+                condicionIconEl.classList.remove('text-green-400', 'text-gray-400', 'text-red-400');
+                condicionIconEl.classList.add('text-red-400'); // Bloqueada: Rojo
+            } else {
+                condicionIconEl.setAttribute('data-lucide', 'lock-open');
+                condicionIconEl.classList.remove('text-red-400', 'text-gray-400', 'text-green-400');
+                condicionIconEl.classList.add('text-green-400'); // Registrada/Otro: Verde
+            }
+            
+            // Re-renderizar Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        /**
+         * Aplica el estado de solo lectura (readonly) a todos los campos editables del formulario.
+         * @param {boolean} isLocked - Si el formulario debe estar bloqueado.
+         */
+        function applyFormReadonlyState(isLocked) {
+            const fieldsToLock = [
+                'form-periodo', 'form-concepto', 'form-dia-ini', 'form-dia-fin', 'form-bono'
+            ];
+            
+            // Controlar el botón de envío
+            const submitBtn = document.getElementById('submit-btn');
+            if (submitBtn) {
+                // Deshabilita el botón si está bloqueado. (Se usa también en setLoadingState)
+                submitBtn.disabled = isLocked; 
+            }
+
+            fieldsToLock.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    // Siempre removemos antes de añadir para evitar duplicidad de listeners
+                    if (id === 'form-dia-ini' || id === 'form-dia-fin') {
+                        el.removeEventListener('change', updateDaysField); 
+                    }
+
+                    if (isLocked) {
+                        el.setAttribute('readonly', true);
+                        el.classList.add('cursor-not-allowed', 'opacity-50', 'bg-gray-700/50');
+                    } else {
+                        el.removeAttribute('readonly');
+                        el.classList.remove('cursor-not-allowed', 'opacity-50', 'bg-gray-700/50');
+                        // Restaurar listeners de cálculo de días para campos de fecha solo si se desbloquea
+                        if (id === 'form-dia-ini' || id === 'form-dia-fin') {
+                            el.addEventListener('change', updateDaysField);
+                        }
+                    }
+                }
+            });
+        }
+
+        /**
+         * Inicializa el formulario en Modo Edición.
+         * @param {object} record - El registro de vacaciones a editar.
+         */
+        function fillFormForEditing(record) {
+            console.log("Rellenando formulario para edición.");
+
+            // Referencias a UI
+            const buttonTextEl = document.getElementById('button-text');
+            const formTitleTextEl = document.getElementById('form-title-text');
+            const condicionButton = document.getElementById('vacacion-condicion-button');
+            const diasDisplayInput = document.getElementById('dias-vacaciones-display-input');
+
+            // 1. Cambiar UI de modo
+            if (buttonTextEl) buttonTextEl.textContent = 'Actualizar Registro';
+            if (formTitleTextEl) {
+                formTitleTextEl.textContent = 'Actualizar Solicitud';
+                formTitleTextEl.classList.remove('text-yellow-300');
+                formTitleTextEl.classList.add('text-blue-400');
+            }
+            
+            // 2. Mostrar el botón de candado/bloqueo
+            if (condicionButton) condicionButton.classList.remove('hidden');
+
+            // 3. Rellenar campos (Esto pone el valor guardado de DIAS_VACACIONES)
+            fillFormFieldsFromRecord(record);
+            
+            // 4. Lógica de bloqueo/solo lectura
+            const isInitiallyBlocked = record.VACACION_CONDICION === 'Bloqueada';
+            
+            // Aplicar el estado de solo lectura a todos los campos y configura/desconfigura listeners
+            applyFormReadonlyState(isInitiallyBlocked);
+            
+            // Actualizar el icono de bloqueo inicial
+            updateLockIconUI(record.VACACION_CONDICION);
+            
+            // CRÍTICO: El campo DIAS_VACACIONES es siempre read-only en modo edición
+            if (diasDisplayInput) {
+                diasDisplayInput.setAttribute('readonly', true);
+                diasDisplayInput.classList.add('cursor-not-allowed', 'opacity-75'); 
+                diasDisplayInput.classList.remove('bg-gray-700/50'); 
+            }
+
+            // CRÍTICO: Limpiar la clave de transferencia después de usarla.
+            localStorage.removeItem(REGISTER_TRANSFER_KEY); 
+        }
+
+        /**
+         * Toggles the 'Bloqueada' condition.
+         */
+        function toggleVacationLock() {
+            if (!currentVacationRecordToEdit) {
+                console.error("No se puede bloquear/desbloquear: No está en modo edición.");
                 return;
             }
 
-            const nombres = workerInfo.NOMBRES || '';
-            const apellidos = workerInfo.APELLIDOS || '';
-            const cedula = workerInfo.CEDULA || '';
-            const ingreso = workerInfo.INGRESO || 'N/A';
-            const empresa = workerInfo.EMPRESA || '';
-            
-            // 1. Formatear el nombre
-            const formattedName = formatEmployeeName(nombres, apellidos);
-            
-            // 2. Formatear la Cédula con puntos
-            const formattedCedula = formatNumberWithDots(cedula);
+            const currentCondition = currentVacationRecordToEdit.VACACION_CONDICION;
+            let newCondition;
+            let originalCondition = currentVacationRecordToEdit.ORIGINAL_CONDICION || 'Registrada';
 
-            // Actualización de los elementos HTML visuales del encabezado
-            if (nameDisplay) nameDisplay.textContent = formattedName;
-            if (cedulaDisplay) cedulaDisplay.textContent = formattedCedula; 
-            if (ingresoDisplay) ingresoDisplay.textContent = ingreso;
-            if (empresaDisplay) empresaDisplay.textContent = empresa;
-            
-            // 3. Establecer el valor de la cédula en el campo oculto
-            if (cedulaInput) cedulaInput.value = cedula;
-
-            // 🛑 4. ESTABLECER PERIODO POR DEFECTO: Año actual del sistema
-            if (periodoInput) {
-                const currentYear = new Date().getFullYear();
-                periodoInput.value = currentYear.toString();
-            }
-        }
-
-
-        /**
-         * Limpia los campos de entrada del formulario de solicitud (no los ocultos).
-         * NOTA: Esta función está diseñada para ser llamada *después* de un registro exitoso.
-         * CAMBIO: Bono vacacional ahora inicia vacío.
-         */
-        function clearFormFields() {
-            // Campos de solicitud: periodo, concepto, fechas, bono
-            const fieldsToClear = [
-                'form-periodo', 'form-concepto', 'form-dia-ini', 'form-dia-fin', 
-                'dias-vacaciones-display-input', 'form-dias'
-            ];
-            
-            fieldsToClear.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) element.value = '';
-            });
-
-            // Campo de bono vacacional (se mantiene el inicio en vacío)
-            document.getElementById('form-bono').value = '';
-            
-            // Restablecer la fecha de inicio al valor por defecto (hoy)
-            const inicioInput = document.getElementById('form-dia-ini');
-            if (inicioInput) {
-                inicioInput.value = getTodayDateString();
-            }
-            
-            updateDaysField(); 
-        }
-
-        function loadData() {
-            console.log("Datos de la tabla refrescados (función loadData() ejecutada).");
-        }
-        
-        function setLoadingState(isLoading) {
-            const submitBtn = document.getElementById('submit-btn');
-            const buttonText = document.getElementById('button-text');
-            
-            if (!submitBtn || !buttonText) return;
-
-            submitBtn.disabled = isLoading;
-            if (isLoading) {
-                buttonText.textContent = 'Enviando...';
-                submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                submitBtn.classList.add('bg-gray-500'); 
+            // Determinar la nueva condición
+            if (currentCondition !== 'Bloqueada') {
+                // --- LÓGICA DE BLOQUEO (LIBRE) ---
+                currentVacationRecordToEdit.ORIGINAL_CONDICION = currentCondition;
+                newCondition = 'Bloqueada';
+                showCustomAlert("Solicitud Bloqueada 🔒", "El registro ha sido marcado como **Bloqueado** y los campos se han restablecido a los valores originales para evitar modificaciones.", false);
+                
             } else {
-                buttonText.textContent = 'Guardar Registro'; 
-                submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                submitBtn.classList.remove('bg-gray-500');
+                // --- LÓGICA DE DESBLOQUEO (Requiere validación de Admin) ---
+                
+                const userProfile = USER_INFO.usuarioPerfil;
+                const userIdx = USER_INFO.usuarioIdx;
+
+                // 1. Validar Perfil de Administrador
+                if (userProfile !== 'Admin') {
+                    showCustomAlert("Acceso Denegado ❌", "Solo los usuarios con perfil **'Admin'** pueden desbloquear las solicitudes.", true);
+                    applyFormReadonlyState(true);
+                    updateLockIconUI('Bloqueada');
+                    return;
+                }
+
+                // 2. Solicitar y Validar Clave
+                const adminKey = prompt("Por favor, ingrese su clave de administrador para desbloquear (USUARIO_IDX_KEY):");
+                
+                if (adminKey !== userIdx) {
+                    showCustomAlert("Clave Incorrecta 🔑", "La clave de administrador ingresada es incorrecta. La solicitud permanece **Bloqueada**.", true);
+                    applyFormReadonlyState(true);
+                    updateLockIconUI('Bloqueada');
+                    return;
+                }
+
+                // 3. Si pasa la validación: Desbloquear
+                newCondition = originalCondition; 
+                showCustomAlert("Solicitud Desbloqueada 🔓", "El registro ha sido **Desbloqueado** por un Administrador. Ahora puedes modificar los campos.", false);
             }
+
+            // 1. Actualizar la variable de estado
+            currentVacationRecordToEdit.VACACION_CONDICION = newCondition;
+
+            // 2. Aplicar el estado de solo lectura
+            const isLocked = newCondition === 'Bloqueada';
+            applyFormReadonlyState(isLocked);
+            
+            // 3. Restaurar los valores originales del formulario si se está BLOQUEANDO
+            if (isLocked) {
+                // Inyectar los datos originales y restaurar el valor de DIAS_VACACIONES
+                fillFormFieldsFromRecord(currentVacationRecordToEdit); 
+            } else {
+                // Si se desbloquea, disparamos el cálculo de días para reflejar
+                // cualquier cambio que haya podido ocurrir en los campos de fecha antes de grabar
+                updateDaysField();
+            }
+            
+            // 4. Actualizar el icono de bloqueo/desbloqueo en la UI
+            updateLockIconUI(newCondition);
         }
-        
-        // --- 7. CÁLCULO DE DÍAS HÁBILES Y UTILIDADES DE FECHA ---
-        
-        /**
-         * Obtiene la fecha de hoy en formato YYYY-MM-DD.
-         * @returns {string} Fecha actual.
-         */
-        function getTodayDateString() {
+
+        // --- CÁLCULO DE DÍAS HÁBILES Y UTILIDADES DE FECHA (SIN CAMBIOS) ---
+        function getTodayDateString() { /* ... */
             const today = new Date();
             const year = today.getFullYear();
-            // getMonth() devuelve 0-11, sumamos 1
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-
-        /**
-         * Formatea una fecha de DD/MM/YYYY o YYYY-MM-DD a YYYY-MM-DD,
-         * el formato requerido por el input HTML <input type="hidden" type="date">.
-         * @param {string} dateString - Fecha a formatear.
-         * @returns {string} Fecha en formato YYYY-MM-DD.
-         */
-        function formatInputDate(dateString) {
+        function formatInputDate(dateString) { /* ... */
             if (!dateString) return '';
             const parts = dateString.split(/[-\/]/); 
             if (parts.length === 3) {
-                // Si el primer componente tiene 4 dígitos (YYYY-MM-DD)
                 if (parts[0].length === 4) {
                     return dateString;
                 }
-                // Si es DD/MM/YYYY
                 return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
             }
-            return dateString; // Devolver tal cual si no se puede parsear
+            return dateString;
         }
-
-        /**
-         * Formatea una fecha a DD/MM/YYYY para fines de visualización.
-         * @param {string} dateString - Fecha en formato DD/MM/YYYY o YYYY-MM-DD.
-         * @returns {string} Fecha en formato DD/MM/YYYY.
-         */
-        function formatDateForDisplay(dateString) {
+        function formatDateForDisplay(dateString) { /* ... */
             if (!dateString) return 'N/A';
             const parts = dateString.split(/[-\/]/); 
             if (parts.length === 3) {
-                // Si es YYYY-MM-DD
                 if (parts[0].length === 4) { 
                     return `${parts[2]}/${parts[1]}/${parts[0]}`; 
                 }
-                // Si es DD/MM/YYYY (ej. del mock)
                 return dateString; 
             }
             return dateString;
         }
-
-        /**
-         * Formatea el nombre del empleado según el esquema solicitado: 
-         * [Primer Nombre] [Inicial 2do Nombre]. [Primer Apellido] [Inicial 2do Apellido].
-         * @param {object} data - Objeto de empleado con NOMBRES y APELLIDOS.
-         * @returns {string} El nombre formateado.
-         */
-        // Nueva versión: Espera dos argumentos (nombres y apellidos)
-        function formatEmployeeName(nombres, apellidos) {
+        function formatEmployeeName(nombres, apellidos) { /* ... */
             let formattedName = 'Empleado Desconocido';
-            
-            // 🛑 La lógica ahora comprueba los argumentos individuales
             if (nombres && apellidos) {
-                // Normalización y split de nombres
-                // Usamos los argumentos directos 'nombres' y 'apellidos'
                 const names = String(nombres).trim().split(/\s+/).filter(p => p.length > 0);
                 const firstName = names[0] || '';
                 const middleInitial = names.length > 1 ? names[1].charAt(0) + '.' : '';
-                
-                // Normalización y split de apellidos
                 const surnames = String(apellidos).trim().split(/\s+/).filter(p => p.length > 0);
                 const firstSurname = surnames[0] || '';
                 const lastInitial = surnames.length > 1 ? surnames[1].charAt(0) + '.' : '';
-
-                // Construcción y limpieza de espacios
                 formattedName = `${firstName} ${middleInitial} ${firstSurname} ${lastInitial}`.replace(/\s{2,}/g, ' ').trim();
             }
             return formattedName;
         }
 
-
-        function calculateBusinessDays(start, end) {
+        function calculateBusinessDays(start, end) { /* ... */
             if (!start || !end) return 0;
-
             let startDate = new Date(start + 'T00:00:00'); 
             let endDate = new Date(end + 'T00:00:00');
-            
             if (startDate > endDate) return 0;
-
             let count = 0;
             let currentDate = new Date(startDate);
-
             while (currentDate <= endDate) {
                 const dayOfWeek = currentDate.getDay(); 
-                if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Lunes (1) a Viernes (5)
+                if (dayOfWeek !== 0 && dayOfWeek !== 6) { 
                     count++;
                 }
                 currentDate.setDate(currentDate.getDate() + 1);
@@ -782,7 +784,7 @@
             return count;
         };
 
-        function updateDaysField() {
+        function updateDaysField() { /* ... */
             const inicioInput = document.getElementById('form-dia-ini');
             const finInput = document.getElementById('form-dia-fin');
             const diasInputHidden = document.getElementById('form-dias'); 
@@ -790,11 +792,15 @@
             const infoText = document.getElementById('dias-habiles-info');
 
             if (!inicioInput || !finInput || !diasInputHidden || !diasInputDisplay || !infoText) return;
+            
+            // Si los campos están en modo readonly, salimos (excepto para inicializar en modo 'new')
+            if (inicioInput.hasAttribute('readonly') || finInput.hasAttribute('readonly')) {
+                return;
+            }
 
             const start = inicioInput.value;
             const end = finInput.value;
             
-            // Resetear estilos de texto por defecto
             infoText.classList.remove('text-red-400');
             infoText.classList.add('text-gray-400');
             diasInputDisplay.classList.remove('!border-red-500');
@@ -805,11 +811,11 @@
                 if (businessDays > 0) {
                     diasInputDisplay.value = businessDays;
                     diasInputHidden.value = businessDays;
-                    infoText.textContent = 'Calculado automáticamente' <br> '(días hábiles).';
+                    infoText.innerHTML = 'Calculado automáticamente <br> (días hábiles).';
                 } else if (businessDays === 0) {
                     diasInputDisplay.value = 0;
                     diasInputHidden.value = 0;
-                    diasInputDisplay.classList.add('!border-red-500'); // Resaltar error en el campo
+                    diasInputDisplay.classList.add('!border-red-500'); 
                     
                     if (new Date(start) > new Date(end)) {
                         infoText.textContent = 'ERROR: Fechas invertidas o inválidas.';
@@ -822,24 +828,47 @@
             } else {
                 diasInputDisplay.value = 0;
                 diasInputHidden.value = 0;
-                infoText.textContent = 'Calculado automáticamente' <br> '(días hábiles).';
+                infoText.innerHTML = 'Calculado automáticamente <br> (días hábiles).';
+            }
+        }
+        
+        function setLoadingState(isLoading) { /* ... */
+            const submitBtn = document.getElementById('submit-btn');
+            const buttonText = document.getElementById('button-text');
+            
+            if (!submitBtn || !buttonText) return;
+
+            submitBtn.disabled = isLoading;
+            if (isLoading) {
+                buttonText.textContent = 'Enviando...';
+                submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                submitBtn.classList.add('bg-gray-500'); 
+            } else {
+                // Restaurar el estado y el texto correcto (considerando el estado de bloqueo)
+                const isEditMode = currentVacationRecordToEdit !== null;
+                const isLocked = isEditMode && currentVacationRecordToEdit.VACACION_CONDICION === 'Bloqueada';
+                
+                buttonText.textContent = isEditMode ? 'Actualizar Registro' : 'Guardar Registro'; 
+                submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                submitBtn.classList.remove('bg-gray-500');
+                
+                if (isLocked) {
+                    submitBtn.disabled = true;
+                }
             }
         }
 
-        /**
-         * FUNCIÓN AUXILIAR para volver a la vista de inicio simulada
-         * (ahora redirige al archivo Inicio.html).
-         */
-        function closeVacationModal() {
-            // Ya no es un modal en la práctica, ahora es una navegación
-            loadContent('Inicio'); 
-        }
 
-
-        // --- 8. FUNCIÓN PRINCIPAL DE ENVÍO A GAS (ACTUALIZADA con limpieza de Bono/Período) ---
+        // --- 6. FUNCIÓN PRINCIPAL DE ENVÍO A GAS (SIN CAMBIOS) ---
 
         async function sendDataToGas() {
-            // 0. AISLAR LÓGICA DE DATOS DEL EMPLEADO
+            // 0. Validación de estado de bloqueo
+            const isEditMode = currentVacationRecordToEdit !== null;
+            if (isEditMode && currentVacationRecordToEdit.VACACION_CONDICION === 'Bloqueada') {
+                showCustomAlert("Acción Bloqueada", "No se puede actualizar el registro. Primero debes **Desbloquear** la solicitud para realizar cambios.", true);
+                return;
+            }
+
             const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
             const workerInfoJSON = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
             const workerInfo = workerInfoJSON ? JSON.parse(workerInfoJSON) : {};
@@ -853,41 +882,34 @@
             const nombres = workerInfo.NOMBRES || '';
             const apellidos = workerInfo.APELLIDOS || '';
             const formattedEmployeeName = formatEmployeeName(nombres, apellidos); 
-            // -----------------------------------------------------------------------------------
 
             const form = document.getElementById('vacation-form');
             
-            // 1. VALIDACIÓN BÁSICA DEL FORMULARIO
             if (!form.checkValidity()) {
                 form.reportValidity(); 
                 return;
             }
 
-            // 2. VALIDACIONES DE REGLAS DE NEGOCIO EN JS
             const periodoInput = document.getElementById('form-periodo');
             const diasInput = document.getElementById('form-dias');
             
             const periodo = Number(periodoInput.value);
             const diasVacaciones = Number(diasInput.value);
 
-            // REGLA 1: PERIODO (2020 <= PERIODO < 2040)
             if (periodo < 2020 || periodo >= 2040) {
-                showCustomAlert("Error de Período", "El campo PERIODO debe ser un año entre 2020 y 2039.", true);
+                showCustomAlert("Error de Período", "El campo PERÍODO debe ser un año entre 2020 y 2039.", true);
                 periodoInput.focus();
                 return;
             }
 
-            // REGLA 3: DIAS_VACACIONES (DIAS_VACACIONES >= 1)
-            // 🛑 MENSAJE DE ERROR MEJORADO: Unifica la validación de días y la indicación de fechas.
             if (diasVacaciones < 1) {
                 showCustomAlert("Error de Días", "El número de Días de Vacaciones calculados debe ser igual o mayor a 1. Por favor, verifica que la fecha fin sea siempre mayor a la fecha inicio.", true);
-                document.getElementById('form-dia-inicio').focus();
+                document.getElementById('form-dia-ini').focus(); 
                 return;
             }
-
+            
             setLoadingState(true);
 
-            // 3. RECOPILAR DATOS Y PREPARAR ENVÍO
             const formData = new FormData(form);
             const dataToSend = {};
             
@@ -896,7 +918,7 @@
                 let processedValue = trimmedValue;
 
                 if (key === 'BONO_VACACIONAL' || key === 'PERIODO') {
-                    processedValue = String(trimmedValue).replace(/\./g, '');
+                    processedValue = String(trimmedValue).replace(/\./g, '').replace(/,/g, '');
                 }
 
                 if (['CEDULA', 'DIAS_VACACIONES', 'BONO_VACACIONAL', 'PERIODO'].includes(key)) {
@@ -906,21 +928,37 @@
                 }
             }
 
-            // 4. INYECTAR DATOS DEL EMPLEADO Y DE TRAZABILIDAD
             dataToSend['NOMBRES'] = nombres;
             dataToSend['APELLIDOS'] = apellidos;
             dataToSend['NOMBRE_EMPLEADO'] = formattedEmployeeName;
             dataToSend['INGRESO'] = workerInfo.INGRESO || 'N/A';
             dataToSend['EMPRESA'] = workerInfo.EMPRESA || ''; 
             
-            dataToSend['VACACION_CONDICION'] = 'Registrada'; 
             dataToSend['RegistroDate'] = new Date().toISOString().split('T')[0]; 
-            dataToSend['action'] = 'register_vacation';
             
             dataToSend['TIENDA'] = USER_INFO.usuarioTienda || 'N/A';
             dataToSend['PERFIL'] = USER_INFO.usuarioPerfil || 'N/A';
             dataToSend['IDX'] = USER_INFO.usuarioIdx || '0';
             dataToSend['RegistroUser'] = USER_INFO.usuarioNombre || 'Usuario Desconocido'; 
+
+            let successMessage;
+
+            if (isEditMode) {
+                dataToSend['action'] = 'update_vacation';
+                dataToSend['ROW_INDEX'] = currentVacationRecordToEdit.ROW_INDEX || ''; 
+                dataToSend['ORIGINAL_PERIODO'] = currentVacationRecordToEdit.PERIODO;
+                dataToSend['ORIGINAL_DIA_INICIO'] = currentVacationRecordToEdit.DIA_INICIO;
+
+                dataToSend['VACACION_CONDICION'] = 'Actualizada'; // Siempre se actualiza a 'Actualizada' al grabar
+                dataToSend['ORIGINAL_CONDICION'] = currentVacationRecordToEdit.ORIGINAL_CONDICION || 'Registrada'; 
+                
+                successMessage = 'Los datos se han **actualizado** correctamente en la hoja de cálculo.';
+                
+            } else {
+                dataToSend['action'] = 'register_vacation';
+                dataToSend['VACACION_CONDICION'] = 'Registrada'; 
+                successMessage = 'Los datos se han **registrado** correctamente en la hoja de cálculo.';
+            }
 
             console.log('Datos finales a enviar:', dataToSend);
 
@@ -947,36 +985,29 @@
                 try {
                     const result = JSON.parse(gasResponseText);
                     if (result.success) {
-                        // Éxito: Muestra alerta y espera la aceptación para redirigir
-                        showCustomAlert("¡Éxito en el Registro!", 
-                            result.message || 'Los datos se han registrado correctamente en la hoja de cálculo.',
-                            false, // isError
-                            true,  // isDismissible (Fuerza la aceptación)
+                        showCustomAlert("¡Éxito en la Operación!", 
+                            successMessage,
+                            false, 
+                            true, 
                             () => {
-                                // Callback: Redirige con forceReload al aceptar la alerta
                                 window.location.href = 'Vacaciones.html?reload=true';
                             }
                         ); 
                     } else {
-                        // Error de lógica en GAS
                         showCustomAlert("Error de Lógica en GAS", {
                             'STATUS': 'ERROR INTERNO',
-                            'MENSAJE': result.message || 'El script de Google Apps Script falló en el registro.',
+                            'MENSAJE': result.message || 'El script de Google Apps Script falló en el registro/actualización.',
                         }, true);
                     }
                 } catch (e) {
-                    // Respuesta RAW no JSON
-                    showCustomAlert("Registro Enviado (Verificar)", {
+                    showCustomAlert("Operación Enviada (Verificar)", {
                         'STATUS': 'VERIFICACIÓN NECESARIA',
                         'MENSAJE': 'La solicitud se envió, pero la respuesta del servidor no fue JSON. Verifique su hoja de cálculo.',
                         'DETALLE_RAW': gasResponseText.substring(0, 200) + '...',
                     });
-                    loadData();
-                    clearFormFields();
                 }
 
             } catch (error) {
-                // Error crítico de conexión
                 hideCustomAlert(); 
                 showCustomAlert("Error Crítico de Conexión", {
                     'STATUS': 'ERROR CRÍTICO',
@@ -988,13 +1019,9 @@
             }
         }
         
-        // --- 9. LÓGICA DE NAVEGACIÓN Y MANEJO DE SECCIONES (ACTUALIZADA para formato de Cédula) ---
+        // --- 7. LÓGICA DE NAVEGACIÓN Y CARGA (ACTUALIZADA) ---
         
-        /**
-         * Marca el botón activo en el footer.
-         * @param {string} sectionName - El nombre de la sección a activar.
-         */
-        function setActiveFooterButton(sectionName) {
+        function setActiveFooterButton(sectionName) { /* ... */
             document.querySelectorAll('#app-footer .footer-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.getAttribute('data-section') === sectionName) {
@@ -1003,23 +1030,16 @@
             });
         }
         
-        // --- FUNCIÓN PRINCIPAL DE NAVEGACIÓN (Actualizada) ---
         function loadContent(section) {
             const mainContent = document.getElementById('main-content');
             
-            // CRÍTICO: Actualizar la clase activa ANTES de la redirección
             setActiveFooterButton(section);
-
-            // -----------------------------------------------------------
-            // REDIRECCIONES A ARCHIVOS HTML EXTERNOS
-            // -----------------------------------------------------------
 
             if (section === 'Inicio') {
                 window.location.href = 'Inicio.html';
                 return;
             }
             
-            // Sección 'Vacaciones' ahora redirige
             if (section === 'Vacaciones') {
                 window.location.href = 'Vacaciones.html';
                 return;
@@ -1040,82 +1060,110 @@
                 return;
             }
             
-            // -----------------------------------------------------------
-            // LÓGICA DE CARGA INTERNA (SOLO 'Agregar')
-            // -----------------------------------------------------------
-
             if (section === 'Agregar') {
                 
-                // Limpiar contenido antes de cargar el formulario
+                const recordToEditJSON = localStorage.getItem(REGISTER_TRANSFER_KEY);
+                let isEditMode = false;
+                
+                if (recordToEditJSON) {
+                    try {
+                        const record = JSON.parse(recordToEditJSON);
+                        if (!record.ORIGINAL_CONDICION) {
+                            record.ORIGINAL_CONDICION = record.VACACION_CONDICION;
+                        }
+                        currentVacationRecordToEdit = record;
+                        isEditMode = true;
+                    } catch (e) {
+                        console.error("Error al parsear el registro de edición:", e);
+                        localStorage.removeItem(REGISTER_TRANSFER_KEY); 
+                        currentVacationRecordToEdit = null;
+                    }
+                } else {
+                    currentVacationRecordToEdit = null;
+                }
+
                 mainContent.innerHTML = ''; 
 
-                // 1. Formatear datos del trabajador para la vista
-                const nameDisplay = formatEmployeeName(MOCK_EMPLOYEE_INFO);
-                // CAMBIO APLICADO: Usar la función de formato para la cédula de display
+                const nameDisplay = formatEmployeeName(MOCK_EMPLOYEE_INFO.NOMBRES, MOCK_EMPLOYEE_INFO.APELLIDOS); 
                 const cedulaDisplayFormatted = formatNumberWithDots(MOCK_EMPLOYEE_INFO.CEDULA); 
-                const cedulaDisplayRaw = String(MOCK_EMPLOYEE_INFO.CEDULA || 'N/A'); // Valor raw para el campo oculto
+                const cedulaDisplayRaw = String(MOCK_EMPLOYEE_INFO.CEDULA || 'N/A'); 
                 const ingresoDisplay = formatDateForDisplay(MOCK_EMPLOYEE_INFO.INGRESO);
+                const empresaDisplay = MOCK_EMPLOYEE_INFO.EMPRESA || 'N/A'; 
                 const fullNameForHidden = `${MOCK_EMPLOYEE_INFO.NOMBRES || ''} ${MOCK_EMPLOYEE_INFO.APELLIDOS || ''}`.trim();
 
-                // 2. Reemplazar placeholders en la plantilla
                 let contentHTML = VACACIONES_FORM_STRUCTURE
                     .replace('{{EMPLOYEE_NAME}}', nameDisplay)
-                    .replace('{{CEDULA_FORMATTED}}', cedulaDisplayFormatted) // Usar el valor formateado
-                    .replace('{{INGRESO}}', ingresoDisplay);
+                    .replace('{{CEDULA_FORMATTED}}', cedulaDisplayFormatted) 
+                    .replace('{{INGRESO}}', ingresoDisplay)
+                    .replace('{{EMPRESA}}', empresaDisplay);
 
                 mainContent.innerHTML = contentHTML;
                 
-                // 3. Establecer valores de campos ocultos y por defecto
                 document.getElementById('form-nombres-apellidos').value = fullNameForHidden;
-                document.getElementById('form-cedula').value = cedulaDisplayRaw; // Valor RAW para el envío a GAS
+                document.getElementById('form-cedula').value = cedulaDisplayRaw; 
                 document.getElementById('form-ingreso').value = ingresoDisplay;
                 
-                
-                // *** LÓGICA DE REINICIO DE CAMPOS AL CARGAR LA PÁGINA ***
-                const todayDate = getTodayDateString();
-                
-                // 1. DÍA DE INICIO: Se mantiene con la fecha de hoy
-                document.getElementById('form-dia-ini').value = todayDate;
-                
-                // 2. CAMPOS REINICIADOS A VACÍO
-                document.getElementById('form-periodo').value = ''; 
-                document.getElementById('form-concepto').value = ''; 
-                document.getElementById('form-dia-fin').value = ''; 
-                // CAMBIO APLICADO: BONO VACACIONAL se mantiene vacío
-                document.getElementById('form-bono').value = ''; 
-                
-                
-                // Re-renderizar Lucide icons para el nuevo contenido
                 if (typeof lucide !== 'undefined') {
                     lucide.createIcons();
                 }
-                renderEmployeeDetails();
-
-                // 4. Adjuntar listeners de eventos para el cálculo de días
-                document.getElementById('form-dia-ini').addEventListener('change', updateDaysField);
-                document.getElementById('form-dia-fin').addEventListener('change', updateDaysField);
                 
-                // Llamada inicial para establecer 0 días y evitar errores (Importante tras reset)
-                updateDaysField(); 
+                if (isEditMode) {
+                    fillFormForEditing(currentVacationRecordToEdit); 
+                    
+                    // 🛑 CORRECCIÓN: Volvemos a añadir los listeners. Si el registro está bloqueado, 
+                    // applyFormReadonlyState los quitará inmediatamente. Si no está bloqueado, se mantienen activos.
+                    // NO llamamos a updateDaysField(), ya que fillFormForEditing ya estableció el valor guardado.
+                    document.getElementById('form-dia-ini').addEventListener('change', updateDaysField);
+                    document.getElementById('form-dia-fin').addEventListener('change', updateDaysField);
+
+                } else {
+                    // Modo Nuevo Registro:
+                    const buttonTextEl = document.getElementById('button-text');
+                    const formTitleTextEl = document.getElementById('form-title-text');
+                    const condicionButton = document.getElementById('vacacion-condicion-button');
+                    const diasDisplayInput = document.getElementById('dias-vacaciones-display-input');
+
+                    if (buttonTextEl) buttonTextEl.textContent = 'Guardar Registro';
+                    if (formTitleTextEl) {
+                        formTitleTextEl.textContent = 'Detalles de Solicitud';
+                        formTitleTextEl.classList.remove('text-blue-400');
+                        formTitleTextEl.classList.add('text-yellow-300');
+                    }
+                    
+                    if (condicionButton) condicionButton.classList.add('hidden');
+                    
+                    if (diasDisplayInput) {
+                        diasDisplayInput.removeAttribute('readonly');
+                        diasDisplayInput.classList.remove('cursor-not-allowed', 'opacity-75'); 
+                    }
+
+                    const todayDate = getTodayDateString();
+                    document.getElementById('form-dia-ini').value = todayDate;
+                    document.getElementById('form-periodo').value = new Date().getFullYear().toString();
+                    document.getElementById('form-concepto').value = ''; 
+                    document.getElementById('form-dia-fin').value = ''; 
+                    document.getElementById('form-bono').value = ''; 
+                    
+                    // Asegurar que el cálculo de días funciona en modo normal y hacer el cálculo inicial
+                    document.getElementById('form-dia-ini').addEventListener('change', updateDaysField);
+                    document.getElementById('form-dia-fin').addEventListener('change', updateDaysField);
+                    updateDaysField(); // 🛑 Solo se llama aquí para inicializar el valor en modo "Nuevo"
+                }
                 
                 return;
             }
             
-            // Si la sección no es reconocida, cargamos el contenido de Inicio simulado
-            mainContent.innerHTML = INICIO_CONTENT;
+            mainContent.innerHTML = 'Contenido de Inicio'; 
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
         }
         
-        // --- 10. INICIALIZACIÓN DE LA APLICACIÓN ---
+        // --- 8. INICIALIZACIÓN DE LA APLICACIÓN (SIN CAMBIOS) ---
 
         document.addEventListener('DOMContentLoaded', () => {
-            
-            // PRIMERO: Inicializar USER_INFO y actualizar el encabezado de bienvenida
             initializeUserInfo();
 
-            // SEGUNDO: Asignar listeners a los botones del footer
             document.querySelectorAll('#app-footer .footer-btn').forEach(button => {
                 button.addEventListener('click', (event) => {
                     const section = button.getAttribute('data-section');
@@ -1125,7 +1173,6 @@
                 });
             });
 
-            // TERCERO: Carga inicial de la aplicación
             const initialSection = document.querySelector('.footer-btn.active')?.getAttribute('data-section') || 'Agregar';
             loadContent(initialSection);
         });
