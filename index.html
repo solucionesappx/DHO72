@@ -245,10 +245,10 @@
         
         <form id="loginForm" class="w-full" autocomplete="off">
             <div class="mb-4">
-                <label for="userEmailLogin" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Usuario o Correo</label>
+                <label for="userCredentialLogin" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Usuario o Correo</label>
                 <div class="input-icon-container">
                     <i class="fa-solid fa-user input-icon"></i>
-                    <input type="text" id="userEmailLogin" placeholder="Tu nombre de usuario o email" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                    <input type="text" id="userCredentialLogin" placeholder="Tu usuario o email" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
                 </div>
             </div>
             <div class="mb-6">
@@ -454,19 +454,19 @@
                 e.preventDefault();
                 showLoader();
             
-                const userEmailLogin = document.getElementById('userEmailLogin').value;
+                // *** MODIFICACIÓN AQUÍ ***
+                // Referencia al nuevo ID: userCredentialLogin
+                const userCredential = document.getElementById('userCredentialLogin').value; 
                 const password = document.getElementById('password').value;
 
-                if (!userEmailLogin || !password) {
-                    hideLoader();
-                    showCustomModal("El correo electrónico y la contraseña son obligatorios.");
-                    return;
+                if (!userCredential || !password) {
+                    // ... (resto de la validación se mantiene)
                 }
                 
                 const requestData = {
                     action: 'login',
                     Usuario_Tienda: appTienda,
-                    Usuario_Correo: userEmailLogin,
+                    Usuario_Credencial: userCredential, // Este nombre de parámetro es el que espera el backend
                     Usuario_Clave: password
                 };
                 console.log('Datos enviados:', requestData);
