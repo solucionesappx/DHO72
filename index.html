@@ -267,9 +267,14 @@
                     ¿Olvidaste tu contraseña?
                 </a>
             </div>
+            <div class="text-center mt-2">
+                <a href="#" id="signup-user-link" class="text-sm font-semibold hover:underline" style="color: var(--link-color);">
+                    ¿No tienes usuario? Regístrate aquí
+                </a>
+            </div>
         </form>
     </div>
-
+   
     <!-- Modal para recuperación de contraseña -->
     <div id="recovery-modal" class="modal">
         <div class="modal-content">
@@ -341,6 +346,73 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para creación de nuevo usuario -->
+    <div id="signup-modal" class="modal">
+        <div class="modal-content max-w-lg">
+            <button id="close-signup-modal-btn" class="modal-close-btn">&times;</button>
+            <h2 class="text-2xl font-bold mb-4 text-center" style="color: var(--text-color);">Nuevo Registro</h2>
+            
+            <form id="signupForm" autocomplete="off">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label for="userIdSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">ID de Usuario (Requerido)</label>
+                        <div class="input-icon-container">
+                            <i class="fa-solid fa-id-card input-icon"></i>
+                            <input type="text" id="userIdSignup" placeholder="ID único" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="userNameSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Nombre Completo (Requerido)</label>
+                        <div class="input-icon-container">
+                            <i class="fa-solid fa-signature input-icon"></i>
+                            <input type="text" id="userNameSignup" placeholder="Nombre Apellido" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="userEmailSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Correo Electrónico (Requerido)</label>
+                        <div class="input-icon-container">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" id="userEmailSignup" placeholder="email@ejemplo.com" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="userTelefonoSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Número de Teléfono (Requerido)</label>
+                        <div class="input-icon-container">
+                            <i class="fa-solid fa-phone input-icon"></i>
+                            <input type="tel" id="userTelefonoSignup" placeholder="Teléfono" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-4 md:col-span-2">
+                        <label for="passwordSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Contraseña (Requerida)</label>
+                        <div class="input-icon-container">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="passwordSignup" placeholder="Mínimo 6 caracteres" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="preguntaSegSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Pregunta de Seguridad (Opcional)</label>
+                        <div class="input-icon-container">
+                            <i class="fa-solid fa-question-circle input-icon"></i>
+                            <input type="text" id="preguntaSegSignup" placeholder="Ej: Nombre de tu primera mascota" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="respuestaSegSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Respuesta de Seguridad (Opcional)</label>
+                        <div class="input-icon-container">
+                            <i class="fa-solid fa-shield-alt input-icon"></i>
+                            <input type="text" id="respuestaSegSignup" placeholder="Respuesta" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-2 rounded-lg font-semibold form-button mt-4">
+                    Registrarse
+                </button>
+            </form>
+        </div>
+    </div>
+
     
     <!-- Loader visual -->
     <div id="loader" class="hidden fixed top-0 left-0 w-full h-full flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
@@ -366,6 +438,12 @@
         const customModalMessage = document.getElementById('custom-modal-message');
         const customModalCloseBtn = document.getElementById('custom-modal-close-btn');
         const loader = document.getElementById('loader');
+
+        // Nuevos elementos para el Registro (Signup)
+        const signupLink = document.getElementById('signup-user-link');
+        const signupModal = document.getElementById('signup-modal');
+        const closeSignupModalBtn = document.getElementById('close-signup-modal-btn');
+        const signupForm = document.getElementById('signupForm');
 
         // Elementos para el nuevo modal de generación de contraseña
         const generatePasswordModal = document.getElementById('generate-password-modal');
@@ -408,6 +486,16 @@
                 localStorage.setItem('theme', 'dark');
             }
         });
+
+        // Lógica para generar el ID único (Usuario_Idx)
+        function generateShortUUID() {
+            const chars = 'ABCDEFGHIJKLMNPQRSTUVWXYZ234562589';
+            let result = '';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
 
         // Lógica para mostrar y ocultar modales y loaders
         function showLoader() {
@@ -494,6 +582,85 @@
                        }
                 } catch (error) {
                     showCustomModal("Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo.");
+                } finally {
+                    hideLoader();
+                }
+            });
+        }
+        
+        // Lógica para abrir/cerrar el modal de registro
+        if (signupLink) {
+            signupLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                signupModal.classList.add('is-visible');
+            });
+        }
+        
+        if (closeSignupModalBtn) {
+            closeSignupModalBtn.addEventListener('click', () => {
+                closeModal('signup-modal');
+                signupForm.reset(); // Limpiar formulario al cerrar
+            });
+        }
+        
+        // Manejo del formulario de Registro (Signup)
+        if (signupForm) {
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showLoader();
+
+                // 1. Recolección de datos
+                const user_id = document.getElementById('userIdSignup').value;
+                const user_name = document.getElementById('userNameSignup').value;
+                const user_email = document.getElementById('userEmailSignup').value;
+                const user_telefono = document.getElementById('userTelefonoSignup').value;
+                const user_clave = document.getElementById('passwordSignup').value;
+                const user_pregunta_seg = document.getElementById('preguntaSegSignup').value;
+                const user_respuesta_seg = document.getElementById('respuestaSegSignup').value;
+
+                // Validación simple de campos requeridos
+                if (!user_id || !user_name || !user_email || !user_telefono || !user_clave) {
+                    hideLoader();
+                    showCustomModal("Por favor, completa todos los campos requeridos (*).");
+                    return;
+                }
+
+                // 2. Preparación de datos (incluyendo campos que el frontend debe generar)
+                const requestData = {
+                    action: 'signup',
+                    Usuario_Tienda: appTienda,
+                    Usuario_RegName: user_name, // Usamos el nombre del usuario como Registrador inicial
+                    Usuario_Idx: generateShortUUID(), // Generamos el ID único de 6 caracteres
+                    
+                    // Datos del formulario
+                    Usuario_ID: user_id,
+                    Usuario_Nombre: user_name,
+                    Usuario_Correo: user_email,
+                    Usuario_Telefono: user_telefono,
+                    Usuario_Clave: user_clave,
+                    Usuario_PreguntaSeg: user_pregunta_seg,
+                    Usuario_RespuestaSeg: user_respuesta_seg,
+                };
+                
+                console.log('Datos de Registro enviados:', requestData);
+                
+                // 3. Envío al backend
+                try {
+                    const response = await fetch(GAS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: new URLSearchParams(requestData),
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        closeModal('signup-modal');
+                        signupForm.reset();
+                        showCustomModal("¡Registro exitoso! Ya puedes iniciar sesión.", null);
+                    } else {
+                        showCustomModal(result.message || "Error en el registro. Verifica los datos y que no sean duplicados.");
+                    }
+                } catch (error) {
+                    showCustomModal("Ocurrió un error de red al intentar registrar el usuario.");
                 } finally {
                     hideLoader();
                 }
