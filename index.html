@@ -206,6 +206,11 @@
             transform: scale(1);
         }
 
+        /* Ajuste para que el modal de errores aparezca sobre otros modales */
+        #custom-modal {
+            z-index: 9999;
+        }
+
         /* Regla CSS para el botón de cierre */
         .modal-close-btn {
             position: absolute;
@@ -349,64 +354,74 @@
 
     <!-- Modal para creación de nuevo usuario -->
     <div id="signup-modal" class="modal">
-        <div class="modal-content max-w-lg">
+        <div class="modal-content"> 
             <button id="close-signup-modal-btn" class="modal-close-btn">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-center" style="color: var(--text-color);">Nuevo Registro</h2>
+            <h2 class="text-xl font-bold mb-4 text-center" style="color: var(--text-color);">Nuevo Registro</h2>
             
             <form id="signupForm" autocomplete="off">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="mb-4">
-                        <label for="userIdSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">ID de Usuario (Requerido)</label>
+                <div class="grid grid-cols-4 gap-x-2 gap-y-1 items-center">
+                    
+                    <label for="userIdSignup" class="col-span-1 text-xs font-normal text-right" style="color: var(--text-color);">Usuario *</label>
+                    <div class="col-span-3">
                         <div class="input-icon-container">
-                            <i class="fa-solid fa-id-card input-icon"></i>
-                            <input type="text" id="userIdSignup" placeholder="ID único" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                            <i class="fa-solid fa-id-card input-icon text-xs"></i>
+                            <input type="text" id="userIdSignup" placeholder="ID único" class="w-full pl-8 pr-4 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input text-xs" required autocomplete="off">
                         </div>
                     </div>
-                    <div class="mb-4">
-                        <label for="userNameSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Nombre Completo (Requerido)</label>
+                    
+                    <label for="userNameSignup" class="col-span-1 text-xs font-normal text-right" style="color: var(--text-color);">Nombre *</label>
+                    <div class="col-span-3">
                         <div class="input-icon-container">
-                            <i class="fa-solid fa-signature input-icon"></i>
-                            <input type="text" id="userNameSignup" placeholder="Nombre Apellido" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                            <i class="fa-solid fa-user input-icon text-xs"></i>
+                            <input type="text" id="userNameSignup" placeholder="Nombre y Apellido" class="w-full pl-8 pr-4 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input text-xs" required autocomplete="off">
                         </div>
                     </div>
-                    <div class="mb-4">
-                        <label for="userEmailSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Correo Electrónico (Requerido)</label>
+                    
+                    <label for="userEmailSignup" class="col-span-1 text-xs font-normal text-right" style="color: var(--text-color);">Email *</label>
+                    <div class="col-span-3">
                         <div class="input-icon-container">
-                            <i class="fa-solid fa-envelope input-icon"></i>
-                            <input type="email" id="userEmailSignup" placeholder="email@ejemplo.com" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                            <i class="fa-solid fa-envelope input-icon text-xs"></i>
+                            <input type="email" id="userEmailSignup" placeholder="email@ejemplo.com" class="w-full pl-8 pr-4 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input text-xs" required autocomplete="off">
                         </div>
                     </div>
-                    <div class="mb-4">
-                        <label for="userTelefonoSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Número de Teléfono (Requerido)</label>
+                    
+                    <label for="userTelefonoSignup" class="col-span-1 text-xs font-normal text-right" style="color: var(--text-color);">Teléfono *</label>
+                    <div class="col-span-3">
                         <div class="input-icon-container">
-                            <i class="fa-solid fa-phone input-icon"></i>
-                            <input type="tel" id="userTelefonoSignup" placeholder="Teléfono" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                            <i class="fa-solid fa-phone input-icon text-xs"></i>
+                            <input type="tel" id="userTelefonoSignup" placeholder="Tu número de teléfono" class="w-full pl-8 pr-4 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input text-xs" required autocomplete="off">
                         </div>
                     </div>
-                    <div class="mb-4 md:col-span-2">
-                        <label for="passwordSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Contraseña (Requerida)</label>
+                    
+                    <label for="passwordSignup" class="col-span-1 text-xs font-normal text-right" style="color: var(--text-color);">Clave *</label>
+                    <div class="col-span-3">
                         <div class="input-icon-container">
-                            <i class="fa-solid fa-lock input-icon"></i>
-                            <input type="password" id="passwordSignup" placeholder="Mínimo 6 caracteres" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                            <i class="fa-solid fa-lock input-icon text-xs"></i>
+                            <input type="password" id="passwordSignup" placeholder="4 dígitos numéricos" class="w-full pl-8 pr-4 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input text-xs" required autocomplete="off" maxlength="4">
                         </div>
                     </div>
-                    <div class="mb-4">
-                        <label for="preguntaSegSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Pregunta de Seguridad (Opcional)</label>
+
+                    <hr class="col-span-4 my-2" style="border-top: 1px solid #d1d5db;">     
+                   
+                    <label for="preguntaSegSignup" class="col-span-1 text-xs font-normal text-right" style="color: var(--text-color);">Pregunta Seguridad</label>
+                    <div class="col-span-3">
                         <div class="input-icon-container">
-                            <i class="fa-solid fa-question-circle input-icon"></i>
-                            <input type="text" id="preguntaSegSignup" placeholder="Ej: Nombre de tu primera mascota" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" autocomplete="off">
+                            <i class="fa-solid fa-question-circle input-icon text-xs"></i>
+                            <input type="text" id="preguntaSegSignup" placeholder="Pregunta de seguridad" class="w-full pl-8 pr-4 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input text-xs" autocomplete="off">
                         </div>
                     </div>
-                    <div class="mb-4">
-                        <label for="respuestaSegSignup" class="block text-sm font-semibold mb-2" style="color: var(--text-color);">Respuesta de Seguridad (Opcional)</label>
+                    
+                    <label for="respuestaSegSignup" class="col-span-1 text-xs font-normal text-right" style="color: var(--text-color);">Respuesta</label>
+                    <div class="col-span-3">
                         <div class="input-icon-container">
-                            <i class="fa-solid fa-shield-alt input-icon"></i>
-                            <input type="text" id="respuestaSegSignup" placeholder="Respuesta" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" autocomplete="off">
+                            <i class="fa-solid fa-shield-alt input-icon text-xs"></i>
+                            <input type="text" id="respuestaSegSignup" placeholder="Tu respuesta" class="w-full pl-8 pr-4 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input text-xs" autocomplete="off">
                         </div>
                     </div>
                 </div>
-
-                <button type="submit" class="w-full py-2 rounded-lg font-semibold form-button mt-4">
+                <p class="text-xs mt-3 text-center" style="color: var(--placeholder-color);">Los campos marcados con (*) son obligatorios.</p>
+                
+                <button type="submit" class="w-full py-2 rounded-lg font-semibold form-button mt-3">
                     Registrarse
                 </button>
             </form>
@@ -625,6 +640,12 @@
                     return;
                 }
 
+                if (user_clave.length !== 4) {
+                    hideLoader();
+                    showCustomModal("La contraseña debe tener exactamente 4 caracteres.");
+                    return;
+                }
+
                 // 2. Preparación de datos (incluyendo campos que el frontend debe generar)
                 const requestData = {
                     action: 'signup',
@@ -816,9 +837,9 @@
         manualPasswordForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const newPassword = manualPasswordInput.value;
-            // La validación debe ser de 5 caracteres
-            if (newPassword.length !== 5) {
-                showCustomModal("La contraseña debe tener exactamente 5 caracteres.");
+            // La validación debe ser de 4 caracteres
+            if (newPassword.length !== 4) {
+                showCustomModal("La contraseña debe tener exactamente 4 caracteres.");
                 return;
             }
             await sendNewPassword(newPassword);
