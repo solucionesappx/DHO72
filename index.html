@@ -592,6 +592,7 @@
                             loginForm.reset();
                             // Redireccionamiento directo a Inicio.html al cerrar el modal de éxito
                             showCustomModal("¡Inicio de sesión exitoso!", null, 'Inicio.html');
+                            console.log("Datos Usuarios: ", userdata);
                         } else {
                         showCustomModal(result.message || "Credenciales incorrectas. Por favor, inténtalo de nuevo.");
                        }
