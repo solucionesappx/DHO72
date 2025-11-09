@@ -201,16 +201,15 @@
     </div>
     <!-- FIN MODAL DE DETALLE DE PERFIL DE USUARIO -->
 
-
     <script>
         lucide.createIcons();
 
-        // Mapeo de navegación (Actualizado para referencia) - Ya no se usa para navegación, pero se mantiene como referencia
+        // Mapeo de navegación (Actualizado para referencia)
         const NAV_MAP = {
             'Inicio': 'Inicio.html',
             'Vacaciones': 'Vacaciones.html',
-            'Editar': 'Inicio.html', // Actualizado a 'EditarDat.html'
-            'Perfil': 'PerfilUsuario.html',
+            'Editar': 'Editar.html', 
+            'Perfil': 'PerfilUser.html',
             'Agregar': 'AgregarDat.html',
             'Configuración': 'ConfigApp.html'
         };
@@ -218,8 +217,34 @@
         // --- FUNCIONES DEL MODAL DE PERFIL ---
 
         /**
+         * Alterna la visibilidad del valor en un campo sensible al pasar/dejar el cursor.
+         * Implementa la lógica de ocultar el icono cuando el valor es visible.
+         */
+        function toggleMaskedValue(valueId, actualValue, show, iconId) {
+            const valueElement = document.getElementById(valueId);
+            const iconElement = document.getElementById(iconId); 
+            
+            if (valueElement) {
+                if (show) {
+                    // 1. Mostrar el valor real.
+                    valueElement.textContent = actualValue;
+                    // 2. Ocultar el icono cuando el valor es visible.
+                    if (iconElement) {
+                        iconElement.style.display = 'none';
+                    }
+                } else {
+                    // 1. Ocultar el valor (volver a *****)
+                    valueElement.textContent = '*****';
+                    // 2. Mostrar el icono (restaura el display por defecto).
+                    if (iconElement) {
+                        iconElement.style.display = ''; 
+                    }
+                }
+            }
+        }
+
+        /**
          * Oculta el modal de detalle del perfil sin forzar la navegación.
-         * Se usa para llamadas programáticas (e.g., al navegar a otra sección).
          */
         function closeModalOnly() {
             const modal = document.getElementById('DetallePerfilModal');
@@ -230,7 +255,6 @@
         
         /**
          * Oculta el modal de detalle del perfil y redirige inmediatamente a Inicio.html.
-         * Se usa cuando el usuario presiona el botón de cerrar ('X') en el modal.
          */
         function closePerfilModalAndRedirectToHome() {
             closeModalOnly(); 
@@ -254,29 +278,59 @@
             const usuarioIdx = localStorage.getItem('Usuario_Idx');
             const usuarioPreguntaSeg = localStorage.getItem('Usuario_PreguntaSeg');
             const usuarioRespuestaSeg = localStorage.getItem('Usuario_RespuestaSeg');
+            console.log('Valor recuperado para Usuario_RespuestaSeg:', usuarioRespuestaSeg);
             
-            // Mapeo de campos a mostrar
+            // Mapeo de campos a mostrar y marcado de campos sensibles
             const profileFields = [
-                { label: 'Nombre Completo', value: usuarioNombre },
-                { label: 'App Tienda', value: usuarioTienda },
-                { label: 'Perfil', value: usuarioPerfil },
-                { label: 'Clave Especial Usuario (IDX)', value: usuarioIdx },
-                { label: 'Pregunta de Seguridad', value: usuarioPreguntaSeg },
-                { label: 'Respuesta de Seguridad', value: usuarioRespuestaSeg }
+                { label: 'Nombre Completo', value: usuarioNombre, sensitive: false, id: 'Nombre' },
+                { label: 'App Tienda', value: usuarioTienda, sensitive: false, id: 'Tienda' },
+                { label: 'Perfil', value: usuarioPerfil, sensitive: false, id: 'Perfil' },
+                { label: 'Clave Especial Usuario (IDX)', value: usuarioIdx, sensitive: true, id: 'Idx' }, 
+                { label: 'Pregunta de Seguridad', value: usuarioPreguntaSeg, sensitive: false, id: 'Pregunta' },
+                { label: 'Respuesta de Seguridad', value: usuarioRespuestaSeg, sensitive: true, id: 'Respuesta' } 
             ];
 
             // 2. Construir el contenido del modal
             const contentHtml = profileFields
                 .map(field => {
                     const displayValue = field.value || 'No definido';
-                    // Mantener la clase de importancia para Nombre y Perfil
                     const isImportant = field.label === 'Nombre Completo' || field.label === 'App Tienda' || field.label === 'Perfil'; 
                     const valueClass = isImportant ? 'text-lg font-bold text-blue-300' : 'text-base text-gray-100';
                     
+                    let valueHtml;
+
+                    if (field.sensitive) {
+                        const maskedValue = '*****';
+                        // IDs únicos para manipulación
+                        const valueId = `value-${field.id}`; 
+                        const iconId = `icon-${field.id}`; 
+                        
+                        // Los eventos onmouseover/onmouseout están adjuntos al DIV padre para mantener el valor visible
+                        valueHtml = `
+                            <div 
+                                class="flex items-center space-x-2"
+                                onmouseover="toggleMaskedValue('${valueId}', '${displayValue}', true, '${iconId}')"
+                                onmouseout="toggleMaskedValue('${valueId}', '${displayValue}', false, '${iconId}')"
+                            >
+                                <span id="${valueId}" class="text-base text-gray-100">${maskedValue}</span>
+                                <span 
+                                    id="${iconId}"
+                                    class="cursor-pointer text-gray-400 hover:text-blue-400 transition-colors duration-150"
+                                    title="Mostrar valor"
+                                >
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </span>
+                            </div>
+                        `;
+                    } else {
+                        // Campo normal
+                        valueHtml = `<span class="${valueClass}">${displayValue}</span>`;
+                    }
+
                     return `
                         <div class="flex flex-col border-b border-gray-600/50 pb-1 pt-1">
                             <span class="text-xs font-semibold uppercase text-gray-400">${field.label}:</span>
-                            <span class="${valueClass}">${displayValue}</span>
+                            ${valueHtml}
                         </div>
                     `;
                 }).join('');
@@ -292,8 +346,7 @@
 
 
         /**
-         * Marca el botón activo en el footer (Necesario si esta fuera la página de destino).
-         * @param {string} sectionName - El nombre de la sección a activar.
+         * Marca el botón activo en el footer.
          */
         function setActiveFooterButton(sectionName) {
             document.querySelectorAll('#app-footer .footer-btn').forEach(btn => {
@@ -312,13 +365,9 @@
             // 1. Manejo especial para Perfil (muestra modal) - PRIORIDAD
             if (section === 'Perfil') {
                 
-                // Muestra el modal de perfil
                 showUserProfileModal();
-                
-                // Mantiene el botón 'Perfil' activo
                 setActiveFooterButton(section);
                 
-                // Asegura que el main content tenga contenido de fondo
                 if (mainContent) {
                     mainContent.innerHTML = `<div class="p-6 text-center mt-4 dark:bg-gray-800 rounded-xl shadow-lg">
                         <i data-lucide="user" class="w-8 h-8 mx-auto mb-3 text-blue-400"></i>
@@ -332,8 +381,8 @@
             }
             
             // 2. Redirección directa para las apps asociadas al proyecto
-            // Usamos closeModalOnly() aquí para cerrar el modal si estaba abierto, sin generar una redirección no deseada.
-            
+            // ... (el resto de la lógica de redirección se mantiene) ...
+
             if (section === 'Vacaciones') {
                 closeModalOnly(); 
                 setActiveFooterButton(section);
@@ -341,7 +390,6 @@
                 return; 
             }
 
-            // Nota: 'Agregar' no está en el footer, pero se incluye la lógica si se llama desde otro sitio.
             if (section === 'Agregar') {
                 closeModalOnly(); 
                 setActiveFooterButton(section);
@@ -392,9 +440,7 @@
             const footerButtons = document.querySelectorAll('.footer-btn');
             footerButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
-                    // Prevenir la acción si ya está activo (aunque loadContent lo manejará)
                     if (e.currentTarget.classList.contains('active') && e.currentTarget.getAttribute('data-section') === 'Perfil') {
-                        // Si ya está en 'Perfil' y presiona de nuevo, simplemente vuelve a mostrar el modal
                         showUserProfileModal();
                         return;
                     }
