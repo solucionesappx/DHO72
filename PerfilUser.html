@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación Móvil - Perfil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Configuración de Tailwind para usar el color de acento y la fuente Inter  */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        html {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Definición de colores base  */
+        :root {
+            --color-bg-dark: #1f2937;
+            --color-text-dark: #f3f4f6;
+            --color-primary-dark: #60a5fa;
+            --color-surface-dark: #374151;
+            /* Variable para compensar la altura del header (h-14 + p-2) */
+            --header-offset: 64px; 
+        }
+        
+        /* Estilos del cuerpo en modo oscuro */
+        .dark { background-color: var(--color-bg-dark); color: var(--color-text-dark); }
+        
+        #app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        header, footer {
+            width: 100%;
+            max-width: 500px; 
+            z-index: 50; 
+            transition: background-color 0.3s, color 0.3s;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Estilos específicos para header y footer en modo oscuro */
+        .dark header, .dark footer { 
+            background-color: var(--color-surface-dark); 
+            border-color: #4b5563; 
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-y: auto; 
+            padding-left: 1rem;
+            padding-right: 1rem;
+            transition: padding 0.3s ease-in-out;
+            padding-top: var(--header-offset); /* Para compensar la altura del header */
+            padding-bottom: 72px; /* Para compensar la altura del footer */
+        }
+        
+        .footer-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 4px;
+            font-size: 0.75rem;
+            line-height: 1;
+            transition: color 0.2s, background-color 0.2s;
+            border-radius: 0.5rem;
+            color: inherit;
+        }
+
+        .footer-btn.active { color: var(--color-primary-dark); }
+
+        /* --- ESTILOS DEL MODAL FIJO Y ALINEADO --- */
+        .modal-overlay {
+            /* Fija el modal sobre todo el viewport */
+            position: fixed; /* Usar fixed para que el modal no se mueva con el scroll */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente */
+            display: none; /* Oculto por defecto */
+            justify-content: center;
+            align-items: center;
+            z-index: 60; /* Más alto que header/footer */
+        }
+
+        /* Contenedor del modal */
+        #modal-content-wrapper {
+            position: absolute; 
+            top: var(--header-offset); /* Alineado debajo del header */
+            
+            /* Ajuste para que ocupe todo el ancho en móvil, o una posición fija en desktop */
+            width: 90%; 
+            max-width: 380px; /* Ancho máximo para que no sea demasiado grande */
+            
+            /* Ajuste para centrar correctamente si el fixed está en el body */
+            transform: none; 
+            margin: 0 auto;
+        }
+        
+        /* Estilo específico para el botón de cerrar modal del perfil */
+        .profile-close-btn {
+            position: absolute;
+            top: 1rem; /* 16px */
+            right: 1rem; /* 16px */
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="dark transition-colors duration-300">
+
+    <div id="app-container" class="shadow-xl">
+        
+        <header id="app-header" class="fixed top-0 w-full h-14 border-b border-gray-700 dark:border-gray-500 flex items-center justify-between px-4">
+         <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
+                Mi Aplicación Móvil DHO
+            </h1>
+            <div class="flex space-x-3">
+                
+                <!-- Botón de Cerrar Sesión con redirección a index.html -->
+                <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="window.location.href = 'index.html'">
+                    <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
+                </button>
+            </div>
+        </header>
+
+        <main id="main-content" class="flex flex-col space-y-4">
+            <!-- Contenido de la sección por defecto - Se mostrará vacío al iniciar 'Perfil' -->
+            <div id="placeholder-content" class="p-6 text-center mt-4 dark:bg-gray-800 rounded-xl shadow-lg">
+                <i data-lucide="user" class="w-8 h-8 mx-auto mb-3 text-blue-400"></i>
+                <h2 class="text-xl font-bold mb-2">Perfil del Usuario</h2>
+                <p class="text-sm text-gray-400">Tus datos se muestran en el modal de perfil.</p>
+            </div>
+        </main>
+
+        <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
+            
+            <button class="footer-btn" data-section="Inicio">
+                <i data-lucide="home" class="w-6 h-6"></i>
+                <span>Inicio</span>
+            </button>
+            
+            <button class="footer-btn" data-section="Vacaciones">
+                <i data-lucide="calendar-days" class="w-6 h-6"></i>
+                <span>Vacaciones</span>
+            </button>
+
+            <button class="footer-btn hidden" data-section="Agregar">
+                <i data-lucide="calendar-plus" class="w-6 h-6"></i>
+                <span>Agregar</span>
+            </button>
+            
+            <button class="footer-btn hidden" data-section="Editar">
+                <i data-lucide="edit" class="w-6 h-6"></i>
+                <span>Editar</span>
+            </button>
+            
+            <button class="footer-btn active" data-section="Perfil">
+                <i data-lucide="user" class="w-6 h-6"></i>
+                <span>Perfil</span>
+            </button>
+            
+            <button class="footer-btn" data-section="Configuración">
+                <i data-lucide="settings" class="w-6 h-6"></i>
+                <span>Config</span>
+            </button>
+        </footer>
+    </div>
+    
+    <!-- MODAL DE DETALLE DE PERFIL DE USUARIO -->
+    <div id="DetallePerfilModal" class="modal-overlay">
+        
+        <div id="modal-content-wrapper" class="mx-auto">
+            <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full transition-all duration-300 transform scale-100 dark:bg-gray-700 relative">
+                
+                <!-- Botón de Cerrar Modal (Posición Absoluta) -->
+                <button onclick="closePerfilModalAndRedirectToHome()" class="profile-close-btn text-red-400 hover:text-red-600 transition duration-150 p-1" title="Cerrar">
+                    <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-4 -mr-4"></i> 		
+                </button>
+               
+                <div class="flex justify-between items-center pb-1 border-b border-gray-600 mb-4 pr-10">
+                    <h3 class="text-xl font-bold text-blue-400" id="modal-title">Mi Perfil de Usuario</h3>
+                </div>
+                
+                <!-- Contenido Dinámico del Perfil -->
+                <div id="perfilBodyContent" class="grid grid-cols-1 gap-1 text-left text-sm max-h-96 overflow-y-auto pr-1">
+                    <p class="text-gray-400">Cargando datos del perfil...</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <!-- FIN MODAL DE DETALLE DE PERFIL DE USUARIO -->
+
+
+    <script>
+        lucide.createIcons();
+
+        // Mapeo de navegación (Actualizado para referencia) - Ya no se usa para navegación, pero se mantiene como referencia
+        const NAV_MAP = {
+            'Inicio': 'Inicio.html',
+            'Vacaciones': 'Vacaciones.html',
+            'Editar': 'Inicio.html', // Actualizado a 'EditarDat.html'
+            'Perfil': 'PerfilUsuario.html',
+            'Agregar': 'AgregarDat.html',
+            'Configuración': 'ConfigApp.html'
+        };
+        
+        // --- FUNCIONES DEL MODAL DE PERFIL ---
+
+        /**
+         * Oculta el modal de detalle del perfil sin forzar la navegación.
+         * Se usa para llamadas programáticas (e.g., al navegar a otra sección).
+         */
+        function closeModalOnly() {
+            const modal = document.getElementById('DetallePerfilModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        /**
+         * Oculta el modal de detalle del perfil y redirige inmediatamente a Inicio.html.
+         * Se usa cuando el usuario presiona el botón de cerrar ('X') en el modal.
+         */
+        function closePerfilModalAndRedirectToHome() {
+            closeModalOnly(); 
+            console.log("Modal de Perfil cerrado. Redireccionando inmediatamente a Inicio.html...");
+            window.location.href = 'Inicio.html';
+        }
+        
+        /**
+         * Muestra el modal de perfil con los datos cargados desde localStorage.
+         */
+        function showUserProfileModal() {
+            const modal = document.getElementById('DetallePerfilModal');
+            const body = document.getElementById('perfilBodyContent');
+            
+            if (!modal || !body) return;
+            
+            // 1. Obtener datos de localStorage
+            const usuarioTienda = localStorage.getItem('Usuario_Tienda');
+            const usuarioNombre = localStorage.getItem('Usuario_Nombre');
+            const usuarioPerfil = localStorage.getItem('Usuario_Perfil');
+            const usuarioIdx = localStorage.getItem('Usuario_Idx');
+            const usuarioPreguntaSeg = localStorage.getItem('Usuario_PreguntaSeg');
+            const usuarioRespuestaSeg = localStorage.getItem('Usuario_RespuestaSeg');
+            
+            // Mapeo de campos a mostrar
+            const profileFields = [
+                { label: 'Nombre Completo', value: usuarioNombre },
+                { label: 'App Tienda', value: usuarioTienda },
+                { label: 'Perfil', value: usuarioPerfil },
+                { label: 'Clave Especial Usuario (IDX)', value: usuarioIdx },
+                { label: 'Pregunta de Seguridad', value: usuarioPreguntaSeg },
+                { label: 'Respuesta de Seguridad', value: usuarioRespuestaSeg }
+            ];
+
+            // 2. Construir el contenido del modal
+            const contentHtml = profileFields
+                .map(field => {
+                    const displayValue = field.value || 'No definido';
+                    // Mantener la clase de importancia para Nombre y Perfil
+                    const isImportant = field.label === 'Nombre Completo' || field.label === 'App Tienda' || field.label === 'Perfil'; 
+                    const valueClass = isImportant ? 'text-lg font-bold text-blue-300' : 'text-base text-gray-100';
+                    
+                    return `
+                        <div class="flex flex-col border-b border-gray-600/50 pb-1 pt-1">
+                            <span class="text-xs font-semibold uppercase text-gray-400">${field.label}:</span>
+                            <span class="${valueClass}">${displayValue}</span>
+                        </div>
+                    `;
+                }).join('');
+
+            body.innerHTML = contentHtml;
+            
+            // 3. Abrir el modal
+            modal.style.display = 'flex'; // Usar 'flex' para centrar
+            lucide.createIcons(); // Recargar iconos
+            
+            console.log("Modal de Perfil de Usuario abierto.");
+        }
+
+
+        /**
+         * Marca el botón activo en el footer (Necesario si esta fuera la página de destino).
+         * @param {string} sectionName - El nombre de la sección a activar.
+         */
+        function setActiveFooterButton(sectionName) {
+            document.querySelectorAll('#app-footer .footer-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-section') === sectionName) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        // Función principal para cargar el contenido de la sección
+        function loadContent(section) {
+            console.log("Navegando a la sección:", section);
+            const mainContent = document.getElementById('main-content');
+            
+            // 1. Manejo especial para Perfil (muestra modal) - PRIORIDAD
+            if (section === 'Perfil') {
+                
+                // Muestra el modal de perfil
+                showUserProfileModal();
+                
+                // Mantiene el botón 'Perfil' activo
+                setActiveFooterButton(section);
+                
+                // Asegura que el main content tenga contenido de fondo
+                if (mainContent) {
+                    mainContent.innerHTML = `<div class="p-6 text-center mt-4 dark:bg-gray-800 rounded-xl shadow-lg">
+                        <i data-lucide="user" class="w-8 h-8 mx-auto mb-3 text-blue-400"></i>
+                        <h2 class="text-xl font-bold mb-2">Perfil del Usuario</h2>
+                        <p class="text-sm text-gray-400">Tus datos se muestran en el modal de perfil.</p>
+                    </div>`;
+                    lucide.createIcons();
+                }
+                
+                return;
+            }
+            
+            // 2. Redirección directa para las apps asociadas al proyecto
+            // Usamos closeModalOnly() aquí para cerrar el modal si estaba abierto, sin generar una redirección no deseada.
+            
+            if (section === 'Vacaciones') {
+                closeModalOnly(); 
+                setActiveFooterButton(section);
+                window.location.href = 'Vacaciones.html';
+                return; 
+            }
+
+            // Nota: 'Agregar' no está en el footer, pero se incluye la lógica si se llama desde otro sitio.
+            if (section === 'Agregar') {
+                closeModalOnly(); 
+                setActiveFooterButton(section);
+                window.location.href = 'AgregarDat.html';
+                return;
+            }
+            
+            if (section === 'Editar') {
+                closeModalOnly(); 
+                setActiveFooterButton(section);
+                window.location.href = 'Editar.html';
+                return;
+            }
+        
+            if (section === 'Inicio') {
+                closeModalOnly(); 
+                setActiveFooterButton(section);
+                window.location.href = 'Inicio.html';
+                return;
+            }
+        
+            if (section === 'Configuración') {
+                closeModalOnly(); 
+                setActiveFooterButton(section);
+                window.location.href = 'ConfigApp.html';
+                return;
+            }
+            
+            // 3. Fallback para secciones desconocidas
+            console.error(`Redirección desconocida para la sección: ${section}`);
+        }
+
+        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const usuarioNombre = localStorage.getItem('Usuario_Nombre');
+            
+            // Extraer el primer nombre y actualizar el saludo
+            let primerNombre = '';
+            if (usuarioNombre) {
+                primerNombre = usuarioNombre.trim().split(' ')[0];
+                const headerTitle = document.querySelector('header h1');
+                if (headerTitle) {
+                    headerTitle.textContent = `¡Hola, ${primerNombre}!`;
+                }
+            }
+
+            // Agregar event listeners a los botones del footer
+            const footerButtons = document.querySelectorAll('.footer-btn');
+            footerButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    // Prevenir la acción si ya está activo (aunque loadContent lo manejará)
+                    if (e.currentTarget.classList.contains('active') && e.currentTarget.getAttribute('data-section') === 'Perfil') {
+                        // Si ya está en 'Perfil' y presiona de nuevo, simplemente vuelve a mostrar el modal
+                        showUserProfileModal();
+                        return;
+                    }
+                    const section = e.currentTarget.getAttribute('data-section');
+                    loadContent(section);
+                });
+            });            
+            
+            // Cargar el contenido de 'Perfil' al inicio (lo que dispara el modal)
+            loadContent('Perfil'); 
+        });
+        
+    </script>
+</body>
+</html>
