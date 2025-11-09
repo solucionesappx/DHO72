@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -320,14 +321,14 @@
     <div id="generate-password-modal" class="modal">
         <div class="modal-content">
             <button id="close-generate-password-modal-btn" class="modal-close-btn">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-center" style="color: var(--text-color);">Nueva Contraseña (5 caracteres)</h2>
+            <h2 class="text-xl font-bold mb-4 text-center" style="color: var(--text-color);">Nueva Contraseña (4 caracteres)</h2>
             
             <!-- Formulario para ingreso manual -->
             <form id="manualPasswordForm" autocomplete="off">
                 <div class="mb-4">
                     <div class="input-icon-container">
                         <i class="fa-solid fa-key input-icon"></i>
-                        <input type="text" id="manualPasswordInput" maxlength="5" placeholder="Ingresa 5 caracteres" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
+                        <input type="text" id="manualPasswordInput" maxlength="5" placeholder="Ingresa 4 carácteres alfanumérico" class="w-full pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-color-1 form-input" required autocomplete="off">
                     </div>
                 </div>
                 <button type="submit" id="confirm-manual-btn" class="w-full py-2 rounded-lg font-semibold form-button">
@@ -579,6 +580,7 @@
                         body: new URLSearchParams(requestData)
                     });
                     const result = await response.json();
+                    console.log('Respuesta completa del Backend (Login):', result);
 
                 if (result.success) {
                 // Guarda los datos del usuario en localStorage
@@ -590,7 +592,7 @@
                             localStorage.setItem('Usuario_PreguntaSeg', result.userData.Usuario_PreguntaSeg);
                             localStorage.setItem('Usuario_RepuestaSeg', result.userData.Usuario_RepuestaSeg);
                             localStorage.setItem('Usuario_Primer_Nombre', result.userData.Usuario_Primer_Nombre);
-                            console.log('Datos enviados localStorage: ',userData);
+                            console.log('Datos listos para guardar en localStorage:', result.userData);
                         }
                             loginForm.reset();
                             // Redireccionamiento directo a Inicio.html al cerrar el modal de éxito
