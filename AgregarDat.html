@@ -1008,6 +1008,29 @@
                 }
             });
         }
+
+        /**
+        * Limpia todas las claves de caché de datos de la aplicación antes de cerrar sesión.
+        * Incluye las claves de BD_Personal2 y Vacaciones2, y limpia cualquier dato de usuario.
+        */
+        function logoutAndClearCache() {
+            // Definir las claves que deben ser eliminadas
+            const cacheKeys = [
+                'employeeDataCache_BD_Personal2', // Caché de BD_Personal2
+                'vacaciones2DataCache',           // Caché de Vacaciones2
+                'Usuario_Nombre',                 // Opcional: limpiar datos de sesión como el nombre
+                // Agrega aquí cualquier otra clave de localStorage que desees limpiar
+            ];
+
+            // Limpiar cada clave
+            cacheKeys.forEach(key => {
+                localStorage.removeItem(key);
+                console.log(`Caché limpia: ${key}`);
+            });
+
+            // Redirigir al usuario a la página de inicio (index.html)
+            window.location.href = 'index.html';
+        }
         
         function loadContent(section) {
             const mainContent = document.getElementById('main-content');
