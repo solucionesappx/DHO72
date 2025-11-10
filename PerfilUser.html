@@ -133,15 +133,6 @@
             </div>
         </header>
 
-        <main id="main-content" class="flex flex-col space-y-4">
-            <!-- Contenido de la sección por defecto - Se mostrará vacío al iniciar 'Perfil' -->
-            <div id="placeholder-content" class="p-6 text-center mt-4 dark:bg-gray-800 rounded-xl shadow-lg">
-                <i data-lucide="user" class="w-8 h-8 mx-auto mb-3 text-blue-400"></i>
-                <h2 class="text-xl font-bold mb-2">Perfil del Usuario</h2>
-                <p class="text-sm text-gray-400">Tus datos se muestran en el modal de perfil.</p>
-            </div>
-        </main>
-
         <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
             
             <button class="footer-btn" data-section="Inicio">
@@ -177,120 +168,407 @@
     </div>
     
     <!-- MODAL DE DETALLE DE PERFIL DE USUARIO -->
-    <div id="DetallePerfilModal" class="modal-overlay">
-        
-        <div id="modal-content-wrapper" class="mx-auto">
-            <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full transition-all duration-300 transform scale-100 dark:bg-gray-700 relative">
+    <div id="DetallePerfilModal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm items-center justify-center hidden z-40 transition-opacity duration-300">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm mx-4">
+            
+        <div id="perfilModalHeader" class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
+            
+            <div class="flex items-center">
+                <h3 class="text-xl font-bold text-blue-400" id="modal-title">Mi Perfil de Usuario</h3>
                 
-                <!-- Botón de Cerrar Modal (Posición Absoluta) -->
-                <button onclick="closePerfilModalAndRedirectToHome()" class="profile-close-btn text-red-400 hover:text-red-600 transition duration-150 p-1" title="Cerrar">
-                    <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-4 -mr-4"></i> 		
+                <button 
+                    id="openEditProfileModalBtn" 
+                    class="text-yellow-600 hover:text-yellow-400/90 transition-colors duration-200 ml-3" 
+                    title="Editar Datos"
+                >
+                    <i data-lucide="pencil" class="w-6 h-6"></i>
                 </button>
-               
-                <div class="flex justify-between items-center pb-1 border-b border-gray-600 mb-4 pr-10">
-                    <h3 class="text-xl font-bold text-blue-400" id="modal-title">Mi Perfil de Usuario</h3>
-                </div>
-                
-                <!-- Contenido Dinámico del Perfil -->
-                <div id="perfilBodyContent" class="grid grid-cols-1 gap-1 text-left text-sm max-h-96 overflow-y-auto pr-1">
-                    <p class="text-gray-400">Cargando datos del perfil...</p>
-                </div>
             </div>
+            
+            <button id="closePerfilModalBtn" 
+                    onclick="closePerfilModalAndRedirectToHome()" 
+                    class="text-red-400 hover:text-red-600 self-start"> 
+                <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-4 -mr-4"></i>
+            </button> 
+            
         </div>
+            
+        <div id="perfilBodyContent">
+            </div>
         
+        </div>
     </div>
     <!-- FIN MODAL DE DETALLE DE PERFIL DE USUARIO -->
 
+    <!-- MODAL EDICIÓN DETALLE DE PERFIL DE USUARIO -->
+           
+    <div id="editProfileModal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm items-center justify-center hidden z-50 transition-opacity duration-300">
+        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm mx-4 transform transition-all duration-300 scale-100">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
+                <h3 class="text-xl font-bold text-white">Editar Perfil</h3>
+                <button id="closeEditProfileModalBtn" class="text-gray-400 hover:text-red-400">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div class="text-center mb-4">
+                <h4 id="editUserNameDisplay" class="text-lg font-semibold text-blue-400"></h4>
+                <p class="text-xs text-gray-400 mt-1">Los campos vacíos mantendrán su valor anterior.</p>
+            </div>
+        
+            <form id="editProfileForm">
+                <input type="hidden" id="Usuario_Correo_Actual" name="Usuario_Correo_Actual">
+
+                <div class="mb-2">
+                    <label for="Usuario_Correo" class="block text-sm font-medium text-gray-400">Correo Electrónico:</label>
+                    <input type="email" id="Usuario_Correo" name="Usuario_Correo"
+                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="mb-2">
+                    <label for="Usuario_Telefono" class="block text-sm font-medium text-gray-400">Teléfono:</label>
+                    <input type="tel" id="Usuario_Telefono" name="Usuario_Telefono"
+                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <div class="mb-2 hidden">
+                    <label for="Usuario_Clave" class="block text-sm font-medium text-gray-400">Clave (4 dígitos):</label>
+                    <input type="password" id="Usuario_Clave" name="Usuario_Clave" maxlength="4"
+                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="mb-2">
+                    <label for="Usuario_PreguntaSeg" class="block text-sm font-medium text-gray-400">Pregunta de Seguridad:</label>
+                    <input type="text" id="Usuario_PreguntaSeg" name="Usuario_PreguntaSeg"
+                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="mb-2">
+                    <label for="Usuario_RespuestaSeg" class="block text-sm font-medium text-gray-400">Respuesta de Seguridad:</label>
+                    <input type="text" id="Usuario_RespuestaSeg" name="Usuario_RespuestaSeg"
+                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-200 mt-4">
+                    Guardar Cambios
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- FIN MODAL EDICIÓN DETALLE DE PERFIL DE USUARIO -->
+
+    <div id="custom-alert-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black bg-opacity-75 transition-opacity duration-300">
+        <div class="w-full max-w-sm mx-auto bg-gray-800 rounded-lg shadow-2xl overflow-hidden transform transition-all duration-300 scale-100 opacity-100">
+            <div id="alert-title-container" class="bg-blue-900 px-4 py-3">
+                <h3 id="alert-title" class="text-lg font-semibold text-blue-300">Título de Alerta</h3>
+            </div>
+            
+            <div id="alert-message-container-wrapper" class="p-4 border-b border-gray-600 bg-gray-700">
+                <p id="alert-message" class="text-sm text-gray-200">Este es el cuerpo del mensaje.</p>
+            </div>
+            
+            <div id="alert-footer" class="px-4 py-3 flex justify-end">
+                <button id="alert-close-btn" 
+                        class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Inicializar iconos de Lucide
         lucide.createIcons();
 
-        // Mapeo de navegación (Actualizado para referencia)
+        // 1. Definición de la URL y la tienda
+        const GAS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz29nU5Ra_k_RZ9BpXUp5D6YAQx3cScf_WDVHjPcJo-gOYtUQ-leW7GU6qSOM85Mbq_/exec"; 
+        const appTienda = localStorage.getItem('Usuario_Tienda') || 'default';
+
+        // Mapa de navegación 
         const NAV_MAP = {
             'Inicio': 'Inicio.html',
             'Vacaciones': 'Vacaciones.html',
-            'Editar': 'EditarDat.html', 
+            'Editar': 'Editar.html', 
             'Perfil': 'PerfilUser.html',
             'Agregar': 'AgregarDat.html',
             'Configuración': 'ConfigApp.html'
         };
         
-        // --- FUNCIONES DEL MODAL DE PERFIL ---
+        // --- FUNCIONES DE ALERTA PERSONALIZADA ---
+
+        function showCustomAlert(title, message, isError = false, isDismissible = true, callback = null) {
+            const modal = document.getElementById('custom-alert-modal');
+            const titleEl = document.getElementById('alert-title');
+            const messageEl = document.getElementById('alert-message');
+            const alertFooter = document.getElementById('alert-footer');
+            const closeBtn = document.getElementById('alert-close-btn');
+
+            if (!modal || !titleEl || !messageEl || !alertFooter || !closeBtn) {
+                console.error("ERROR CRÍTICO: No se encontraron los elementos esenciales del modal de alerta.");
+                return; 
+            }
+            
+            const titleContainer = titleEl.parentElement; 
+            const messageContainerWrapper = document.getElementById('alert-message-container-wrapper');
+
+            // --- LÓGICA DE VISIBILIDAD DEL BOTÓN ---
+            if (isDismissible) {
+                alertFooter.style.display = 'block'; 
+                modal.classList.remove('pointer-events-none'); 
+                
+                closeBtn.onclick = () => {
+                    hideCustomAlert();
+                    if (callback) callback();
+                };
+                
+            } else {
+                alertFooter.style.display = 'none'; 
+                modal.classList.add('pointer-events-none'); 
+            }
+
+            // --- LÓGICA DE ESTILOS Y CONTENIDO ---
+            titleEl.textContent = title;
+            
+            if (isError) {
+                // Estilos para error (rojo)
+                titleContainer.classList.remove('bg-blue-900');
+                titleContainer.classList.add('bg-red-900');
+                titleEl.classList.remove('text-blue-300');
+                titleEl.classList.add('text-red-300');
+                closeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                closeBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                messageContainerWrapper.classList.remove('bg-gray-700', 'border-gray-600');
+                messageContainerWrapper.classList.add('bg-red-950', 'border-red-600');
+            } else {
+                // Estilos para éxito/información (azul)
+                titleContainer.classList.add('bg-blue-900');
+                titleContainer.classList.remove('bg-red-900');
+                titleEl.classList.add('text-blue-300');
+                titleEl.classList.remove('text-red-300');
+                closeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                closeBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                messageContainerWrapper.classList.add('bg-gray-700', 'border-gray-600');
+                messageContainerWrapper.classList.remove('bg-red-950', 'border-red-600');
+            }
+            
+            if (typeof message === 'object' && message !== null) {
+                messageEl.textContent = JSON.stringify(message, null, 2);
+                messageEl.style.fontSize = '0.75rem'; 
+            } else {
+                messageEl.textContent = String(message);
+                messageEl.style.fontSize = '0.9rem'; 
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        function hideCustomAlert() {
+            const modal = document.getElementById('custom-alert-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('pointer-events-none');
+                
+                const closeBtn = document.getElementById('alert-close-btn');
+                if(closeBtn) {
+                    closeBtn.onclick = () => {
+                        document.getElementById('custom-alert-modal').style.display = 'none';
+                    };
+                }
+            }
+        }
+
+        // --- FUNCIONES COMUNES Y AUXILIARES ---
+        
+        // Función simple de loader (se puede reemplazar por showCustomAlert con isDismissible=false)
+        function showLoader() { 
+            showCustomAlert("Cargando...", "Procesando la solicitud, por favor espere...", false, false);
+        }
+        function hideLoader() { 
+            hideCustomAlert();
+        }
+
+        function closeModalOnly() {
+            const perfilModal = document.getElementById('DetallePerfilModal');
+            const editModal = document.getElementById('editProfileModal');
+            if (perfilModal) perfilModal.style.display = 'none';
+            if (editModal) editModal.style.display = 'none';
+        }
+        
+        function closePerfilModalAndRedirectToHome() {
+            closeModalOnly(); 
+            console.log("Modal de Perfil cerrado. Redireccionando inmediatamente a Inicio.html...");
+            window.location.href = 'Inicio.html';
+        }
+
+        // --- FUNCIONES DE EDICIÓN DE PERFIL ---
 
         /**
-         * Alterna la visibilidad del valor en un campo sensible al pasar/dejar el cursor.
-         * Implementa la lógica de ocultar el icono cuando el valor es visible.
+         * Muestra el modal de edición del perfil. (Sin cambios)
          */
+        function showEditProfileModal() {
+            const modal = document.getElementById('editProfileModal');
+            if (!modal) return;
+            
+            // 1. Cargar datos desde localStorage
+            const nombre = localStorage.getItem('Usuario_Nombre') || '';
+            const correo = localStorage.getItem('Usuario_Correo') || '';
+            const telefono = localStorage.getItem('Usuario_Telefono') || '';
+            const pregunta = localStorage.getItem('Usuario_PreguntaSeg') || '';
+            const respuesta = localStorage.getItem('Usuario_RespuestaSeg') || '';
+            
+            // 2. Mostrar Nombre del Usuario
+            const userNameDisplay = document.getElementById('editUserNameDisplay');
+            if (userNameDisplay) {
+                userNameDisplay.textContent = nombre;
+            }
+
+            // 3. Rellenar el formulario
+            
+            // A. ASIGNACIÓN CRÍTICA: Correo actual para la búsqueda en el backend
+            const correoActualHiddenInput = document.getElementById('Usuario_Correo_Actual');
+            if (correoActualHiddenInput) {
+                correoActualHiddenInput.value = correo; 
+            }
+
+            // B. Establecer Placeholders (el campo Usuario_Clave se omitió en el HTML)
+
+            const correoInput = document.getElementById('Usuario_Correo');
+            if (correoInput) { correoInput.value = ''; correoInput.placeholder = correo; }
+
+            const telefonoInput = document.getElementById('Usuario_Telefono');
+            if (telefonoInput) { telefonoInput.value = ''; telefonoInput.placeholder = telefono; }
+
+            const preguntaInput = document.getElementById('Usuario_PreguntaSeg');
+            if (preguntaInput) { preguntaInput.value = ''; preguntaInput.placeholder = pregunta; }
+
+            const respuestaInput = document.getElementById('Usuario_RespuestaSeg');
+            if (respuestaInput) { respuestaInput.value = ''; respuestaInput.placeholder = respuesta; }
+
+            // 4. Mostrar el modal
+            closeModalOnly(); 
+            modal.style.display = 'flex';
+            
+            lucide.createIcons();
+        }
+
+        /**
+         * Maneja el envío del formulario de edición.
+         */
+        async function handleEditProfileSubmit(e) {
+            e.preventDefault();
+            showLoader(); // Muestra el modal de carga
+
+            const form = e.target;
+            
+            // 1. Obtener valores originales de localStorage para fallback
+            const originalCorreo = localStorage.getItem('Usuario_Correo') || '';
+            const originalTelefono = localStorage.getItem('Usuario_Telefono') || '';
+            const originalPregunta = localStorage.getItem('Usuario_PreguntaSeg') || '';
+            const originalRespuesta = localStorage.getItem('Usuario_RespuestaSeg') || '';
+            
+            // 2. Determinar los nuevos valores (usando el fallback si el campo está vacío)
+            const newEmail = form.Usuario_Correo.value || originalCorreo;
+            const newPhone = form.Usuario_Telefono.value || originalTelefono;
+            const newPreguntaSeg = form.Usuario_PreguntaSeg.value || originalPregunta;
+            const newRespuestaSeg = form.Usuario_RespuestaSeg.value || originalRespuesta;
+            
+            // 3. Crear el objeto de datos
+            const requestData = {
+                action: 'editProfile', 
+                Usuario_Tienda: appTienda,
+                Usuario_Correo_Actual: form.Usuario_Correo_Actual.value, 
+                
+                Usuario_Correo: newEmail,
+                Usuario_Telefono: newPhone,
+                Usuario_PreguntaSeg: newPreguntaSeg,
+                Usuario_RespuestaSeg: newRespuestaSeg,
+            };
+            
+            console.log('Datos de Edición enviados:', requestData);
+
+            try {
+                const response = await fetch(GAS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: new URLSearchParams(requestData),
+                });
+                const result = await response.json();
+                console.log('Respuesta del Backend (Edición):', result);
+
+                if (result.success) {
+                    // Actualizar localStorage
+                    if (result.userData) {
+                        localStorage.setItem('Usuario_Correo', result.userData.Usuario_Correo);
+                        localStorage.setItem('Usuario_Telefono', newPhone); 
+                        localStorage.setItem('Usuario_PreguntaSeg', result.userData.Usuario_PreguntaSeg);
+                        localStorage.setItem('Usuario_RespuestaSeg', result.userData.Usuario_RespuestaSeg);
+                    }
+
+                    document.getElementById('editProfileModal').style.display = 'none';
+                    
+                    // *** CAMBIO CRÍTICO AQUÍ: Redirigir a Inicio.html ***
+                    showCustomAlert("¡Actualización Exitosa! 🎉", "Su perfil ha sido actualizado correctamente. Será redirigido al inicio.", false, true, () => {
+                        loadContent('Inicio'); // Llama a la función de navegación para ir a Inicio.html
+                    });
+                    
+                } else {
+                    // Usar showCustomAlert para el error del backend
+                    showCustomAlert("Error al Actualizar", result.message || "Error al actualizar el perfil. Por favor, intente de nuevo más tarde.", true, true);
+                }
+            } catch (error) {
+                // Usar showCustomAlert para el error de red o fetch
+                console.error("Error de red/Fetch:", error);
+                showCustomAlert("Error de Conexión", "Ocurrió un error al intentar comunicarse con el servidor. Verifique su conexión o contacte al administrador.", true, true);
+            } finally {
+                hideLoader(); // Oculta el modal de carga
+            }
+        }
+
+
+        // --- FUNCIONES DE VISUALIZACIÓN DEL PERFIL (Sin Cambios) ---
+
         function toggleMaskedValue(valueId, actualValue, show, iconId) {
             const valueElement = document.getElementById(valueId);
             const iconElement = document.getElementById(iconId); 
             
             if (valueElement) {
                 if (show) {
-                    // 1. Mostrar el valor real.
                     valueElement.textContent = actualValue;
-                    // 2. Ocultar el icono cuando el valor es visible.
-                    if (iconElement) {
-                        iconElement.style.display = 'none';
-                    }
+                    if (iconElement) { iconElement.style.display = 'none'; }
                 } else {
-                    // 1. Ocultar el valor (volver a *****)
                     valueElement.textContent = '*****';
-                    // 2. Mostrar el icono (restaura el display por defecto).
-                    if (iconElement) {
-                        iconElement.style.display = ''; 
-                    }
+                    if (iconElement) { iconElement.style.display = ''; }
                 }
             }
         }
 
-        /**
-         * Oculta el modal de detalle del perfil sin forzar la navegación.
-         */
-        function closeModalOnly() {
-            const modal = document.getElementById('DetallePerfilModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-        
-        /**
-         * Oculta el modal de detalle del perfil y redirige inmediatamente a Inicio.html.
-         */
-        function closePerfilModalAndRedirectToHome() {
-            closeModalOnly(); 
-            console.log("Modal de Perfil cerrado. Redireccionando inmediatamente a Inicio.html...");
-            window.location.href = 'Inicio.html';
-        }
-        
-        /**
-         * Muestra el modal de perfil con los datos cargados desde localStorage.
-         */
         function showUserProfileModal() {
             const modal = document.getElementById('DetallePerfilModal');
             const body = document.getElementById('perfilBodyContent');
+            const header = document.getElementById('perfilModalHeader'); 
             
-            if (!modal || !body) return;
+            if (!modal || !body || !header) return;
             
-            // 1. Obtener datos de localStorage
             const usuarioTienda = localStorage.getItem('Usuario_Tienda');
             const usuarioNombre = localStorage.getItem('Usuario_Nombre');
             const usuarioPerfil = localStorage.getItem('Usuario_Perfil');
             const usuarioIdx = localStorage.getItem('Usuario_Idx');
             const usuarioPreguntaSeg = localStorage.getItem('Usuario_PreguntaSeg');
             const usuarioRespuestaSeg = localStorage.getItem('Usuario_RespuestaSeg');
-            console.log('Valor recuperado para Usuario_RespuestaSeg:', usuarioRespuestaSeg);
+            const usuarioCorreo = localStorage.getItem('Usuario_Correo');
+            const usuarioTelefono = localStorage.getItem('Usuario_Telefono');
             
-            // Mapeo de campos a mostrar y marcado de campos sensibles
             const profileFields = [
                 { label: 'Nombre Completo', value: usuarioNombre, sensitive: false, id: 'Nombre' },
                 { label: 'App Tienda', value: usuarioTienda, sensitive: false, id: 'Tienda' },
                 { label: 'Perfil', value: usuarioPerfil, sensitive: false, id: 'Perfil' },
+                { label: 'Correo Electrónico', value: usuarioCorreo, sensitive: false, id: 'Correo' },
+                { label: 'Teléfono', value: usuarioTelefono, sensitive: false, id: 'Telefono' },
                 { label: 'Clave Especial Usuario (IDX)', value: usuarioIdx, sensitive: true, id: 'Idx' }, 
                 { label: 'Pregunta de Seguridad', value: usuarioPreguntaSeg, sensitive: false, id: 'Pregunta' },
                 { label: 'Respuesta de Seguridad', value: usuarioRespuestaSeg, sensitive: true, id: 'Respuesta' } 
             ];
 
-            // 2. Construir el contenido del modal
             const contentHtml = profileFields
                 .map(field => {
                     const displayValue = field.value || 'No definido';
@@ -301,16 +579,14 @@
 
                     if (field.sensitive) {
                         const maskedValue = '*****';
-                        // IDs únicos para manipulación
                         const valueId = `value-${field.id}`; 
                         const iconId = `icon-${field.id}`; 
                         
-                        // Los eventos onmouseover/onmouseout están adjuntos al DIV padre para mantener el valor visible
                         valueHtml = `
                             <div 
                                 class="flex items-center space-x-2"
-                                onmouseover="toggleMaskedValue('${valueId}', '${displayValue}', true, '${iconId}')"
-                                onmouseout="toggleMaskedValue('${valueId}', '${displayValue}', false, '${iconId}')"
+                                onmouseover="toggleMaskedValue('${valueId}', '****', true, '${iconId}')"
+                                onmouseout="toggleMaskedValue('${valueId}', '****', false, '${iconId}')"
                             >
                                 <span id="${valueId}" class="text-base text-gray-100">${maskedValue}</span>
                                 <span 
@@ -323,7 +599,6 @@
                             </div>
                         `;
                     } else {
-                        // Campo normal
                         valueHtml = `<span class="${valueClass}">${displayValue}</span>`;
                     }
 
@@ -334,20 +609,17 @@
                         </div>
                     `;
                 }).join('');
-
-            body.innerHTML = contentHtml;
             
-            // 3. Abrir el modal
-            modal.style.display = 'flex'; // Usar 'flex' para centrar
-            lucide.createIcons(); // Recargar iconos
+            body.innerHTML = contentHtml;
+            modal.style.display = 'flex'; 
+            lucide.createIcons(); 
             
             console.log("Modal de Perfil de Usuario abierto.");
         }
 
 
-        /**
-         * Marca el botón activo en el footer.
-         */
+        // --- FUNCIONES DE NAVEGACIÓN (Sin Cambios) ---
+
         function setActiveFooterButton(sectionName) {
             document.querySelectorAll('#app-footer .footer-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -356,13 +628,11 @@
                 }
             });
         }
-        
-        // Función principal para cargar el contenido de la sección
+
         function loadContent(section) {
             console.log("Navegando a la sección:", section);
             const mainContent = document.getElementById('main-content');
             
-            // 1. Manejo especial para Perfil (muestra modal) - PRIORIDAD
             if (section === 'Perfil') {
                 
                 showUserProfileModal();
@@ -380,53 +650,21 @@
                 return;
             }
             
-            // 2. Redirección directa para las apps asociadas al proyecto
-            // ... (el resto de la lógica de redirección se mantiene) ...
-
-            if (section === 'Vacaciones') {
+            if (NAV_MAP[section]) {
                 closeModalOnly(); 
                 setActiveFooterButton(section);
-                window.location.href = 'Vacaciones.html';
-                return; 
-            }
-
-            if (section === 'Agregar') {
-                closeModalOnly(); 
-                setActiveFooterButton(section);
-                window.location.href = 'AgregarDat.html';
+                window.location.href = NAV_MAP[section];
                 return;
             }
             
-            if (section === 'Editar') {
-                closeModalOnly(); 
-                setActiveFooterButton(section);
-                window.location.href = 'Editar.html';
-                return;
-            }
-        
-            if (section === 'Inicio') {
-                closeModalOnly(); 
-                setActiveFooterButton(section);
-                window.location.href = 'Inicio.html';
-                return;
-            }
-        
-            if (section === 'Configuración') {
-                closeModalOnly(); 
-                setActiveFooterButton(section);
-                window.location.href = 'ConfigApp.html';
-                return;
-            }
-            
-            // 3. Fallback para secciones desconocidas
             console.error(`Redirección desconocida para la sección: ${section}`);
         }
 
-        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
+
+        // --- INICIALIZACIÓN DE LA APLICACIÓN (Sin Cambios) ---
         document.addEventListener('DOMContentLoaded', () => {
             const usuarioNombre = localStorage.getItem('Usuario_Nombre');
             
-            // Extraer el primer nombre y actualizar el saludo
             let primerNombre = '';
             if (usuarioNombre) {
                 primerNombre = usuarioNombre.trim().split(' ')[0];
@@ -436,7 +674,6 @@
                 }
             }
 
-            // Agregar event listeners a los botones del footer
             const footerButtons = document.querySelectorAll('.footer-btn');
             footerButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -449,7 +686,24 @@
                 });
             });            
             
-            // Cargar el contenido de 'Perfil' al inicio (lo que dispara el modal)
+            const openEditBtn = document.getElementById('openEditProfileModalBtn');
+            if (openEditBtn) {
+                openEditBtn.addEventListener('click', showEditProfileModal);
+            }
+            
+            const closeEditBtn = document.getElementById('closeEditProfileModalBtn');
+            if (closeEditBtn) {
+                closeEditBtn.addEventListener('click', () => {
+                    document.getElementById('editProfileModal').style.display = 'none';
+                    showUserProfileModal(); 
+                });
+            }
+            
+            const editForm = document.getElementById('editProfileForm');
+            if (editForm) {
+                editForm.addEventListener('submit', handleEditProfileSubmit);
+            }
+
             loadContent('Perfil'); 
         });
         
