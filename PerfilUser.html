@@ -6,6 +6,12 @@
     <title>Aplicación Móvil - Perfil</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    /* Control de Caché del Navegador  */
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <style>
         /* Configuración de Tailwind para usar el color de acento y la fuente Inter  */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -667,6 +673,7 @@
                 'Usuario_Telefono', 
                 'Usuario_PreguntaSeg', 
                 'Usuario_RespuestaSeg', 
+                'Usuario_Id',
                 'Usuario_Idx',
                 'Usuario_Tienda',
                 'Usuario_Perfil'
@@ -717,6 +724,19 @@
 
 
         // --- INICIALIZACIÓN DE LA APLICACIÓN (Sin Cambios) ---
+
+       document.addEventListener('DOMContentLoaded', function() {
+            const correo = localStorage.getItem('Usuario_Correo');
+            const id = localStorage.getItem('Usuario_Id');
+            
+            // Verifica si AMBAS claves están ausentes.
+            // La sesión no es válida si NO hay Correo AND NO hay Id.
+            if (!correo && !id) {
+                console.log("Redirigiendo a index.html");
+                window.location.replace('index.html'); 
+            }
+        });
+        
         document.addEventListener('DOMContentLoaded', () => {
             const usuarioNombre = localStorage.getItem('Usuario_Nombre');
             
