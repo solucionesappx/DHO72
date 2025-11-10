@@ -430,7 +430,7 @@
             const telefono = localStorage.getItem('Usuario_Telefono') || '';
             const pregunta = localStorage.getItem('Usuario_PreguntaSeg') || '';
             const respuesta = localStorage.getItem('Usuario_RespuestaSeg') || '';
-            
+          
             // 2. Mostrar Nombre del Usuario
             const userNameDisplay = document.getElementById('editUserNameDisplay');
             if (userNameDisplay) {
@@ -556,6 +556,9 @@
             }
         }
 
+        /**
+         * Muestra el modal de perfil de usuario con los campos enmascarados/desenmascarables.
+         */
         function showUserProfileModal() {
             const modal = document.getElementById('DetallePerfilModal');
             const body = document.getElementById('perfilBodyContent');
@@ -563,6 +566,7 @@
             
             if (!modal || !body || !header) return;
             
+            // Obtener datos de localStorage
             const usuarioTienda = localStorage.getItem('Usuario_Tienda');
             const usuarioNombre = localStorage.getItem('Usuario_Nombre');
             const usuarioPerfil = localStorage.getItem('Usuario_Perfil');
@@ -572,6 +576,7 @@
             const usuarioCorreo = localStorage.getItem('Usuario_Correo');
             const usuarioTelefono = localStorage.getItem('Usuario_Telefono');
             
+            // Definición de los campos del perfil
             const profileFields = [
                 { label: 'Nombre Completo', value: usuarioNombre, sensitive: false, id: 'Nombre' },
                 { label: 'App Tienda', value: usuarioTienda, sensitive: false, id: 'Tienda' },
@@ -592,6 +597,9 @@
                     let valueHtml;
 
                     if (field.sensitive) {
+                        // *** CORRECCIÓN CLAVE AQUÍ: ESCAPAR Y PASAR EL VALOR REAL (field.value) ***
+                        // Aseguramos que el valor no sea nulo y escapamos comillas simples para que no rompa el atributo HTML
+                        const escapedValue = (field.value || '').replace(/'/g, "\\'"); 
                         const maskedValue = '*****';
                         const valueId = `value-${field.id}`; 
                         const iconId = `icon-${field.id}`; 
@@ -599,8 +607,8 @@
                         valueHtml = `
                             <div 
                                 class="flex items-center space-x-2"
-                                onmouseover="toggleMaskedValue('${valueId}', '****', true, '${iconId}')"
-                                onmouseout="toggleMaskedValue('${valueId}', '****', false, '${iconId}')"
+                                onmouseover="toggleMaskedValue('${valueId}', '${escapedValue}', true, '${iconId}')"
+                                onmouseout="toggleMaskedValue('${valueId}', '${escapedValue}', false, '${iconId}')"
                             >
                                 <span id="${valueId}" class="text-base text-gray-100">${maskedValue}</span>
                                 <span 
@@ -630,7 +638,6 @@
             
             console.log("Modal de Perfil de Usuario abierto.");
         }
-
 
         // --- FUNCIONES DE NAVEGACIÓN (Sin Cambios) ---
 
