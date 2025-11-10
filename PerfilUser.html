@@ -114,6 +114,14 @@
             right: 1rem; /* 16px */
             z-index: 10;
         }
+
+        .modal-content {
+            /* ... otros estilos ... */
+            width: 100%;
+            max-width: 380px; /* Este es el valor que determina el ancho unificado */
+            /* ... */
+        }
+
     </style>
 </head>
 <body class="dark transition-colors duration-300">
@@ -171,91 +179,97 @@
     <div id="DetallePerfilModal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm items-center justify-center hidden z-40 transition-opacity duration-300">
         <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm mx-4">
             
-        <div id="perfilModalHeader" class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
-            
-            <div class="flex items-center">
-                <h3 class="text-xl font-bold text-blue-400" id="modal-title">Mi Perfil de Usuario</h3>
+            <div id="perfilModalHeader" class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
                 
-                <button 
-                    id="openEditProfileModalBtn" 
-                    class="text-yellow-600 hover:text-yellow-400/90 transition-colors duration-200 ml-3" 
-                    title="Editar Datos"
-                >
-                    <i data-lucide="pencil" class="w-6 h-6"></i>
-                </button>
+                <div class="flex items-center">
+                    <h3 class="text-xl font-bold text-blue-400" id="modal-title">Mi Perfil de Usuario</h3>
+                    
+                    <button 
+                        id="openEditProfileModalBtn" 
+                        class="text-yellow-600 hover:text-yellow-400/90 transition-colors duration-200 ml-3" 
+                        title="Editar Datos"
+                    >
+                        <i data-lucide="pencil" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <button id="closePerfilModalBtn" 
+                        onclick="closePerfilModalAndRedirectToHome()" 
+                        class="text-red-400 hover:text-red-600 self-start"> 
+                    <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-4 -mr-4"></i>
+                </button> 
+                
             </div>
             
-            <button id="closePerfilModalBtn" 
-                    onclick="closePerfilModalAndRedirectToHome()" 
-                    class="text-red-400 hover:text-red-600 self-start"> 
-                <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-4 -mr-4"></i>
-            </button> 
-            
-        </div>
-            
-        <div id="perfilBodyContent">
+            <div id="perfilBodyContent">
             </div>
         
         </div>
     </div>
     <!-- FIN MODAL DE DETALLE DE PERFIL DE USUARIO -->
 
-    <!-- MODAL EDICIÓN DETALLE DE PERFIL DE USUARIO -->
-           
-    <div id="editProfileModal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-sm items-center justify-center hidden z-50 transition-opacity duration-300">
-        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full max-w-sm mx-4 transform transition-all duration-300 scale-100">
-            <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
-                <h3 class="text-xl font-bold text-white">Editar Perfil</h3>
-                <button id="closeEditProfileModalBtn" class="text-gray-400 hover:text-red-400">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            
-            <div class="text-center mb-4">
-                <h4 id="editUserNameDisplay" class="text-lg font-semibold text-blue-400"></h4>
-                <p class="text-xs text-gray-400 mt-1">Los campos vacíos mantendrán su valor anterior.</p>
-            </div>
-        
-            <form id="editProfileForm">
-                <input type="hidden" id="Usuario_Correo_Actual" name="Usuario_Correo_Actual">
-
-                <div class="mb-2">
-                    <label for="Usuario_Correo" class="block text-sm font-medium text-gray-400">Correo Electrónico:</label>
-                    <input type="email" id="Usuario_Correo" name="Usuario_Correo"
-                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
-
-                <div class="mb-2">
-                    <label for="Usuario_Telefono" class="block text-sm font-medium text-gray-400">Teléfono:</label>
-                    <input type="tel" id="Usuario_Telefono" name="Usuario_Telefono"
-                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+    <!-- MODAL EDICIÓN DETALLE DE PERFIL DE USUARIO -->          
+    <div id="editProfileModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="bg-gray-800 p-6 rounded-xl shadow-2xl w-full flex-grow dark:bg-gray-800 relative">
+                
+                <div class="flex justify-between items-start pb-4 border-b border-gray-600 mb-4">
+                    <h2 class="text-2xl font-bold text-white">Editar Perfil</h2>
+                    <button id="closeEditProfileModalBtn" class="text-red-400 hover:text-red-600 transition-colors duration-200">
+                        <i data-lucide="x" class="w-6 h-6 icon-x relative -mt-5 -mr-5"></i> 
+                    </button>
                 </div>
                 
-                <div class="mb-2 hidden">
-                    <label for="Usuario_Clave" class="block text-sm font-medium text-gray-400">Clave (4 dígitos):</label>
-                    <input type="password" id="Usuario_Clave" name="Usuario_Clave" maxlength="4"
-                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
+                <h3 id="editUserNameDisplay" class="text-center text-lg font-bold text-blue-400 uppercase mb-2">
+                    </h3>
+                <p class="text-sm text-gray-400 text-center mb-6">
+                    Los campos que no sean modificados mantendrán el valor mostrado.
+                </p>
 
-                <div class="mb-2">
-                    <label for="Usuario_PreguntaSeg" class="block text-sm font-medium text-gray-400">Pregunta de Seguridad:</label>
-                    <input type="text" id="Usuario_PreguntaSeg" name="Usuario_PreguntaSeg"
-                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
+                <form id="editProfileForm" class="space-y-4">
+                    <input type="hidden" id="Usuario_Correo_Actual" name="Usuario_Correo_Actual">
 
-                <div class="mb-2">
-                    <label for="Usuario_RespuestaSeg" class="block text-sm font-medium text-gray-400">Respuesta de Seguridad:</label>
-                    <input type="text" id="Usuario_RespuestaSeg" name="Usuario_RespuestaSeg"
-                        class="mt-0 block w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                </div>
+                    <div>
+                        <label for="Usuario_Correo" class="block text-sm font-medium text-gray-300">Correo Electrónico:</label>
+                        <input type="email" id="Usuario_Correo" name="Usuario_Correo" 
+                            class="mt-1 block w-full px-4 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500" 
+                            placeholder="Correo actual"
+                            title="Dejar vacío para mantener el valor actual.">
+                    </div>
 
-                <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors duration-200 mt-4">
-                    Guardar Cambios
-                </button>
-            </form>
+                    <div>
+                        <label for="Usuario_Telefono" class="block text-sm font-medium text-gray-300">Teléfono:</label>
+                        <input type="text" id="Usuario_Telefono" name="Usuario_Telefono" 
+                            class="mt-1 block w-full px-4 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500" 
+                            placeholder="Teléfono actual"
+                            title="Dejar vacío para mantener el valor actual.">
+                    </div>
+                    
+                    <div>
+                        <label for="Usuario_PreguntaSeg" class="block text-sm font-medium text-gray-300">Pregunta de Seguridad:</label>
+                        <input type="text" id="Usuario_PreguntaSeg" name="Usuario_PreguntaSeg" 
+                            class="mt-1 block w-full px-4 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500" 
+                            placeholder="Pregunta actual"
+                            title="Dejar vacío para mantener el valor actual.">
+                    </div>
+
+                    <div>
+                        <label for="Usuario_RespuestaSeg" class="block text-sm font-medium text-gray-300">Respuesta de Seguridad:</label>
+                        <input type="text" id="Usuario_RespuestaSeg" name="Usuario_RespuestaSeg" 
+                            class="mt-1 block w-full px-4 py-1 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500" 
+                            placeholder="Respuesta actual"
+                            title="Dejar vacío para mantener el valor actual.">
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-
     <!-- FIN MODAL EDICIÓN DETALLE DE PERFIL DE USUARIO -->
 
     <div id="custom-alert-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black bg-opacity-75 transition-opacity duration-300">
