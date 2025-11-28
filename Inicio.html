@@ -430,8 +430,8 @@
                 Mi Aplicación Móvil ZXC
             </h1>
             <div class="flex space-x-3">
-                <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="logoutAndClearCache()">
-                    <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
+                <button class="p-2 rounded-full hover:bg-gray-500 opacity-80 transition-opacity" onclick="logoutAndClearCache()">
+                    <i data-lucide="log-out" class="w-6 h-6 text-red-500 transition duration-150"></i>
                 </button>
             </div>
         </header>
@@ -450,31 +450,34 @@
                     
                     <!-- Contenedor de métricas -->
                     <div class="flex justify-between space-x-2 p-1">
-                        <!-- Tarjeta de Métrica: Total Empleados - USANDO LA CLASE REUTILIZABLE -->
-                        <div id="metric-total-records" class="metric-card dark:bg-gray-700"> 
+                        <div id="metric-total-records" class="metric-card dark:bg-gray-700 flex-1"> 
                             <i data-lucide="users" class="w-6 h-6 text-green-500 flex-shrink-0"></i> 
                             <div class="flex flex-col"> 
                                 <span class="text-xl font-extrabold text-green-500 leading-none block" data-metric="total">0</span> 
-                                <span class="text-xs dark:text-gray-300 whitespace-nowrap leading-none block">Total Empleados</span> 
+                                <span class="text-xs dark:text-gray-300 leading-none block max-w-16">
+                                    Total Empleados
+                                </span> 
                             </div> 
                         </div> 
-                        <!-- Tarjeta de Métrica: Dados de Baja - USANDO LA CLASE REUTILIZABLE -->
-                        <div class="metric-card dark:bg-gray-700"> 
+                        <div class="metric-card dark:bg-gray-700 flex-1"> 
                             <i data-lucide="user-minus" class="w-6 h-6 text-red-500 flex-shrink-0"></i> 
                             <div class="flex flex-col"> 
                                 <span class="text-xl font-extrabold text-red-500 leading-none block" data-metric="perfil_dados_baja">0</span> 
-                                <span class="text-xs dark:text-gray-300 whitespace-nowrap leading-none block">Dados de Baja</span> 
+                                <span class="text-xs dark:text-gray-300 leading-none block max-w-16">
+                                    Dados de Baja
+                                </span> 
                             </div> 
                         </div> 
-                        <!-- Tarjeta de Métrica: Notas/Alertas - USANDO LA CLASE REUTILIZABLE -->
-                        <div class="metric-card dark:bg-gray-700"> 
+                        <div class="metric-card dark:bg-gray-700 flex-1"> 
                             <i data-lucide="alert-triangle" class="w-6 h-6 text-yellow-500 flex-shrink-0"></i> 
                             <div class="flex flex-col"> 
                                 <span class="text-xl font-extrabold text-yellow-500 leading-none block" data-metric="ctrl1_warning">0</span> 
-                                <span class="text-xs dark:text-gray-300 whitespace-nowrap leading-none block">Notas/Alertas</span> 
+                                <span class="text-xs dark:text-gray-300 leading-none block max-w-16">
+                                    Notas/Alertas
+                                </span> 
                             </div> 
                         </div> 
-                    </div> 
+                    </div>
                 </div>
                 <!-- FIN DEL CONTENEDOR METRICAS BD_PERSONAL -->
                 
@@ -488,7 +491,7 @@
                                         autocomplete="off">
                         <i data-lucide="search" class="search-icon w-5 h-5 text-gray-500 dark:text-gray-300"></i>
                     </div>
-                    <button id="clear-search-btn" class="p-2.5 rounded-full hover:bg-gray-700 shadow-md transition-colors duration-200 text-red-500 dark:text-red-400 font-bold" title="Reiniciar Filtros y Ordenación">
+                    <button id="clear-search-btn" class="p-2.5 rounded-full text-red-500 hover:bg-gray-700 transition duration-150" title="Reiniciar Filtros y Ordenación">
                         <i data-lucide="x-circle" class="w-8 h-8"></i>
                     </button>
                     <button id="reload-icon" class="p-2 rounded-full text-blue-400 hover:bg-gray-700 transition duration-150" title="Recargar Datos (Omitir Caché)">
@@ -501,7 +504,7 @@
                     <!-- CONTENEDOR DEL TÍTULO DE LA TABLA Y BOTÓN DE AGREGAR -->
                     <div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-2">
                         <h3 class="text-lg font-semibold">Base de Datos de Empleados</h3>
-                        <button id="add-employee-btn" class="p-2 rounded-full text-green-400 transition duration-150 shadow-md" title="Agregar Nuevo Empleado" onclick="openNewEmployeeModal()">
+                        <button id="add-employee-btn" class="p-2 rounded-full text-green-400 hover:bg-gray-700 transition duration-150" title="Agregar Nuevo Empleado" onclick="openNewEmployeeModal()">
                             <i data-lucide="user-plus" class="w-6 h-6"></i>
                         </button>
                     </div>
@@ -515,28 +518,28 @@
 
         <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
             <button class="footer-btn active" data-section="Inicio">
-                <i data-lucide="home" class="w-6 h-6"></i>
+                <i data-lucide="home" class="w-6 h-6"></i> 
                 <span>Inicio</span>
             </button>
-            <button class="footer-btn" data-section="Vacaciones">
-                <i data-lucide="calendar-days" class="w-6 h-6"></i> 
+            <button id="nav-vacaciones" class="footer-btn transition-opacity duration-300" data-section="Vacaciones">
+                <i data-lucide="calendar-days" class="w-6 h-6 text-gray-400"></i> 
                 <span>Vacaciones</span>
             </button>
             <button class="footer-btn hidden" data-section="Agregar">
-                <i data-lucide="calendar-plus" class="w-6 h-6"></i>
+                <i data-lucide="calendar-plus" class="w-6 h-6 text-gray-200"></i> 
                 <span>Agregar</span>
             </button>
             <button class="footer-btn" data-section="Perfil">
-                <i data-lucide="user" class="w-6 h-6"></i>
+                <i data-lucide="user" class="w-6 h-6 text-gray-200"></i> 
                 <span>Perfil</span>
             </button>
             <button class="footer-btn" data-section="Configuración">
-                <i data-lucide="settings" class="w-6 h-6"></i>
+                <i data-lucide="settings" class="w-6 h-6 text-gray-200"></i> 
                 <span>Config</span>
             </button>
         </footer>
     </div>
-    
+   
     <!-- ========================================================== -->
     <!-- --- MODAL DE DETALLES DEL TRABAJADOR (VISTA Y EDICIÓN) --- -->
     <!-- ========================================================== -->
@@ -554,8 +557,6 @@
                            rounded-full 
                            text-red-400 
                            hover:text-red-600
-                           shadow-red-500/50 
-                           hover:shadow-[0_0_15px_4px_rgba(239,68,68,0.7)] 
                            hover:scale-120
                            transition-all duration-300 flex-shrink-0">
                 <i data-lucide="x" class="w-6 h-6"></i>
@@ -585,14 +586,22 @@
                     </button>
                     
                     <!-- Botones MODO EDICIÓN (Nuevos Íconos Guardar/Cancelar) -->
-                    <!-- GUARDAR (Save) -->
-                    <button id="save-icon-button" class="p-1 rounded-full transition-colors duration-200 hidden"
+                    <!-- DADO DE BAJA (Fired) -->
+                    <button id="fired-icon-button" 
+                            class="p-1 rounded-full transition-colors duration-200 hidden" 
+                            title="Dar de Baja">
+                        <i data-lucide="user-minus" class="w-6 h-6 text-red-700 hover:text-red-500"></i>
+                    </button> 
+                    <!-- GUARDAR (Save) -->                    
+                    <button id="save-icon-button" 
+                            class="p-1 rounded-full transition-colors duration-200 hidden"
                             title="Guardar Cambios" 
                             onclick="saveEmployeeDetails()">
                         <i data-lucide="save" class="w-6 h-6 text-green-500 hover:text-green-700"></i>
                     </button>
                     <!-- CANCELAR (Undo-2) - El ícono UNDO-2 fue solicitado en la interacción anterior -->
-                    <button id="cancel-icon-button" class="p-1 rounded-full transition-colors duration-200 hidden"
+                    <button id="cancel-icon-button" 
+                            class="p-1 rounded-full transition-colors duration-200 hidden"
                             title="Cancelar Edición" 
                             onclick="cancelEditMode()">
                         <i data-lucide="undo-2" class="w-6 h-6 text-red-500 hover:text-red-700"></i>
@@ -606,6 +615,25 @@
             </div>
         </div>
     </div>
+
+    <div id="custom-confirm-modal" 
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6 space-y-4">
+            <p id="custom-confirm-message" class="text-white text-lg font-semibold"></p>
+            
+            <div class="flex justify-end space-x-3">
+                <button id="custom-confirm-cancel-btn" 
+                        class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition duration-150">
+                    Cancelar
+                </button>
+                <button id="custom-confirm-accept-btn" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-150">
+                    Aceptar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ========================================================== -->
     
     <script>
@@ -945,6 +973,7 @@
             const modalTitle = document.getElementById('modal-title');
             const editButton = document.getElementById('edit-button');
             const vacationButton = document.getElementById('vacation-detail-btn');
+            const firedButton = document.getElementById('fired-icon-button'); // Obtenido correctamente
             const saveButton = document.getElementById('save-icon-button'); 
             const cancelButton = document.getElementById('cancel-icon-button'); 
             
@@ -966,6 +995,7 @@
                 vacationButton.classList.add('hidden'); 
                 
                 // Mostrar botones de Edición
+                firedButton.classList.remove('hidden'); // ¡Mostrar Dar de Baja!
                 saveButton.classList.remove('hidden'); 
                 cancelButton.classList.remove('hidden'); 
                 
@@ -986,6 +1016,7 @@
                 // Ocultar botones de Edición
                 saveButton.classList.add('hidden'); 
                 cancelButton.classList.add('hidden'); 
+                firedButton.classList.add('hidden'); // <--- ¡NUEVA LÍNEA CLAVE! Ocultar Dar de Baja
             }
             lucide.createIcons();
         }
@@ -1146,12 +1177,16 @@
          * Cancela el modo de edición y vuelve al modo de vista.
          */
         function cancelEditMode() {
+            // NOTA: Con la corrección en toggleEditMode, esta función ya no necesita
+            // preocuparse por el firedButton, ya que toggleEditMode(false) lo oculta.
             const isNewRecord = currentSelectedEmployee === null;
+            
             if (isNewRecord) {
                 // Si es nuevo, cerrar el modal completamente
                 closeDetailsModal();
             } else {
-                // Revertir al modo de vista con los datos originales
+                // Revertir al modo de vista con los datos originales.
+                // Esto llama a toggleEditMode(false) que ahora oculta firedButton.
                 toggleEditMode(false); 
             }
         }
@@ -1850,6 +1885,96 @@
             }
         }
 
+        // ==========================================================
+        // --- LÓGICA DE CONFIRMACIÓN PERSONALIZADA ---
+        // ==========================================================
+
+        function closeCustomConfirm() {
+            const modal = document.getElementById('custom-confirm-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Muestra un modal personalizado de confirmación con callback.
+         * @param {object} options - Opciones que incluyen message, type, y onConfirm.
+         */
+        function showCustomConfirm(options) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const messageElement = document.getElementById('custom-confirm-message');
+            let acceptButton = document.getElementById('custom-confirm-accept-btn');
+            let cancelButton = document.getElementById('custom-confirm-cancel-btn');
+            
+            if (!modal || !acceptButton || !cancelButton) {
+                console.error("Error: Modal de confirmación o sus botones no encontrados en el DOM.");
+                return;
+            }
+
+            // 1. Mostrar el mensaje
+            messageElement.textContent = options.message || "¿Desea continuar?";
+            
+            // 2. Limpiar listeners anteriores de forma segura (Clonar y Reemplazar)
+            // Esto es vital cuando se reutiliza un modal y se cambian los callbacks.
+            const newAccept = acceptButton.cloneNode(true);
+            acceptButton.parentNode.replaceChild(newAccept, acceptButton);
+            acceptButton = newAccept;
+            
+            const newCancel = cancelButton.cloneNode(true);
+            cancelButton.parentNode.replaceChild(newCancel, cancelButton);
+            cancelButton = newCancel;
+            
+            // 3. Asignar el nuevo listener de Aceptar (Callback)
+            acceptButton.onclick = () => {
+                closeCustomConfirm();
+                if (options.onConfirm) {
+                    options.onConfirm();
+                }
+            };
+            
+            // 4. Asignar el listener de Cancelar
+            cancelButton.onclick = () => {
+                closeCustomConfirm();
+            };
+
+            // 5. Mostrar el modal
+            modal.classList.remove('hidden');
+        }
+
+        /**
+         * Ejecuta la acción de dar de baja: actualiza el campo Perfil y guarda.
+         */
+        function handleFiredWorker() {
+            // 1. Pedir confirmación usando la nueva alerta personalizada
+            // Esta función debe mostrar el modal con dos botones (Aceptar/Cancelar)
+            showCustomConfirm({
+                message: "¿Está seguro que desea dar de baja a este trabajador?",
+                type: 'warning',
+                onConfirm: () => {
+                    // LÓGICA DE CALLBACK QUE SE EJECUTA SOLO SI EL USUARIO ACEPTA**
+                    const dynamicPerfilInput = document.getElementById('edit-perfil'); 
+                    
+                    if (!dynamicPerfilInput) {
+                        // Opcional: mostrar una alerta personalizada de error si el campo no existe
+                        showCustomAlert("Error interno: El campo Perfil no está visible.", 'error');
+                        return;
+                    }
+
+                    // 2. Establecer el valor 'DADO DE BAJA'
+                    dynamicPerfilInput.value = 'DADO DE BAJA';
+                    
+                    // 3. Deshabilitar el campo
+                    dynamicPerfilInput.setAttribute('disabled', 'true'); 
+
+                    // 4. Ejecutar la función de guardado
+                    if (typeof saveEmployeeDetails === 'function') {
+                        saveEmployeeDetails(); 
+                    } else {
+                        console.error("Función saveEmployeeDetails no encontrada.");
+                    }
+                }
+            });
+        }
 
         /**
          * Recopila, valida y prepara los datos del formulario para su envío a GAS.
@@ -2048,6 +2173,58 @@
             console.error(`ERROR: Sección no mapeada para navegación: ${section}`);
         }
 
+        // ==========================================================
+        // --- LÓGICA DE CONTROL DE ACCESO A SECCIÓN VACACIONES ---
+        // ==========================================================
+        /**
+        * Verifica si existe una CEDULA en localStorage. Si no existe, 
+        * deshabilita visual y funcionalmente el botón de Vacaciones.
+        */
+        function disableVacacionesIfNoCedula() {
+            // 1. Obtener el valor de CEDULA de localStorage
+            const cedula = localStorage.getItem('CEDULA');
+            // 2. Obtener la referencia al botón
+            const navVacacionesBtn = document.getElementById('nav-vacaciones');
+
+            if (!navVacacionesBtn) {
+                return; 
+            }
+
+            if (!cedula) {
+                // No hay CEDULA: Aplicar clases de deshabilitado
+                
+                // opacity-50: Efecto opaco ("hover opaco" estático para indicar inactividad)
+                // cursor-not-allowed: Cambia el puntero/cursor a "prohibido"
+                // pointer-events-none: Anula completamente los eventos de click y hover,
+                //                     asegurando que no se active la navegación o el foco.
+                navVacacionesBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                
+            } else {
+                // Si existe CEDULA, asegurar que esté habilitado (si se deshabilitó antes)
+                navVacacionesBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+            }
+        }
+
+        // Aseguramos que esta función se ejecute al iniciar la aplicación (dentro de DOMContentLoaded)
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... [Tu código existente] ...
+            
+            // ... [Bloque de 'footerButtons' que ya tienes] ...
+            const footerButtons = document.querySelectorAll('.footer-btn');
+            footerButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const section = button.getAttribute('data-section');
+                    loadContent(section);          
+                });
+            });
+        
+            // Ejecutar la lógica de control de acceso DESPUÉS de definir todos los elementos
+            disableVacacionesIfNoCedula(); 
+
+            // Volver a inicializar los íconos al cargar
+            lucide.createIcons();
+        });
+
         /**
          * Limpia todas las claves de caché de datos de la aplicación antes de cerrar sesión.
          * Incluye las claves de BD_Personal2 y Vacaciones2, y limpia cualquier dato de usuario.
@@ -2092,12 +2269,20 @@
             const reloadBtn = document.getElementById('reload-icon');
             const detailsModal = document.getElementById('details-employee-modal');
 
+            const firedBtn = document.getElementById('fired-icon-button');
             const saveBtn = document.getElementById('save-icon-button'); 
             const cancelBtn = document.getElementById('cancel-icon-button'); 
+
+            if (firedBtn) {
+                firedBtn.addEventListener('click', () => {
+                    handleFiredWorker();
+                });
+            }
 
             if (saveBtn) {
                 saveBtn.addEventListener('click', saveEmployeeDetails); 
             }
+
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', cancelEditMode);
             }
