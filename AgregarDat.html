@@ -353,12 +353,12 @@
                 <div class="p-5 bg-gray-900 rounded-xl shadow-lg border border-gray-700">
                     
                     <h2 class="text-xl font-bold text-yellow-300 mb-4 pb-2 flex items-center" id="form-title-wrapper"> 
-                        <span id="form-title-text">Detalles de Solicitud</span>
+                        <span id="form-title-text">Detalles de Registro</span>
                         <button type="button" 
                                 onclick="toggleVacationLock()" 
                                 class="ml-2 p-1 rounded-full text-gray-400 hover:bg-gray-700 transition duration-150 hidden" 
                                 id="vacacion-condicion-button" 
-                                title="Bloquear/Desbloquear Solicitud">
+                                title="Bloquear/Desbloquear Registro">
                             <i data-lucide="lock-open" class="w-6 h-6" id="vacacion-condicion-icon"></i>
                         </button>
                     </h2>
@@ -597,7 +597,7 @@
 
             if (buttonTextEl) buttonTextEl.textContent = 'Actualizar Registro';
             if (formTitleTextEl) {
-                formTitleTextEl.textContent = 'Actualizar Solicitud';
+                formTitleTextEl.textContent = 'Actualizar Registro';
                 formTitleTextEl.classList.remove('text-yellow-300');
                 formTitleTextEl.classList.add('text-blue-400');
             }
@@ -1141,7 +1141,7 @@
 
                     if (buttonTextEl) buttonTextEl.textContent = 'Guardar Registro';
                     if (formTitleTextEl) {
-                        formTitleTextEl.textContent = 'Detalles de Solicitud';
+                        formTitleTextEl.textContent = 'Detalles de Registro';
                         formTitleTextEl.classList.remove('text-blue-400');
                         formTitleTextEl.classList.add('text-yellow-300');
                     }
