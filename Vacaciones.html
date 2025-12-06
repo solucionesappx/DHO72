@@ -30,8 +30,8 @@
             --color-primary-dark: #60a5fa;
             --color-surface-light: #ffffff;
             --color-surface-dark: #374151;
-            /* NUEVA VARIABLE: Color de hover verde para la fila */
-            --color-row-hover: #15803d; /* Verde oscuro (ej. Emerald 700) */
+            /* NUEVA VARIABLE: Color de hover gris para la fila */
+            --color-row-hover: #4b5563; 
         }
         
         /* Estilos del cuerpo en modo oscuro */
@@ -166,7 +166,7 @@
         .header-content {
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* Alinea a la izquierda */
+            justify-content: center; /* Alinea al centro */
             padding: 0.25rem 0.5rem; /* Vuelve a aplicar el padding que tenía el TH */
             height: 100%; 
             min-height: 2.5rem; 
@@ -198,8 +198,8 @@
 
         /* Aplica el color de fondo para el TD fijo también al hacer scroll */
         .data-table td.fixed-column {
-            /* AJUSTE: Color de fondo para TD fijo */
-            background-color: var(--color-surface-dark); /* Fondo del TD normal en modo oscuro */
+            /* AJUSTE: Color de fondo para TD fijo (ID) */
+            background-color: #4b5563; /* Fondo del TD normal en modo oscuro */
         }
 
         
@@ -231,7 +231,7 @@
         /* --- ESTILOS DEL MODAL --- */
         .modal-overlay {
             position: fixed;
-            top: 60px;
+            top: 20px;
             left: 0;
             width: 100%;
             height: 100%;
@@ -337,14 +337,14 @@
                         
                         <!-- Botones de Limpiar y Recargar -->
                         <button id="clear-search-btn" 
-                                class="p-2.5 rounded-full light:bg-white hover:bg-gray-700 shadow-md transition-colors duration-150 text-red-500 dark:text-red-400 font-bold" 
+                                class="p-2.5 rounded-full light:bg-white hover:bg-gray-700 transition-colors duration-150 text-red-500 dark:text-red-400 font-bold" 
                                 title="Reiniciar Filtros"
                                 onclick="clearSearchFilter()"> 
                             <i data-lucide="x-circle" class="w-7 h-7"></i> 
                         </button>
                         <!-- BOTÓN DE RECARGA: Llama a loadVacacionesData(true) para FORZAR la recarga, omitiendo el caché -->
                         <button id="reload-btn" 
-                                class="p-2.5 rounded-full text-blue-400 hover:bg-gray-700 shadow-md transition duration-150"  
+                                class="p-2.5 rounded-full text-blue-400 hover:bg-gray-700 transition duration-150"  
                                 title="Forzar Recarga de Datos (Omitir Caché)"
                                 onclick="initVacacionesView(true)">
                             <i data-lucide="refresh-cw" class="w-6 h-6" id="reload-icon"></i>
@@ -374,7 +374,7 @@
                                 <i data-lucide="x" class="w-6 h-6"></i>
                             </button>
                             
-                            <div class="flex items-center pb-3 mb-4">
+                            <div class="flex items-center pb-3">
                                 
                                 <div class="flex items-center space-x-2">
                                     <h3 class="text-xl font-bold text-yellow-400">Detalle de Vacaciones</h3>
@@ -407,22 +407,28 @@
                     </div>
 
                     <!-- Campos de Detalle del Registro (ACTUALIZADO CON DIA_INI y DIA_FIN) -->
-                    <div class="grid grid-cols-2 gap-x-4 gap-y-3 p-4 bg-gray-700 rounded-lg text-sm">
+                    <div class="grid grid-cols-2 gap-x-4 gap-y-1 p-3 bg-gray-700 rounded-lg">
                         
+                        <!-- 0. Vacación ID -->
+                        <div class="col-span-2 flex flex-col">
+                            <span class="text-xs font-medium uppercase text-gray-400">Registro ID</span>
+                            <span id="detail-vacacion_id" class="text-base font-semibold text-white">N/A</span>
+                        </div>
+
                         <!-- 1. Período -->
                         <div class="col-span-2 flex flex-col">
                             <span class="text-xs font-medium uppercase text-gray-400">Período</span>
                             <span id="detail-periodo" class="text-base font-semibold text-white">N/A</span>
-                        </div>
+                        </div>                        
                         
                         <!-- 2. Concepto -->
-                        <div class="col-span-2 flex flex-col mb-2">
+                        <div class="col-span-2 flex flex-col mb-1">
                             <span class="text-xs font-medium uppercase text-gray-400">Concepto</span>
                             <span id="detail-concepto" class="text-base font-semibold text-white">N/A</span>
                         </div>
 
                         <!-- 3. DÍA INICIO -->
-                        <div class="flex flex-col border-r border-gray-600 pr-4">
+                        <div class="flex flex-col border-r border-gray-600">
                             <span class="text-xs font-medium uppercase text-gray-400">Día de Inicio</span>
                             <span id="detail-dia-ini" class="text-base font-semibold text-white">N/A</span>
                         </div>
@@ -434,16 +440,45 @@
                         </div>
                         
                         <!-- 5. Días -->
-                        <div class="flex flex-col border-r border-gray-600 pr-4 mt-3 pt-3 border-t border-gray-600">
+                        <div class="flex flex-col border-r border-gray-600 pr-4 mt-1 pt-2 border-t border-gray-600">
                             <span class="text-xs font-medium uppercase text-gray-400">Días Vacaciones</span>
                             <!-- Este es un span, no un input, pero mantiene la consistencia -->
                             <span id="detail-dias" class="text-base font-semibold text-white">0</span>
                         </div>
                         
                         <!-- 6. Bono -->
-                        <div class="flex flex-col mt-3 pt-3 border-t border-gray-600">
+                        <div class="flex flex-col border-t border-gray-600 pr-4 mt-1 pt-2 ">
                             <span class="text-xs font-medium uppercase text-gray-400">Bono Vacacional</span>
                             <span id="detail-bono" class="text-base font-semibold text-green-400">0</span>
+                        </div>
+
+                        <!-- 7. Observaciones -->
+                        <div class="col-span-2 flex flex-col pt-2 border-t border-gray-600">
+                            <span class="text-xs font-medium uppercase text-gray-400">Observaciones</span>
+                            <span id="detail-observaciones" class="text-base font-semibold text-white whitespace-pre-wrap">N/A</span>
+                        </div>
+
+                        <!-- 8. Auditoria -->
+                        <div class="col-span-2 pt-2 border-t border-gray-600">
+                            
+                            <div class="grid grid-cols-3 gap-x-2 gap-y-1">
+                                
+                                <div class="flex flex-col">
+                                    <span style="font-size: 0.6rem;" class="font-medium uppercase text-gray-400">Tipo Registro</span>
+                                    <span id="detail-Vacacion_Condicion" class="text-xs font-semibold text-blue-400 whitespace-pre-wrap">N/A</span>
+                                </div>
+
+                                <div class="flex flex-col">
+                                    <span style="font-size: 0.6rem;" class="font-medium uppercase text-gray-400">Registrado por</span>
+                                    <span id="detail-RegistroUser" class="text-xs font-semibold text-blue-400 whitespace-pre-wrap">N/A</span>
+                                </div>
+
+                                <div class="flex flex-col">
+                                    <span style="font-size: 0.6rem;" class="font-medium uppercase text-gray-400">Fecha Registro</span>
+                                    <span id="detail-RegistroDate" class="text-xs font-semibold text-blue-400 whitespace-pre-wrap">N/A</span>
+                                </div>
+                                
+                            </div>
                         </div>
                 
                     </div>                  
@@ -493,7 +528,8 @@
 
         // --- LÓGICA DE CARGA DE DATOS DEL EMPLEADO (LOCALSTORAGE/MOCK) ---
         const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit';
-        const REGISTER_TRANSFER_KEY = 'registerInfoToEdit';  
+        const REGISTER_TRANSFER_KEY = 'registerInfoToEdit'; 
+        const EMPLOYEE_DATA_KEY = 'selectedEmployeeData'; 
 
         /**
          * Carga la información del empleado desde localStorage (si existe y es válida) 
@@ -541,23 +577,53 @@
         // Variables de estado para el modal de detalle
         let currentRecordIndex = -1; // Índice del registro actual en filteredEmployeeData
 
-
         // 2. Definición de las columnas de la tabla 'Vacaciones2'
         const TABLE_COLUMNS = [
-            'NOMBRE_EMPLEADO', 'INGRESO', 'PERIODO', 'DESCRIPCION_CONCEPTO', 
-            'DIA_INICIO', 'DIA_FINAL', 'DIAS_VACACIONES', 'BONO_VACACIONAL', 
-            'VACACION_CONDICION', 'RegistroUser', 'RegistroDate', 'CEDULA', 
-            'NOMBRES', 'APELLIDOS', 'EMPRESA'
+            'NOMBRE_EMPLEADO', 
+            'INGRESO',
+            'VACACIONES_ID', 
+            'PERIODO', 
+            'DESCRIPCION_CONCEPTO',
+            'DIA_INICIO', 
+            'DIA_FINAL', 
+            'DIF', 
+            'DIAS_VAC2', 
+            'DIAS_VACACIONES', 
+            'BONO_VACACIONAL', 
+            'VACACION_CONDICION', 
+            'RegistroUser', 
+            'RegistroDate', 
+            'CEDULA', 
+            'NOMBRES', 
+            'APELLIDOS', 
+            'EMPRESA', 
+            'OBSERVACIONES'
         ];
+
+        // --- NUEVA VARIABLE GLOBAL DE MAPEO ---
+        const COLUMN_HEADERS_MAP = {
+            'VACACIONES_ID': 'REGISTRO ID',
+            'PERIODO': 'PERIODO',
+            'DESCRIPCION_CONCEPTO': 'DESCRIPCIÓN/CONCEPTO',
+            'DIA_INICIO': 'DESDE',
+            'DIA_FINAL': 'HASTA',
+            'DIF': 'DIFERENCIA',
+            'DIAS_VAC2': 'DIAS VAC2',
+            'DIAS_VACACIONES': 'DIAS VAC',
+            'BONO_VACACIONAL': 'BONO VAC',
+            'VACACION_CONDICION': 'TIPO REGISTRO',
+            'OBSERVACIONES': 'OBSERVACIONES'
+        };
 
         // Global State for Sorting and Data
         let originalVacacionesData = []; // Datos crudos sin filtrar
         // Almacena los detalles fijos del empleado (Nombre, Ingreso, etc.) una vez cargados
-        let employeeFixedDetails = null; 
+        // let employeeFixedDetails = null; 
         let currentSortColumn = null; // Columna activa para el ordenamiento
         let sortOrder = 'asc'; // 'asc' o 'desc'
         let searchFilter = ''; // Estado del filtro de búsqueda
         let filterMode = 'all'; // 'all' (Periodo o Concepto) o 'period' (Solo Periodo)
+        let employeeFixedDetails = {}; // Almacena los detalles fijos del empleado
         
         // ESTADO GLOBAL DEL MODAL: Almacena los datos actualmente filtrados y *ordenados*
         let currentFilteredData = [];   
@@ -633,8 +699,6 @@
             }
         }
 
-
-
         // --- FUNCIONES DE LÓGICA DE NEGOCIO (TARJETA Y TOTALES) ---
         
         /**
@@ -670,6 +734,188 @@
             return formattedName;
         }
 
+        /**
+         * Divide y formatea el nombre y apellido completo en dos líneas para la tarjeta.
+         * Línea 1: Primer Nombre + Inicial del Segundo Nombre
+         * Línea 2: Primer Apellido + Inicial del Segundo Apellido
+         * @param {string} nombres - Cadena con todos los nombres.
+         * @param {string} apellidos - Cadena con todos los apellidos.
+         * @returns {object} Un objeto con las dos líneas formateadas (line1, line2).
+         */
+        function getTwoLineName(nombres, apellidos) {
+            if (!nombres || !apellidos) {
+                return { line1: 'NOMBRE NO', line2: 'DISPONIBLE' };
+            }
+
+            // Convertir a mayúsculas
+            const names = String(nombres).trim().toUpperCase().split(/\s+/).filter(Boolean);
+            const surnames = String(apellidos).trim().toUpperCase().split(/\s+/).filter(Boolean);
+
+            // 1. LÍNEA 1: Primer Nombre + Inicial del Segundo Nombre
+            const firstName = names[0] || '';
+            const middleInitial = names.length > 1 ? names[1].charAt(0) + '.' : ''; 
+            const line1 = `${firstName} ${middleInitial}`.trim();
+
+            // 2. LÍNEA 2: Primer Apellido + Inicial del Segundo Apellido
+            const firstSurname = surnames[0] || '';
+            const lastInitial = surnames.length > 1 ? surnames[1].charAt(0) + '.' : ''; 
+            const line2 = `${firstSurname} ${lastInitial}`.trim();
+
+            // Manejo de caso extremo si todo es vacío
+            if (!line1 && !line2) {
+                return { line1: 'EMPLEADO', line2: 'SIN NOMBRE' };
+            }
+
+            return { line1, line2 };
+        }
+
+        /**
+         * Filtra los datos de vacaciones, excluyendo los registros de ajuste o recalculo.
+         * @param {Array<Object>} data - Los datos brutos de vacaciones.
+         * @returns {Array<Object>} Los datos filtrados, listos para la tabla y los cálculos.
+         */
+        function filterVacationRecords(data) {
+            if (!Array.isArray(data)) return [];
+            
+            return data.filter(row => {
+                // Excluir cualquier fila que contenga 'REGISTRO RECALCULADO' en OBSERVACIONES
+                const observaciones = row['OBSERVACIONES'] || '';
+                return !observaciones.includes('ELIMINADO');
+            });
+        }
+
+        /**
+         * Renderiza la parte superior de la tarjeta del empleado (datos estáticos) 
+         * inmediatamente desde el objeto employeeFixedDetails.
+         */
+        function renderStaticEmployeeDetails(details) {
+            const container = document.getElementById('employee-card-container');
+            
+            if (!container) return; 
+
+            if (!details || !details.cedula) {
+                // Mensaje si no hay datos del empleado en localStorage
+                container.innerHTML = `
+                    <div class="employee-card p-4 rounded-xl shadow-lg border border-red-700">
+                        <p class="text-center text-yellow-400 font-semibold">Seleccione un trabajador desde Inicio para ver su historial.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Desestructurar y formatear los datos (asumiendo que formatNumberWithDots y formatDate existen)
+            const { nombreFormateado, empresa, cedula, fechaIngreso } = details;
+
+            // HTML EXTRAÍDO (parte superior de la tarjeta hasta la línea separadora)
+            const staticHTML = `
+                <div class="employee-card p-4 rounded-xl shadow-xl transition duration-300">
+                    <div class="grid grid-cols-2 gap-1">
+                        <div class="pb-3">
+                            <div class="flex items-center space-x-2 flex-grow min-w-0"> 
+                                <i data-lucide="circle-user-round" class="w-6 h-6 text-blue-300 flex-shrink-0"></i>
+                                <p class="text-[17px] font-extrabold text-gray-100 leading-snug break-words max-w-full">
+                                    ${nombreFormateado.toUpperCase()}
+                                </p>
+                            </div>
+                            
+                            <div class="flex items-center text-sm text-gray-400 space-x-2">
+                                <i data-lucide="factory" class="w-6 h-6 text-gray-400 flex-shrink-0"></i>
+                                <span class="whitespace-normal">${empresa}</span>
+                            </div>
+                        </div>
+
+                        <div class="pb-3">
+                            <div class="text-right">
+                                <div class="flex flex-col items-end">
+                                    <span class="text-sm text-white font-semibold">Cédula: ${formatNumberWithDots(cedula)}</span>
+                                    <span class="text-sm text-white font-semibold">Ingreso: ${formatDate(fechaIngreso)}</span>
+                                </div>
+                            </div> 
+                        </div> 
+                    </div>                     
+                    
+                    <div class="flex flex-row items-center justify-center p-1 rounded-xl border border-gray-600 bg-gray-600/80 hover:bg-gray-500 transition-colors cursor-pointer"
+                        title="Otro Trabajador" 
+                        onclick="window.location.href = 'Inicio.html'"> 
+                        <i data-lucide="user-search" class="w-6 h-6 text-blue-400 flex-shrink-0"></i>
+                        <span class="text-xm text-gray-300 ml-2">Buscar otro Empleado</span>
+                    </div> 
+
+                    <div class="border-b border-gray-600 mt-2 mb-2"></div>
+
+                    <div id="vacation-totals-placeholder">
+                        <p class="text-center text-gray-400 py-4">Calculando saldos de vacaciones...</p>
+                    </div>
+                    
+                </div>`;
+
+            container.innerHTML = staticHTML;
+            lucide.createIcons();
+        }
+
+        /**
+         * Renderiza la parte inferior de la tarjeta (los totales de vacaciones calculados)
+         * en el placeholder creado por renderStaticEmployeeDetails.
+         */
+        function renderVacationTotals(totals) { 
+            const placeholder = document.getElementById('vacation-totals-placeholder');
+            
+            if (!placeholder) return; 
+
+            // Mensaje en caso de error o data vacía
+            if (!totals || Object.keys(totals).length === 0) {
+                placeholder.innerHTML = `
+                    <p class="text-center text-red-400 font-semibold py-4">No se pudieron calcular los totales de vacaciones.</p>
+                `;
+                return;
+            }
+            
+            const { totalDays } = totals;
+            
+            // Define las clases dinámicas para la tarjeta Total 
+            const totalCardClasses = totalDays >= 0 
+                ? 'bg-gray-600/80 border-gray-500 hover:bg-gray-600/80' 
+                : 'bg-red-700/80 border-red-500 hover:bg-red-700/80'; 
+
+            // HTML de los TOTALES
+            const totalsHTML = `
+                <div class="grid grid-cols-4 gap-3">
+                    
+                    <div class="flex flex-col items-center justify-center p-2 rounded-xl border border-gray-600 bg-gray-600/80 hover:bg-gray-500 transition-colors cursor-pointer"
+                        title="Añadir Nuevo Registro" onclick="loadContent('Agregar')"> 
+                        <i data-lucide="calendar-plus" class="w-6 h-6 text-yellow-400 flex-shrink-0"></i>
+                        <span class="text-xs text-gray-300 mt-1">Agregar</span>
+                    </div>
+
+                    <div id="assigned-card" class="p-1.5 rounded-xl shadow-lg flex flex-col items-center justify-center border border-gray-600 bg-gray-700/50">
+                        <div class="flex items-center">
+                            <i data-lucide="calendar-arrow-up" class="w-5 h-5 text-green-400 mr-1"></i>
+                            <span id="assigned-value" class="text-xl font-extrabold text-green-400 leading-none">${formatNumberWithDots(totals.diasAsignados)}</span>
+                        </div>
+                        <span class="text-xs text-gray-300 whitespace-nowrap mt-0.5">Asignados</span>
+                    </div>
+                
+                    <div id="consumed-card" class="p-1.5 rounded-xl shadow-lg flex flex-col items-center justify-center border border-gray-600 bg-gray-700/50">
+                        <div class="flex items-center">
+                            <i data-lucide="calendar-arrow-down" class="w-5 h-5 text-red-400 mr-1"></i>
+                            <span id="consumed-value" class="text-xl font-extrabold text-red-400 leading-none">${formatNumberWithDots(Math.abs(totals.diasConsumidos))}</span>
+                        </div>
+                        <span class="text-xs text-gray-300 whitespace-nowrap mt-0.5">Consumidos</span>
+                    </div>
+                
+                    <div id="total-card" class="${totalCardClasses} p-1.5 rounded-xl shadow-lg flex flex-col items-center justify-center border-2 transition-colors duration-300">
+                        <div class="flex items-center">
+                            <i data-lucide="calendar-check-2" class="w-5 h-5 text-white mr-1"></i>
+                            <span id="total-value" class="text-xl font-extrabold text-white leading-none">${formatNumberWithDots(totalDays)}</span>
+                        </div>
+                        <span class="text-xs text-white-300 whitespace-nowrap mt-0.5">Saldo Neto</span>
+                    </div> 
+                </div>
+            `;
+
+            placeholder.innerHTML = totalsHTML;
+            lucide.createIcons();
+        }
 
         /**
          * Calcula los totales de días asignados, consumidos y el saldo neto, 
@@ -700,7 +946,6 @@
                 totalDays: totalDays
             };
         }
-
 
         /**
          * Renderiza la estructura de la tarjeta con los detalles fijos del empleado.
@@ -884,7 +1129,7 @@
         /**
          * Carga los datos de un registro en el modal y lo muestra.
          * También almacena el registro completo en localStorage para una posible edición/vista detallada.
-         * @param {number} index - El índice (0-based) del registro dentro de `currentFilteredData` (que ahora está ordenado).
+         * @param {number} index - El índice (0-based) del registro dentro de `currentFilteredData`.
          */
         function openVacationModal(index) {
             // Clave de localStorage para el registro seleccionado
@@ -904,7 +1149,7 @@
             // 2. Obtener los datos del registro (Ahora usa el índice correcto de la lista ORDENADA)
             const record = currentFilteredData[currentRecordIndex];
             
-            // 🛑 NUEVA LÓGICA: Guardar el registro completo en localStorage
+            // Guardar el registro completo en localStorage
             try {
                 localStorage.setItem(REGISTER_TRANSFER_KEY, JSON.stringify(record));
                 console.log("✅ Registro completo guardado en localStorage:", REGISTER_TRANSFER_KEY);
@@ -914,8 +1159,15 @@
             }
             
             // 3. Rellenar los campos del modal
+            document.getElementById('detail-vacacion_id').textContent = record['VACACIONES_ID'] || 'N/A';
             document.getElementById('detail-periodo').textContent = record['PERIODO'] || 'N/A';
             document.getElementById('detail-concepto').textContent = record['DESCRIPCION_CONCEPTO'] || 'N/A';
+            
+            document.getElementById('detail-observaciones').textContent = record['OBSERVACIONES'] || 'Sin observaciones'; 
+            document.getElementById('detail-Vacacion_Condicion').textContent = record['VACACION_CONDICION'] || 'Sin Información'; 
+            document.getElementById('detail-RegistroUser').textContent = record['RegistroUser'] || 'Sin Información'; 
+            document.getElementById('detail-RegistroDate').textContent = formatDateTime(record['RegistroDate']); 
+
             document.getElementById('detail-dia-ini').textContent = formatDate(record['DIA_INICIO']);
             document.getElementById('detail-dia-fin').textContent = formatDate(record['DIA_FINAL']);
             
@@ -1003,9 +1255,14 @@
                     // MODO 1: Solo filtrar por Periodo
                     return periodo.includes(searchTerm);
                 } else {
-                    // MODO 2: Filtrar por Periodo O Concepto (default)
+                    // MODO 2: Filtrar por Periodo O Concepto O OBSERVACIONES (default)
                     const concepto = String(row['DESCRIPCION_CONCEPTO'] || '').toLowerCase();
-                    return periodo.includes(searchTerm) || concepto.includes(searchTerm);
+                    // 🛑 AÑADIR OBSERVACIONES AL CRITERIO DE BÚSQUEDA
+                    const observaciones = String(row['OBSERVACIONES'] || '').toLowerCase();
+
+                    return periodo.includes(searchTerm) || 
+                        concepto.includes(searchTerm) || 
+                        observaciones.includes(searchTerm); // 🛑 Nuevo criterio de búsqueda
                 }
             });
 
@@ -1021,25 +1278,28 @@
                     sortOrder = 'asc';
                 }
             } else if (!currentSortColumn) {
-                 currentSortColumn = null;
-                 sortOrder = 'asc';
+                currentSortColumn = null;
+                sortOrder = 'asc';
             }
-
 
             // 4. Ordenar los datos (Modifica dataToSort in-place)
             dataToSort.sort((a, b) => {
-                // Ordenamiento por defecto (si no hay una columna activa)
+                // Ordenamiento por defecto (si no hay una columna activa, se aplica el nuevo orden)
                 if (!currentSortColumn || currentSortColumn === 'CEDULA' || !key) {
-                    let comparison = compareValues(a.CEDULA, b.CEDULA, 'asc', true);
+                    let comparison;
+                    
+                    // 1. Criterio Prioritario: VACACIONES_ID (Descendente - ¡Debe ser Numérico!)
+                    // Usamos 'desc' y 'true' para ordenar IDs como números de mayor a menor.
+                    comparison = compareValues(a.VACACIONES_ID, b.VACACIONES_ID, 'desc', true); 
                     if (comparison !== 0) return comparison;
 
-                    comparison = compareValues(a.PERIODO, b.PERIODO, 'desc', false);
-                    if (comparison !== 0) return comparison;
-
-                    comparison = compareValues(a.DESCRIPCION_CONCEPTO, b.DESCRIPCION_CONCEPTO, 'asc', false);
+                    // 2. Criterio Secundario: RegistroDate (Ascendente - No es Numérico)
+                    // Usamos 'asc' y 'false' para ordenar las fechas como cadenas de texto de forma ascendente.
+                    comparison = compareValues(a.RegistroDate, b.RegistroDate, 'asc', false);
+                    
                     return comparison;
                 } else {
-                    // Ordenamiento por la columna seleccionada
+                    // Ordenamiento por la columna seleccionada por el usuario (código existente)
                     const sortKey = currentSortColumn;
                     let valA = a[sortKey] !== undefined ? a[sortKey] : '';
                     let valB = b[sortKey] !== undefined ? b[sortKey] : '';
@@ -1051,8 +1311,8 @@
                 }
             });
 
-            // 5. *** FIX DEL BUG: ALMACENAR LOS DATOS FILTRADOS Y ORDENADOS EN EL ESTADO GLOBAL ***
-            currentFilteredData = dataToSort; // Ahora currentFilteredData es la fuente exacta de la tabla
+            // 5. Almacenar los datos filtrados y ordenados en el estado global
+            currentFilteredData = dataToSort;
 
             // 6. Actualizar métricas de la tarjeta con los datos filtrados
             updateCardMetrics(currentFilteredData);
@@ -1110,7 +1370,6 @@
             applyAllFilters();
         }
 
-
         /**
          * Actualiza visualmente los iconos de ordenamiento en el encabezado de la tabla.
          */
@@ -1138,8 +1397,6 @@
             }
         }
 
-
-       
         /**
          * Navega al registro anterior o siguiente y recarga el modal.
          * @param {number} direction - -1 para anterior, 1 para siguiente.
@@ -1305,19 +1562,22 @@
             const EXCLUIR_COLUMNS = ['NOMBRE_EMPLEADO', 'INGRESO', 'VACACION_CONDICION', 'RegistroUser', 'RegistroDate', 'CEDULA', 
             'NOMBRES', 'APELLIDOS', 'EMPRESA'];           
             const DATE_COLUMNS = ['DIA_INICIO', 'DIA_FINAL'];
-            const DATETIME_COLUMN = 'RegistroDate'; 
-            const NUMBER_DOT_COLUMNS = ['BONO_VACACIONAL', 'DIAS_VACACIONES']; // Incluye Bono y Días para formateo
+            const DATETIME_COLUMN = ['RegistroDate']; 
+            const NUMBER_DOT_COLUMNS = ['BONO_VACACIONAL', 'DIAS_VACACIONES', 'DIF', 'DIAS_VAC2']; // Incluye Bono y Días para formateo
+            const REG_INFO = ['PERIODO', 'VACACIONES_ID'];
 
             // 1. Crear el encabezado de la tabla (TH)
             const tableHeader = `<th class="fixed-column text-center">ID</th>` + TABLE_COLUMNS.map(col => {
                 // Excluir columnas de la tarjeta que no son útiles en la tabla
                 if (EXCLUIR_COLUMNS.includes(col)) return ''; 
 
-                // Aquí no necesitamos lógica condicional, aplicamos 'text-center' directamente
+                // Obtener el nombre legible, si no existe, usar la clave (col)
+                const headerName = COLUMN_HEADERS_MAP[col] || col;
+
                 return `
                     <th onclick="sortData('${col}')" class="text-center"> 
                         <div class="header-content">
-                            <span class="header-content-text">${col}</span>
+                            <span class="header-content-text">${headerName}</span> 
                             <span id="sort-icon-container-${col}" class="sort-icon-lucide-container">
                                 </span>
                         </div>
@@ -1343,6 +1603,8 @@
                     } else if (DATE_COLUMNS.includes(col) || col === DATETIME_COLUMN) {
                         // Justificado al centro: DATE_COLUMNS (y DATETIME_COLUMN)
                         alignmentClass = 'text-center';
+                    }  else if (REG_INFO.includes(col)) { 
+                        alignmentClass = 'text-center';   
                     }
 
                     // Aplica formateo condicional
@@ -1379,24 +1641,26 @@
             updateSortIcons();
         }
 
+        /**
+         * Inicializa la vista de Vacaciones.
+         * Carga los datos del empleado de forma síncrona para el renderizado inmediato de la tarjeta.
+         * Carga los datos de vacaciones de forma asíncrona, los filtra y los usa para los totales y la tabla.
+         * @param {boolean} forceReload - Si es true, fuerza la recarga de la red.
+         */
         function initVacacionesView(forceReload = false) {
             const EMPLOYEE_TRANSFER_KEY = 'userInfoToEdit'; // Clave de localStorage para el empleado seleccionado
             
-            // Limpia el contenido de la tarjeta antes de la carga
-            const cardContainer = document.getElementById('employee-card-container');
-            if (cardContainer) {
-                cardContainer.innerHTML = `
-                    <div class="employee-card p-4 rounded-xl shadow-lg border border-gray-700">
-                        <p class="text-center text-gray-400">Cargando información del trabajador...</p>
-                    </div>
-                `;
-            }
-
+            // 🛑 REMOVER: Se omite la limpieza del contenedor con el mensaje "Cargando..."
+            //             porque ahora renderStaticEmployeeDetails() lo reemplaza inmediatamente.
+            
             // 🛑 PASO 1: CARGAR LA INFO DEL TRABAJADOR DE LOCALSTORAGE (BD_Personal2)
             const workerInfoJSON = localStorage.getItem(EMPLOYEE_TRANSFER_KEY);
             if (!workerInfoJSON) {
                 console.error("Error: No hay trabajador seleccionado en 'userInfoToEdit'.");
-                renderEmployeeCard(null, {});
+                // Si no hay info, renderiza la tarjeta con el mensaje de "Seleccionar trabajador".
+                renderStaticEmployeeDetails(null); 
+                // Llama al placeholder de la tabla para mostrar el mensaje de error/no data
+                displayStatusMessage("Por favor, regrese a **Inicio** y seleccione un trabajador para ver su historial.", 'error');
                 return; 
             }
             
@@ -1405,12 +1669,12 @@
                 workerInfo = JSON.parse(workerInfoJSON);
             } catch (e) {
                 console.error("Error al parsear workerInfo:", e);
-                renderEmployeeCard(null, {});
+                renderStaticEmployeeDetails(null);
+                displayStatusMessage("Error al cargar los datos del trabajador seleccionado.", 'error');
                 return;
             }
             
             // 🛑 PASO 2: CONSTRUIR employeeFixedDetails USANDO workerInfo
-            // Usamos los campos NOMBRES, APELLIDOS, CEDULA, EMPRESA e INGRESO de BD_Personal2.
             const formattedName = formatEmployeeName(workerInfo.NOMBRES, workerInfo.APELLIDOS);
 
             employeeFixedDetails = {
@@ -1421,6 +1685,9 @@
                 fechaIngreso: workerInfo.INGRESO 
             };
 
+            // 🛑 NUEVO PASO A: Renderizar la parte ESTÁTICA inmediatamente (Carga instantánea de detalles)
+            renderStaticEmployeeDetails(employeeFixedDetails); 
+            
             // Reiniciar el estado de ordenamiento y filtros
             currentSortColumn = null;
             sortOrder = 'asc';
@@ -1431,27 +1698,32 @@
                 
             // 🛑 PASO 3: Ejecutar la carga de datos de vacaciones (Vacaciones2)
             loadVacacionesData(forceReload).then(fetchedData => {
+                
                 if (fetchedData && fetchedData.length > 0) {
-                    originalVacacionesData = fetchedData;
                     
-                    // PASO CLAVE 4: Renderizar la ESTRUCTURA de la tarjeta con los detalles de BD_Personal2
-                    // y los totales calculados de Vacaciones2
-                    const initialTotals = calculateVacationTotals(fetchedData);
-                    renderEmployeeCard(employeeFixedDetails, initialTotals); // <- employeeFixedDetails ya está listo
+                    // 🛑 PASO CRÍTICO: Filtrar los datos cargados (excluye "REGISTRO RECALCULADO")
+                    const filteredData = filterVacationRecords(fetchedData); 
+                    
+                    // Almacenar los datos filtrados para la tabla.
+                    originalVacacionesData = filteredData; 
+                    
+                    // Calcular los totales usando ÚNICAMENTE los datos filtrados.
+                    const initialTotals = calculateVacationTotals(filteredData);
+                    
+                    // 🛑 PASO CLAVE 4: Renderizar los TOTALES de vacaciones (parte dinámica de la tarjeta)
+                    renderVacationTotals(initialTotals);
 
-                    // PASO CLAVE 5: Aplicar filtros/ordenamiento inicial
+                    // PASO CLAVE 5: Aplicar filtros/ordenamiento inicial para renderizar la tabla
                     updateFilterPlaceholder(); 
                 } else {
+                    // Caso sin datos de vacaciones (pero el empleado sí existe)
                     originalVacacionesData = [];
-                    employeeFixedDetails = { // Definir los detalles aunque no haya data de vacaciones
-                        nombreFormateado: formattedName,
-                        empresa: workerInfo.EMPRESA,
-                        cedula: workerInfo.CEDULA,
-                        fechaIngreso: workerInfo.INGRESO
-                    };
                     
-                    // Renderizar la tarjeta con los datos de BD_Personal2 pero con totales vacíos
-                    renderEmployeeCard(employeeFixedDetails, {}); 
+                    // Renderizar la tarjeta con totales vacíos (limpia el mensaje "Calculando...")
+                    renderVacationTotals({}); 
+                    
+                    // Renderizar la tabla con mensaje de "No hay datos"
+                    updateFilterPlaceholder(); 
                 }
             });
         }
