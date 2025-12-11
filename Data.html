@@ -268,6 +268,30 @@
                 return sortedData;
             }
 
+            /**
+             * Re-renderiza la tabla con los datos actuales y el ordenamiento actual.
+             * (Declarada globalmente para ser usada en onclick, callbacks y promesas)
+             */
+            function handleSort(key) {
+                if (!window._currentTableData) return;
+
+                if (currentSort.key === key) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.key = key;
+                    // Ordena descendentemente por defecto para nuevas columnas (más intuitivo para IDs/Fechas)
+                    currentSort.direction = 'desc'; 
+                }
+                
+                document.getElementById('main-content').innerHTML = renderDataTable(window._currentTableData);
+                lucide.createIcons();
+                // handleConfigModal() llama internamente a attachFullLoadListener.
+                // Aunque solo adjunta el listener del modal, también lo usaremos para asegurar
+                // que los listeners dinámicos (como el botón de Carga Total) se adjunten.
+                handleConfigModal(); 
+            }
+            window.handleSort = handleSort; // <--- ¡Esto hace la función globalmente accesible!
+
             // =================================================================================
             // 2. LÓGICA DE DATOS Y RENDERIZADO (CORE)
             // =================================================================================
@@ -747,7 +771,6 @@
                     window.location.href = 'PerfilUser.html'; 
                 } else if (section === 'Vacaciones') {
                     window.location.href = 'Vacaciones.html';
-                }
             }
 
             function logoutAndClearCache() {
