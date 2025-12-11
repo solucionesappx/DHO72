@@ -53,7 +53,7 @@
             <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
                 Mi Aplicación Móvil ZXC
             </h1>
-            <div class="flex space-x-3">              
+            <div class="flex space-x-3">              
                 <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="logoutAndClearCache()">
                     <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
                 </button>
@@ -155,8 +155,8 @@
             const DEFAULT_SORT_KEY = 'VACACIONES_ID'; 
             const DEFAULT_SORT_DIRECTION = 'desc'; 
 
-            let dynamicColumnOrderList = [];     // Orden de columnas visible inicial (del servidor)
-            let columnDisplayMap = {};           // Mapeo de claves limpias a nombres amigables
+            let dynamicColumnOrderList = [];     // Orden de columnas visible inicial (del servidor)
+            let columnDisplayMap = {};           // Mapeo de claves limpias a nombres amigables
             let finalDisplayOrder = [];          // Orden final de columnas (persistencia local)
             let allAvailableColumnKeys = [];     // Todas las claves limpias disponibles en la hoja
 
