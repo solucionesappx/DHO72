@@ -3,46 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplicación Móvil - Datos</title>
+    <title>Aplicación Móvil - Base</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- Control de Caché del Navegador  -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
     <style>
-        /* [Estilos CSS Base y Layout] */
+        /* Configuración de Tailwind para usar el color de acento y la fuente Inter  */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        html { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        :root {
-            --color-bg-dark: #1f2937; --color-text-dark: #f3f4f6; --color-primary-dark: #60a5fa; 
-            --color-surface-dark: #374151; --color-header: #374151; --color-data-text: #f3f4f6; 
-            --color-bg-table-row: #2c3645; 
+        html {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
-        .dark { background-color: var(--color-bg-dark); color: var(--color-text-dark); }
-        #app-container { max-width: 500px; margin: 0 auto; min-height: 10vh; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-        header, footer { width: 100%; max-width: 500px; z-index: 50; left: 50%; transform: translateX(-50%); }
-        .dark header, .dark footer { background-color: var(--color-surface-dark); border-color: #4b5563; }
-        main { flex-grow: 1; overflow-y: auto; padding: 76px 1rem 72px 1rem; }
-        .footer-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; font-size: 0.75rem; line-height: 1; border-radius: 0.5rem; color: inherit; }
-        .footer-btn.active { color: var(--color-primary-dark); }
 
-        /* [Estilos de Tabla y Sticky] */
-        .table-scroll-container { max-height: calc(85vh - 150px); overflow: auto; border-radius: 0.75rem; border: 1px solid #4b5563; background-color: var(--color-bg-table-row); display: block; }
-        .table-scroll-container table { border-collapse: collapse; table-layout: auto; width: max-content; min-width: 100%; }
-        .table-scroll-container th { position: sticky; top: 0; z-index: 20; background-color: var(--color-header); color: var(--color-data-text); padding: 0.25rem 0.5rem; text-align: center; white-space: nowrap; font-size: 0.75rem; border-bottom: 2px solid rgba(255, 255, 255, 0.1); cursor: pointer; text-transform: uppercase; }
-        .sticky-id-cell { position: sticky; left: 0; z-index: 30; font-weight: bold; text-align: center; border-right: 1px solid rgba(255, 255, 255, 0.2); min-width: 30px; max-width: 30px; }
-        .table-scroll-container th.sticky-id-cell { background-color: var(--color-header); z-index: 40; }
-        .table-data-cell.sticky-id-cell { color: var(--color-primary-dark); font-family: monospace, sans-serif; background-color: var(--color-header) !important; z-index: 35; text-align: center; }
-        .table-data-cell { font-size: 0.875rem; padding: 0.25rem 0.5rem; white-space: nowrap; border-bottom: 1px solid #4b5563; height: 32px; text-align: left; }
-        .cell-fixed-width-scroll { min-width: 50ch; max-width: 50ch; white-space: normal; }
-        .table-data-cell.cell-fixed-width-scroll { overflow-x: auto; white-space: nowrap; display: block; }
-        .table-scroll-container th.cell-fixed-width-scroll { overflow-x: hidden; white-space: normal; font-size: 0.75rem; }
-        .table-scroll-container tr:nth-child(even) .table-data-cell { background-color: #374151; }
-        .table-scroll-container tr:nth-child(odd) .table-data-cell { background-color: #2c3645; }
-        .header-content { display: flex; align-items: center; justify-content: center; gap: 4px; }
-        .modal-overlay { background-color: rgba(0, 0, 0, 0.8); transition: opacity 0.3s ease; }
+        /* Definición de colores base  */
+        :root {
+            --color-bg-dark: #1f2937;
+            --color-text-dark: #f3f4f6;
+            --color-primary-dark: #60a5fa;
+            --color-surface-dark: #374151;
+        }
+        
+        /* Estilos del cuerpo en modo oscuro */
+        .dark { background-color: var(--color-bg-dark); color: var(--color-text-dark); }
+        
+        #app-container {
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            position: relative; 
+            overflow: hidden; 
+        }
+
+        header, footer {
+            width: 100%;
+            max-width: 500px; 
+            z-index: 50; 
+            transition: background-color 0.3s, color 0.3s;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Estilos específicos para header y footer en modo oscuro */
+        .dark header, .dark footer { 
+            background-color: var(--color-surface-dark); 
+            border-color: #4b5563; 
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-y: auto; 
+            padding-left: 1rem;
+            padding-right: 1rem;
+            transition: padding 0.3s ease-in-out;
+            padding-top: 76px; /* Para compensar la altura del header */
+            padding-bottom: 72px; /* Para compensar la altura del footer */
+        }
+        
+        .footer-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 4px;
+            font-size: 0.75rem;
+            line-height: 1;
+            transition: color 0.2s, background-color 0.2s;
+            border-radius: 0.5rem;
+            color: inherit;
+        }
+
+        .footer-btn.active { color: var(--color-primary-dark); }
     </style>
 </head>
 <body class="dark transition-colors duration-300">
@@ -50,10 +88,11 @@
     <div id="app-container" class="shadow-xl">
         
         <header id="app-header" class="fixed top-0 w-full h-14 border-b border-gray-700 dark:border-gray-500 flex items-center justify-between px-4">
-           <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
+         <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
                 Mi Aplicación Móvil ZXC
             </h1>
             <div class="flex space-x-3">              
+                <!-- Botón de Cerrar Sesión con redirección a index.html -->
                 <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="logoutAndClearCache()">
                     <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
                 </button>
@@ -61,11 +100,19 @@
         </header>
 
         <main id="main-content" class="flex flex-col space-y-4">
-            </main>
+            <!-- Contenido de la sección por defecto (Página 'Perfil' al no usar SPA) -->
+            <div class="p-6 text-center mt-4 dark:bg-gray-800 rounded-xl shadow-lg">
+                <i data-lucide="user" class="w-8 h-8 mx-auto mb-3 text-blue-400"></i>
+                <h2 class="text-xl font-bold mb-2">Página Configuración de la Aplicación</h2>
+                <p class="text-sm text-gray-400">Sección exclusiva para Administradores y Propietarios.</p>
+                <p class="text-xs mt-3 text-gray-500">Este es el archivo base (index.html), que redirigirá al Perfil.</p>
+            </div>
+        </main>
 
         <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
             
-            <button class="footer-btn" data-section="Inicio">
+            <!-- INICIO: Botón activo como se requiere/confirma -->
+            <button class="footer-btn active" data-section="Inicio">
                 <i data-lucide="home" class="w-6 h-6"></i>
                 <span>Inicio</span>
             </button>
@@ -79,755 +126,145 @@
                 <i data-lucide="calendar-plus" class="w-6 h-6"></i>
                 <span>Agregar</span>
             </button>
-
-            <button class="footer-btn active" data-section="Datos">
+            
+            <button class="footer-btn" data-section="Datos">
                 <i data-lucide="database-backup" class="w-6 h-6"></i>
                 <span>Datos</span>
             </button>
-                                        
+            
             <button class="footer-btn" data-section="Perfil">
                 <i data-lucide="user" class="w-6 h-6"></i>
                 <span>Perfil</span>
             </button>
             
-            <button class="footer-btn" data-section="Configuración">
+            <button class="footer-btn active" data-section="Configuración">
                 <i data-lucide="settings" class="w-6 h-6"></i>
                 <span>Config</span>
             </button>
         </footer>
     </div>
-    
-    <button id="loadFullDataButton" class="hidden fixed bottom-20 right-4 z-40 p-3 rounded-full bg-blue-600 shadow-xl text-white hover:bg-blue-700 transition-colors" title="Cargar totalidad de datos (Total)">
-        </button>
-    
-    <div id="configModal" class="modal-overlay hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-sm border border-gray-700">
-            
-            <div class="flex items-center justify-between p-2 border-b border-gray-700">
-                <h3 class="text-xl font-semibold text-white">Configuración de Columnas</h3>
-            </div>
 
-            <div id="config-tabs" class="flex border-b border-gray-700">
-                <button data-tab="order" class="tab-button flex-1 p-3 text-center text-sm font-medium border-b-2 border-blue-500 text-blue-400 bg-gray-700/50 transition-colors">
-                    Ordenar Columnas
-                </button>
-                <button data-tab="visibility" class="tab-button flex-1 p-3 text-center text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">
-                    Ver/Ocultar Columnas
-                </button>
-            </div>
+    <script>
+        // Inicializa los íconos de Lucide
+        lucide.createIcons();
 
-            <div class="p-2 max-h-85 overflow-y-auto">
-                
-                <div id="tab-order" class="tab-content">
-                    <p class="text-sm text-gray-400 mb-1">Arrastra los elementos para cambiar el orden de las columnas visibles.</p>
-                    <ul id="columnSortableList" class="space-y-1">
-                        </ul>
-                </div>
-                
-                <div id="tab-visibility" class="tab-content hidden">
-                    <p class="text-sm text-gray-400 mb-3">Marca las columnas que deseas que aparezcan en la tabla.</p>
-                    <ul id="hiddenColumnList" class="space-y-1">
-                        </ul>
-                </div>
-            </div>
-            
-            <div class="flex justify-end p-2 border-t border-gray-700 space-x-3">
-                <button id="closeConfigModal" class="px-4 py-1 bg-gray-600 text-white rounded-md shadow-lg hover:bg-gray-700 transition-colors">
-                    Cancelar
-                </button>
-                <button id="saveColumnOrderButton" class="px-4 py-1 bg-blue-600 text-white rounded-md shadow-lg hover:bg-blue-700 transition-colors">
-                    Guardar y Aplicar
-                </button>
-            </div>
-        </div>
-    </div>
+        // Función principal para cargar el contenido de la sección y manejar la navegación MPA
+        function loadContent(section) {
+            console.log("Navegando a la sección:", section);
+            // La siguiente variable se mantiene por si se añade lógica futura, aunque actualmente no se usa
+            const mainContent = document.getElementById('main-content'); 
 
+            if (section === 'Vacaciones') {
+                window.location.href = 'Vacaciones.html';
+                return; // Importante: Detiene la ejecución aquí.
+            }
 
-        <script>
-            // ! [IMPORTANTE] URL de tu despliegue de Aplicación Web GAS
-            // ASEGÚRATE DE QUE ESTA URL SEA LA DE TU ÚLTIMO DESPLIEGUE CORREGIDO DE GAS
-            const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyW6DPOoH6xRq_pxVnf3H5KStpgjayH1zFfCFfSkObVKix4bkcE50EOSRu0xPY2DiP-/exec'; 
-            const SHEET_NAME = 'DatosX'; // Nombre de la Hoja de Datos (Usado para referencia)
+            if (section === 'Agregar') {
+                window.location.href = 'AgregarDat.html';
+                return;
+            }
 
-            // Variables de persistencia y estado
-            const STORAGE_KEY_ORDER = 'table_column_order'; 
-            // Asegúrate que esta clave limpia coincida con la que genera tu GAS (ej. 'VACACIONESID')
-            const DEFAULT_SORT_KEY = 'VACACIONES_ID'; 
-            const DEFAULT_SORT_DIRECTION = 'desc'; 
-
-            let dynamicColumnOrderList = [];     // Orden de columnas visible inicial (del servidor)
-            let columnDisplayMap = {};           // Mapeo de claves limpias a nombres amigables
-            let finalDisplayOrder = [];          // Orden final de columnas (persistencia local)
-            let allAvailableColumnKeys = [];     // Todas las claves limpias disponibles en la hoja
-
-            // Estado actual del ordenamiento de la tabla
-            let currentSort = {
-                key: DEFAULT_SORT_KEY,
-                direction: DEFAULT_SORT_DIRECTION
-            };
-            
-            // Datos actualmente cargados en memoria
-            window._currentTableData = null; 
-
-            // =================================================================================
-            // 1. FUNCIONES DE FORMATO Y UTILIDADES
-            // =================================================================================
-
-            function formatNumberWithDots(value) {
-                if (value === null || value === undefined || value === '') return ''; // Cambiado de '0' a ''
-                const numStr = String(value).replace(',', '.'); 
-                const number = parseFloat(numStr);
-                if (!isNaN(number)) {
-                    // Determina la precisión, si es entero, no muestra decimales
-                    const isInteger = Math.abs(number - Math.round(number)) < 0.001; 
-                    const maxDigits = isInteger ? 0 : 2;
-
-                    return new Intl.NumberFormat('es-ES', { 
-                        minimumFractionDigits: maxDigits, 
-                        maximumFractionDigits: maxDigits 
-                    }).format(number);
-                }
-                return String(value);
+            if (section === 'Editar') {
+                // Redirecciona al archivo 'EditarDat.html por ahora a Inicio.html'
+                window.location.href = 'Inicio.html';
+                return;
             }
             
-            function formatDateTime(value) {
-                if (!value) return 'N/A';
-                try {
-                    // Intenta tratarlo como fecha de hoja de cálculo de GAS (UTC)
-                    let date = new Date(value);
-                    
-                    if (isNaN(date.getTime())) {
-                        // Si falla, intenta con formato más flexible
-                        date = new Date(String(value).replace(/(\d{4})-(\d{2})-(\d{2})T?/, '$1/$2/$3 '));
-                    }
-
-                    if (isNaN(date.getTime())) return String(value); 
-                    
-                    // Formato 'dd/mm/yyyy hh:mm:ss'
-                    const d = date.getDate().toString().padStart(2, '0');
-                    const m = (date.getMonth() + 1).toString().padStart(2, '0');
-                    const y = date.getFullYear();
-                    const h = date.getHours().toString().padStart(2, '0');
-                    const min = date.getMinutes().toString().padStart(2, '0');
-                    const s = date.getSeconds().toString().padStart(2, '0');
-
-                    return `${d}/${m}/${y} ${h}:${min}:${s}`;
-                } catch (e) {
-                    return String(value);
-                }
+            if (section === 'Inicio') {
+                window.location.href = 'Inicio.html';
+                return;
             }
             
-            function formatDate(value) {
-                if (!value) return 'N/A';
-                try {
-                    let date;
-                    if (typeof value === 'string' && value.includes('T') && value.includes('Z')) {
-                        // Formato ISO
-                        date = new Date(value);
-                    } else if (typeof value === 'string') {
-                        // Formato simple de fecha
-                        date = new Date(value.replace(/-/g, '/')); 
-                    } else {
-                        date = new Date(value);
-                    }
-                    if (isNaN(date.getTime())) return String(value); 
-                    const d = date.getDate().toString().padStart(2, '0');
-                    const m = (date.getMonth() + 1).toString().padStart(2, '0');
-                    const y = date.getFullYear();
-                    return `${d}/${m}/${y}`;
-                } catch (e) {
-                    return String(value);
-                }
+            if (section === 'Configuración') {
+                window.location.href = 'ConfigApp.html';
+                return;
             }
             
-            function sortData(data, key, direction) {
-                const isDesc = direction === 'desc';
-                const sortedData = [...data];
-
-                sortedData.sort((a, b) => {
-                    const valA = a[key];
-                    const valB = b[key];
-                    
-                    if (valA === undefined || valA === null || valA === '') return isDesc ? 1 : -1;
-                    if (valB === undefined || valB === null || valB === '') return isDesc ? -1 : 1;
-
-                    const numA = parseFloat(valA);
-                    const numB = parseFloat(valB);
-                    
-                    if (!isNaN(numA) && !isNaN(numB)) {
-                        return isDesc ? numB - numA : numA - numB;
-                    }
-                    
-                    const strA = String(valA).toLowerCase();
-                    const strB = String(valB).toLowerCase();
-                    
-                    if (strA < strB) return isDesc ? 1 : -1;
-                    if (strA > strB) return isDesc ? -1 : 1;
-                    return 0;
-                });
-                return sortedData;
+            if (section === 'Perfil') {
+                // Redirecciona al archivo 'PerfilUser.html'
+                window.location.href = 'PerfilUser.html';
+                return;
             }
 
-            // =================================================================================
-            // 2. LÓGICA DE DATOS Y RENDERIZADO (CORE)
-            // =================================================================================
-
-            /**
-             * Función principal para obtener datos de la API de GAS.
-             */
-            async function fetchAndCacheData(fullLoad = false) {
-                const mainContent = document.getElementById('main-content');
-                
-                // Mostrar spinner de carga
-                mainContent.innerHTML = `
-                    <div class="text-center py-10">
-                        <i data-lucide="loader-circle" class="w-8 h-8 mx-auto text-blue-400 animate-spin"></i>
-                        <p class="mt-2 text-gray-400">Cargando ${fullLoad ? 'todos los' : 'datos iniciales'} de Google Sheets...</p>
-                    </div>
-                `;
-                lucide.createIcons(); 
-
-                const userTienda = localStorage.getItem('Usuario_Tienda') || 'DEFAULT';
-                let apiUrlWithParam = `${GAS_API_URL}?userTienda=${encodeURIComponent(userTienda)}`;
-
-                if (fullLoad) {
-                    apiUrlWithParam += `&fullLoad=true`;
-                }
-
-                try {
-                    const response = await fetch(apiUrlWithParam);
-                    const result = await response.json(); 
-                    
-                    if (!response.ok || result.error) {
-                        const errorMessage = result.error || `HTTP error! status: ${response.status}`;
-                        throw new Error(errorMessage);
-                    }
-
-                    // 1. ASIGNAMOS VALORES DINÁMICOS RECIBIDOS
-                    const serverOrder = result.columnOrder || [];
-                    columnDisplayMap = result.displayMap || {};
-                    dynamicColumnOrderList = serverOrder;
-                    allAvailableColumnKeys = result.allAvailableColumns || serverOrder; 
-                    
-                    // 2. Lógica de Persistencia para el orden de columnas
-                    const savedOrder = localStorage.getItem(STORAGE_KEY_ORDER);
-                    if (savedOrder) {
-                        const parsedOrder = JSON.parse(savedOrder);
-                        // Filtrar el orden guardado por las claves que realmente existen en el servidor
-                        const validSavedOrder = parsedOrder.filter(key => allAvailableColumnKeys.includes(key));
-                        // Añadir las nuevas claves del servidor (no vistas antes) al final
-                        const newKeys = serverOrder.filter(key => !validSavedOrder.includes(key));
-                        finalDisplayOrder = [...validSavedOrder, ...newKeys];
-                    } else {
-                        finalDisplayOrder = serverOrder;
-                    }
-                    
-                    window._currentTableData = result.data || [];
-                    
-                    // 3. Configurar el estado del botón de FullLoad para que renderDataTable lo utilice
-                    const totalRows = result.pagination?.totalRows || 0;
-                    const fetchedRows = result.pagination?.fetchedRows || 0;
-                    
-                    // Almacenamos el estado en una variable global
-                    window._fullLoadState = {
-                        shouldShow: totalRows > fetchedRows,
-                        totalRows: totalRows
-                    };
-
-                    return window._currentTableData; 
-
-                } catch (error) {
-                    console.error("Error al obtener los datos:", error);
-                    mainContent.innerHTML = `
-                        <div class="p-6 text-center mt-4 bg-red-900/50 rounded-xl shadow-lg border border-red-700">
-                            <i data-lucide="cloud-off" class="w-8 h-8 mx-auto mb-3 text-red-400"></i>
-                            <h2 class="text-lg font-bold">Error de Conexión o Servidor</h2>
-                            <p class="text-sm text-red-300 mt-2">Detalle: ${error.message}</p>
-                        </div>
-                    `;
-                    lucide.createIcons();
-                    return null;
-                }
-            }
-
-            /**
-             * Genera el HTML de la tabla a partir de los datos.
-             */
-            function renderDataTable(data) {
-                if (!data || data.length === 0) {
-                    // Muestra mensaje si no hay datos.
-                    return `
-                        <div class="p-6 text-center mt-4 dark:bg-gray-800 rounded-xl shadow-lg">
-                            <i data-lucide="search-x" class="w-8 h-8 mx-auto mb-3 text-yellow-400"></i>
-                            <p class="text-sm text-gray-400">No hay registros disponibles en la hoja de cálculo.</p>
-                        </div>
-                    `;
-                }
-                
-                const sortedData = sortData(data, currentSort.key, currentSort.direction);
-
-                const COLUMN_ORDER_LIST = finalDisplayOrder; 
-                const displayHeaders = ['#', ...COLUMN_ORDER_LIST]; 
-
-                const totalRecords = sortedData.length;
-                const paddingLength = 5; 
-
-                let tableHTML = `<div class="table-scroll-container mb-4"><table class="w-full">`;
-                tableHTML += '<thead><tr>';
-                
-                // Generar la fila de encabezados
-                displayHeaders.forEach((headerKey, index) => {
-                    let headerText;
-                    let fixedClass = ''; 
-                    
-                    if (index === 0) {
-                        headerText = 'ID';
-                    } else {
-                        headerText = columnDisplayMap[headerKey] || headerKey; 
-                        
-                        if (headerKey === 'DESCRIPCION_CONCEPTO' || headerKey === 'OBSERVACIONES') { 
-                            fixedClass = ' cell-fixed-width-scroll';
-                        }
-                    }
-                    
-                    const isSticky = index === 0 ? ' sticky-id-cell' : '';
-                    
-                    let sortIcon = '';
-                    if (headerKey !== '#' && headerKey === currentSort.key) {
-                        const iconName = currentSort.direction === 'asc' ? 'chevron-up' : 'chevron-down';
-                        sortIcon = `<i data-lucide="${iconName}" class="w-4 h-4 ml-1"></i>`;
-                    }
-
-                    const sortableAttr = index !== 0 ? `data-key="${headerKey}" onclick="handleSort('${headerKey}')"` : '';
-                    
-                    tableHTML += `<th class="${isSticky}${fixedClass}" ${sortableAttr} style="min-width: 80px;">
-                                    <div class="header-content">${headerText}${sortIcon}</div>
-                                </th>`;
-                });
-                tableHTML += '</tr></thead>';
-
-                // Construir cuerpo de la tabla (filas)
-                tableHTML += '<tbody>';
-                sortedData.forEach((row, rowIndex) => {
-                    tableHTML += '<tr>';
-                    
-                    // CELDA 1: CORRELATIVO VIRTUAL (PEGADIZO)
-                    const rawCorrelative = rowIndex + 1;
-                    const correlative = String(rawCorrelative).padStart(paddingLength, '0');
-                    tableHTML += `<td class="table-data-cell sticky-id-cell">${correlative}</td>`;
-                    
-                    // RESTO DE LAS CELDAS
-                    COLUMN_ORDER_LIST.forEach(header => {
-                        let cellValue = row[header] !== undefined && row[header] !== null ? row[header] : '';
-                        let alignmentClass = 'text-left'; 
-                        let fixedClass = ''; 
-
-                        // --- 1. LÓGICA DE FORMATO ---
-                        switch (header) {
-                            case 'INGRESO':
-                            case 'DIA_INICIO': 
-                            case 'DIA_FINAL': 
-                                cellValue = formatDate(cellValue);
-                                break;
-                            case 'RegistroDate':
-                                cellValue = formatDateTime(cellValue);
-                                break;
-
-                            case 'CEDULA':
-                            case 'DIF':
-                            case 'DIAS_VAC2':
-                            case 'DIAS_VACACIONES':
-                            case 'BONO_VACACIONAL':
-                                cellValue = formatNumberWithDots(cellValue);
-                                break;
-                            
-                            case 'DESCRIPCION_CONCEPTO':
-                                fixedClass = ' cell-fixed-width-scroll';
-                                break;
-
-                            default: 
-                                cellValue = String(cellValue); 
-                                break;
-                        }
-
-                        // --- 2. LÓGICA DE ALINEACIÓN ---
-                        switch (header) {
-                            case 'VACACIONES_ID': 
-                            case 'PERIODO': 
-                            case 'REGISTRO_ID':
-                        //    case 'NOMBRE_EMPLEADO':
-                            case 'INGRESO':
-                            case 'DIA_INICIO':
-                            case 'DIA_FINAL':
-                            case 'RegistroDate':
-                                alignmentClass = 'text-center';
-                                break;
-
-                            case 'DIF': 
-                            case 'DIAS_VAC2': 
-                            case 'DIAS_VACACIONES':
-                            case 'CEDULA':
-                            case 'BONO_VACACIONAL':
-                                alignmentClass = 'text-right';
-                                break;
-
-                            // Default mantiene 'text-left' para texto largo
-                        }
-                        
-                        tableHTML += `<td class="table-data-cell ${alignmentClass}${fixedClass}">${cellValue}</td>`;
-                    });
-                    
-                    tableHTML += '</tr>';
-                });
-                tableHTML += '</tbody>';
-                tableHTML += '</table></div>'; 
-                
-                // --- Lógica del Botón de Carga Total ---
-                const fullLoadState = window._fullLoadState || { shouldShow: false, totalRows: 0 };
-                let loadButtonHTML = '';
-
-                if (fullLoadState.shouldShow) {
-                    // Renderiza el botón de carga total, usando el mismo estilo de icono fijo
-                    loadButtonHTML = `
-                        <button id="loadFullDataButton" 
-                                class="p-2 rounded-full text-gray-300 hover:text-blue-400 transition-colors" 
-                                title="Cargar la totalidad de datos (${fullLoadState.totalRows} registros)"
-                        >
-                            <i data-lucide="cloud-download" class="w-6 h-6"></i>
-                        </button>
-                    `;
-                }
-
-                // Header con el Título, el Botón de Carga Total y el Botón de Configuración
-                const header = `
-                    <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-2xl font-bold">Tabla de Datos</h2>
-                        <div class="flex space-x-2">
-                            ${loadButtonHTML} 
-                            <button id="openConfigModal" class="p-2 rounded-full text-gray-300 hover:text-blue-400 transition-colors" title="Configurar Columnas">
-                                <i data-lucide="list-ordered" class="w-6 h-6"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-400 mb-6">Contenido de la hoja '${SHEET_NAME}'. (Total: ${totalRecords} registros)</p>
-                `;
-                
-                return header + tableHTML;
-            }
-
-
-            // =================================================================================
-            // 3. LÓGICA DE CONFIGURACIÓN DE COLUMNAS (DRAG & DROP Y VISIBILIDAD)
-            // =================================================================================
-
-            function setupTabSwitching(containerId) {
-                const tabContainer = document.getElementById(containerId);
-                if (!tabContainer) return;
-
-                tabContainer.querySelectorAll('.tab-button').forEach(button => {
-                    button.onclick = (e) => {
-                        const targetTab = e.target.closest('.tab-button').getAttribute('data-tab');
-                        const targetTabId = 'tab-' + targetTab;
-
-                        tabContainer.querySelectorAll('.tab-button').forEach(btn => {
-                            btn.classList.remove('border-blue-500', 'text-blue-400', 'bg-gray-700/50');
-                            btn.classList.add('border-transparent', 'text-gray-400', 'hover:text-white');
-                        });
-                        document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-
-                        e.target.closest('.tab-button').classList.add('border-blue-500', 'text-blue-400', 'bg-gray-700/50');
-                        e.target.closest('.tab-button').classList.remove('border-transparent', 'text-gray-400', 'hover:text-white');
-                        document.getElementById(targetTabId)?.classList.remove('hidden');
-
-                        if (targetTab === 'order') {
-                            const sortableList = document.getElementById('columnSortableList');
-                            if (sortableList) setupDragAndDrop(sortableList);
-                        }
-                    };
-                });
-            }
-
-            /**
-             * Guarda el orden de las columnas (arrastradas + visibles) en localStorage y re-renderiza.
-             */
-            function saveColumnOrder() {
-                const modal = document.getElementById('configModal');
-                const sortableList = document.getElementById('columnSortableList');
-                
-                // 1. Obtener las claves que el usuario quiere ver (Desde Pestaña 2: Visibilidad)
-                const checkedKeys = Array.from(document.querySelectorAll('#hiddenColumnList input[type="checkbox"]:checked'))
-                                        .map(checkbox => checkbox.getAttribute('data-key'));
-                
-                // 2. Obtener el orden actual de las columnas arrastradas
-                const currentOrderInModal = Array.from(sortableList.querySelectorAll('li[data-key]')).map(item => item.getAttribute('data-key'));
-                
-                const checkedKeysSet = new Set(checkedKeys);
-                const idKey = DEFAULT_SORT_KEY; 
-                let finalOrder = [];
-
-                // 3. Asegurar la clave principal (ID) al inicio si está marcada/existe
-                if (checkedKeysSet.has(idKey)) {
-                    finalOrder.push(idKey);
-                    checkedKeysSet.delete(idKey);
-                }
-                
-                // 4. Recorrer el orden arrastrado e incluir las que siguen siendo visibles.
-                const keysFromDrag = currentOrderInModal.filter(key => key !== idKey); 
-                
-                keysFromDrag.forEach(key => {
-                    if (checkedKeysSet.has(key)) {
-                        finalOrder.push(key);
-                        checkedKeysSet.delete(key); 
-                    }
-                });
-
-                // 5. Añadir las columnas marcadas como visibles que NO fueron arrastradas
-                // (Respetando el orden original del servidor para las nuevas/no ordenadas)
-                dynamicColumnOrderList.forEach(key => {
-                    if (checkedKeysSet.has(key)) {
-                        finalOrder.push(key);
-                    }
-                });
-
-                // 6. Persistir y actualizar el estado global
-                localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(finalOrder));
-                finalDisplayOrder = finalOrder;
-                
-                // 7. Cerrar y Re-renderizar la tabla
-                modal.classList.add('hidden');
-                if (window._currentTableData) {
-                    window.handleSort(currentSort.key); 
-                } else {
-                    loadContent('Datos'); 
-                }
-            }
-
-
-            /**
-             * Inicializa el modal de configuración de columnas y sus listeners.
-             */
-            function handleConfigModal() {
-                const modal = document.getElementById('configModal');
-                const sortableList = document.getElementById('columnSortableList');
-                const hiddenList = document.getElementById('hiddenColumnList');
-                const openButton = document.getElementById('openConfigModal');
-                
-                if (!openButton || !modal || !window._currentTableData) {
-                    return; 
-                }
-                
-                // Adjuntar listener del botón de configuración (Si ya existe, se sobrescribe)
-                openButton.onclick = () => {
-                    sortableList.innerHTML = '';
-                    hiddenList.innerHTML = ''; 
-
-                    const idKey = DEFAULT_SORT_KEY; 
-                    const idDisplayName = columnDisplayMap[idKey] || idKey; 
-                    
-                    const visibleKeys = new Set(finalDisplayOrder);
-                    const allKeys = allAvailableColumnKeys.length > 0 ? allAvailableColumnKeys : dynamicColumnOrderList;
-                    
-                    // Claves que el usuario puede personalizar (todas menos la ID)
-                    const allCustomizableKeys = allKeys.filter(key => key !== idKey);
-                    
-                    
-                    // --- INSERCIÓN DEL REGISTRO ID EN LA PESTAÑA 1 (ORDEN) ---
-                    if (allKeys.includes(idKey)) {
-                        const idListItem = document.createElement('li');
-                        idListItem.className = 'flex items-center justify-between p-2 bg-blue-900/50 rounded-md shadow-md border border-blue-700 text-sm text-blue-300 cursor-not-allowed';
-                        idListItem.setAttribute('data-key', idKey);
-                        idListItem.innerHTML = `<i data-lucide="lock" class="w-4 h-4 text-blue-300 mr-2 shrink-0"></i><span class="flex-grow">${idDisplayName} (Clave)</span>`;
-                        sortableList.appendChild(idListItem);
-                    }
-
-                    // A. Construir lista de Columnas Visibles (Arrastrables) - Pestaña 1: ORDEN
-                    finalDisplayOrder.filter(key => key !== idKey).forEach(key => { 
-                        const displayName = columnDisplayMap[key] || key;
-                        const listItem = document.createElement('li');
-                        
-                        listItem.className = 'flex items-center justify-between p-1 bg-gray-700 rounded-md shadow-md cursor-grab active:cursor-grabbing border border-gray-600 hover:bg-gray-600 transition-colors text-sm';
-                        
-                        listItem.draggable = true;
-                        listItem.setAttribute('data-key', key);
-                        
-                        listItem.innerHTML = `<i data-lucide="grip-vertical" class="w-4 h-4 text-gray-400 mr-2 shrink-0"></i><span class="flex-grow">${displayName}</span>`;
-                        
-                        sortableList.appendChild(listItem);
-                    });
-
-                    
-                    // --- INSERCIÓN DEL REGISTRO ID EN LA PESTAÑA 2 (VISIBILIDAD) ---
-                    if (allKeys.includes(idKey)) {
-                        const idListItem = document.createElement('li');
-                        idListItem.className = 'flex items-center p-2 rounded-md bg-blue-900/50 border border-blue-700 text-sm text-blue-300 cursor-not-allowed';
-                        
-                        idListItem.innerHTML = `
-                            <input type="checkbox" id="col-vis-${idKey}" checked disabled data-key="${idKey}" class="w-4 h-4 text-blue-300 bg-blue-900 border-blue-700 rounded cursor-not-allowed">
-                            <label for="col-vis-${idKey}" class="ms-2 font-medium flex-grow">${idDisplayName} (Obligatoria)</label>
-                        `;
-                        hiddenList.appendChild(idListItem);
-                    }
-                    
-                    // B. Construir lista de Columnas con Checkbox - Pestaña 2: VISIBILIDAD (Solo las personalizables)
-                    allCustomizableKeys.forEach(key => {
-                        const displayName = columnDisplayMap[key] || key;
-                        const isChecked = visibleKeys.has(key); 
-                        
-                        const listItem = document.createElement('li');
-                        listItem.className = 'flex items-center p-1 rounded-md bg-gray-900/50 hover:bg-gray-700/50 transition-colors text-sm';
-                        
-                        listItem.innerHTML = `
-                            <input type="checkbox" id="col-vis-${key}" data-key="${key}" ${isChecked ? 'checked' : ''} class="visibility-column-checkbox w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 cursor-pointer">
-                            <label for="col-vis-${key}" class="ms-2 font-medium text-gray-300 cursor-pointer flex-grow">${displayName}</label>
-                        `;
-                        hiddenList.appendChild(listItem);
-                    });
-                    
-                    setupTabSwitching('config-tabs');
-                    const orderTabButton = document.querySelector('[data-tab="order"]');
-                    if (orderTabButton) orderTabButton.click(); 
-
-                    setupDragAndDrop(sortableList); 
-                    modal.classList.remove('hidden');
-                    lucide.createIcons(); 
-                };
-            }
-
-            // --- Lógica del Drag and Drop ---
-            function setupDragAndDrop(listElement) {
-                let draggedItem = null;
-                listElement.addEventListener('dragstart', (e) => {
-                    if (e.target.hasAttribute('draggable') && e.target.draggable) {
-                        draggedItem = e.target;
-                        e.dataTransfer.effectAllowed = 'move';
-                        setTimeout(() => e.target.classList.add('opacity-40'), 0);
-                    }
-                });
-                listElement.addEventListener('dragend', (e) => {
-                    e.target.classList.remove('opacity-40');
-                    draggedItem = null;
-                });
-                listElement.addEventListener('dragover', (e) => {
-                    e.preventDefault(); 
-                    const target = e.target.closest('li[draggable="true"]');
-                    if (target && target !== draggedItem) {
-                        const rect = target.getBoundingClientRect();
-                        const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                        if (next) {
-                            listElement.insertBefore(draggedItem, target.nextSibling);
-                        } else {
-                            listElement.insertBefore(draggedItem, target);
-                        }
-                    }
-                });
-            }
-
-            // =================================================================================
-            // 4. FUNCIONES DE NAVEGACIÓN Y LOGOUT
-            // =================================================================================
-
-            async function loadContent(section) {
-                if (section === 'Datos') {
-                    // Cargar datos (Inicial/Parcial)
-                    const data = await fetchAndCacheData(false); 
-                    if (data) {
-                        // Ordenamiento inicial forzado al cargar la sección 'Datos'
-                        currentSort = { key: DEFAULT_SORT_KEY, direction: DEFAULT_SORT_DIRECTION };
-                        document.getElementById('main-content').innerHTML = renderDataTable(data);
-                        lucide.createIcons();
-                        handleConfigModal(); 
-                    }
-                } else if (section === 'Agregar') {
-                    window.location.href = 'AgregarDat.html';
-                } else if (section === 'Inicio') { 
-                    window.location.href = 'Inicio.html'; 
-                } else if (section === 'Configuración') { 
-                    window.location.href = 'ConfigApp.html'; 
-                } else if (section === 'Perfil') { 
-                    window.location.href = 'PerfilUser.html'; 
-                } else if (section === 'Vacaciones') {
-                    window.location.href = 'Vacaciones.html';
-                } else if (section === 'Datos') {
-                    window.location.href = 'Data.html';
-                }
-            }
-
-            function logoutAndClearCache() {
-                ['Usuario_Correo', 'Usuario_Id', 'Usuario_Tienda', STORAGE_KEY_ORDER].forEach(key => {
-                    localStorage.removeItem(key);
-                });
-                window.location.href = 'index.html';
+            if (section === 'Datos') {
+                // Redirecciona al archivo 'Data.html'
+                window.location.href = 'Data.html';
+                return;
             }
             
-            // =================================================================================
-                // 5. INICIALIZACIÓN
-                // =================================================================================
+            console.error(`ERROR: Sección no mapeada para navegación: ${section}`);
+        }
 
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Verificación de sesión
-                    const correo = localStorage.getItem('Usuario_Correo');
-                    if (!correo) { window.location.replace('index.html'); return; }
+                function logoutAndClearCache() {
+            // Definir las claves que deben ser eliminadas al cerrar sesión:
+            const cacheKeys = [
+                // Claves de caché de datos:
+                'employeeDataCache_BD_Personal2', // Caché de BD_Personal2
+                'vacaciones2DataCache',           // Caché de Vacaciones2
+                
+                // Claves de datos de sesión/perfil del usuario (CRÍTICAS para la limpieza):
+                'Usuario_Nombre',
+                'Usuario_Correo', 
+                'Usuario_Telefono', 
+                'Usuario_PreguntaSeg', 
+                'Usuario_RespuestaSeg', 
+                'Usuario_Id',
+                'Usuario_IdX',
+                'Usuario_Tienda',
+                'Usuario_Perfil'
+            ];
+        
+            console.log("Iniciando proceso de cierre de sesión y limpieza de caché...");
+        
+            // Limpiar cada clave
+            cacheKeys.forEach(key => {
+                localStorage.removeItem(key);
+                console.log(`Caché limpia: ${key}`);
+            });
+        
+            // Redirigir al usuario a la página de inicio (index.html)
+            window.location.href = 'index.html';
+        }
+        
+        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
 
-                    // Inicialización de botones de navegación (Footer)
-                    const footerButtons = document.querySelectorAll('.footer-btn');
-                    footerButtons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            footerButtons.forEach(btn => btn.classList.remove('active'));
-                            button.classList.add('active');
-                            loadContent(button.getAttribute('data-section'));
-                        });
-                    });
-                    
-                    // --- LISTENERS DINÁMICOS ---
-                    // Función para adjuntar el listener del botón de Carga Completa (necesario tras cada renderizado)
-                    function attachFullLoadListener() {
-                        const loadFullDataButton = document.getElementById('loadFullDataButton');
-                        if (loadFullDataButton) {
-                            loadFullDataButton.onclick = () => {
-                                // Forzar la carga completa al hacer clic en el botón
-                                fetchAndCacheData(true).then(data => {
-                                    if (data) {
-                                        window.handleSort(currentSort.key); // Re-renderizar con todos los datos
-                                    }
-                                }); 
-                            };
-                        }
-                    }
-                    
-                    // Modificar handleConfigModal para incluir la llamada al listener del botón dinámico
-                    const originalHandleConfigModal = window.handleConfigModal;
-                    window.handleConfigModal = function() {
-                        originalHandleConfigModal(); // Ejecuta la lógica original del modal
-                        attachFullLoadListener(); // Adjunta el listener del botón de carga total
-                    };
+        document.addEventListener('DOMContentLoaded', function() {
+            const correo = localStorage.getItem('Usuario_Correo');
+            const id = localStorage.getItem('Usuario_Id');
+            
+            // Verifica si AMBAS claves están ausentes.
+            // La sesión no es válida si NO hay Correo AND NO hay Id.
+            if (!correo && !id) {
+                console.log("Redirigiendo a index.html");
+                window.location.replace('index.html'); 
+            }
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica para mostrar solo el primer nombre del usuario si existe en localStorage
+            const usuarioNombreCompleto = localStorage.getItem('Usuario_Nombre');
+            const headerTitle = document.querySelector('#app-header h1');
+            
+            if (usuarioNombreCompleto && headerTitle) {
+                // Extrae solo el primer nombre, tomando la primera palabra y recortando espacios
+                const primerNombre = usuarioNombreCompleto.trim().split(' ')[0];
+                headerTitle.textContent = `¡Hola, ${primerNombre}!`;
+            }
+            // Si usuarioNombreCompleto es null/vacío, el h1 mantiene su valor por defecto ("Mi Aplicación Móvil ZXC").
 
-
-                    // --- LISTENERS FIJOS DEL MODAL DE CONFIGURACIÓN ---
-                    const modal = document.getElementById('configModal');
-                    
-                    const saveButton = document.getElementById('saveColumnOrderButton');
-                    if (saveButton) {
-                        saveButton.addEventListener('click', saveColumnOrder);
-                    }
-
-                    const closeButton = document.getElementById('closeConfigModal');
-                    if (closeButton) {
-                        closeButton.addEventListener('click', () => {
-                            if (modal) modal.classList.add('hidden');
-                        });
-                    }
-
-                    // Carga inicial de datos
-                    const activeSectionButton = document.querySelector('.footer-btn.active');
-                    if (activeSectionButton && activeSectionButton.getAttribute('data-section') === 'Datos') {
-                        loadContent('Datos');
-                    } else if (!activeSectionButton) {
-                        // Si no hay botón activo, asumimos que 'Datos' es la sección principal
-                        loadContent('Datos');
-                    }
-                    
-                    lucide.createIcons();
+            // Agrega event listeners para la navegación MPA, llamando a loadContent
+            const footerButtons = document.querySelectorAll('.footer-btn');
+            footerButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const section = button.getAttribute('data-section');
+                    loadContent(section);
                 });
+            });
+            
+            // Opcional: Redirigir a 'Perfil' (que es la vista principal) al cargar el index
+            // loadContent('Perfil'); 
+        });
+        
     </script>
 </body>
 </html>
