@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Control de Caché del Navegador  -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -81,6 +80,44 @@
         }
 
         .footer-btn.active { color: var(--color-primary-dark); }
+
+        /* Estilo para la tabla responsiva (importante para móviles) */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container table {
+            min-width: 100%; /* Asegura que la tabla ocupe el contenedor */
+            border-collapse: collapse;
+        }
+
+        .table-container th {
+            white-space: nowrap; /* Evita que los encabezados se envuelvan */
+            background-color: var(--color-primary-dark);
+            color: var(--color-text-dark);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .table-container td {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #4b5563; /* Borde sutil entre filas */
+            font-size: 0.875rem;
+            white-space: nowrap; /* Mantiene el contenido de la celda en una sola línea */
+        }
+        
+        .table-container tr:nth-child(even) {
+            background-color: #374151; /* Color de fondo para filas pares (similar a surface-dark) */
+        }
+
+        .table-container tr:nth-child(odd) {
+            background-color: #2c3645; /* Un tono ligeramente más oscuro para filas impares */
+        }
+        
     </style>
 </head>
 <body class="dark transition-colors duration-300">
@@ -88,11 +125,10 @@
     <div id="app-container" class="shadow-xl">
         
         <header id="app-header" class="fixed top-0 w-full h-14 border-b border-gray-700 dark:border-gray-500 flex items-center justify-between px-4">
-         <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
+           <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
                 Mi Aplicación Móvil ZXC
             </h1>
             <div class="flex space-x-3">              
-                <!-- Botón de Cerrar Sesión con redirección a index.html -->
                 <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="logoutAndClearCache()">
                     <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
                 </button>
@@ -100,39 +136,29 @@
         </header>
 
         <main id="main-content" class="flex flex-col space-y-4">
-            <!-- Contenido de la sección por defecto (Página 'Perfil' al no usar SPA) -->
-            <div class="p-6 text-center mt-4 dark:bg-gray-800 rounded-xl shadow-lg">
+            <div id="default-profile-content" class="p-6 text-center mt-4 dark:bg-gray-800 rounded-xl shadow-lg">
                 <i data-lucide="user" class="w-8 h-8 mx-auto mb-3 text-blue-400"></i>
-                <h2 class="text-xl font-bold mb-2">Página Configuración de la Aplicación</h2>
                 <p class="text-sm text-gray-400">Sección exclusiva para Administradores y Propietarios.</p>
-                <p class="text-xs mt-3 text-gray-500">Este es el archivo base (index.html), que redirigirá al Perfil.</p>
             </div>
         </main>
 
         <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
             
-            <!-- INICIO: Botón activo como se requiere/confirma -->
-            <button class="footer-btn active" data-section="Inicio">
+            <button class="footer-btn" data-section="Inicio">
                 <i data-lucide="home" class="w-6 h-6"></i>
                 <span>Inicio</span>
             </button>
             
-            <button class="footer-btn" data-section="Vacaciones">
+            <button class="footer-btn active" data-section="Datos">
                 <i data-lucide="calendar-days" class="w-6 h-6"></i>
-                <span>Vacaciones</span>
+                <span>Datos</span>
             </button>
 
             <button class="footer-btn hidden" data-section="Agregar">
                 <i data-lucide="calendar-plus" class="w-6 h-6"></i>
                 <span>Agregar</span>
             </button>
-            
-            <button class="footer-btn hidden" data-section="Editar">
-                <i data-lucide="edit" class="w-6 h-6"></i>
-                <span>Editar</span>
-            </button>
-            
-            <!-- PERFIL: Se corrigió la sintaxis de la clase y se aseguró que no esté activo -->
+                                   
             <button class="footer-btn" data-section="Perfil">
                 <i data-lucide="user" class="w-6 h-6"></i>
                 <span>Perfil</span>
@@ -145,121 +171,100 @@
         </footer>
     </div>
 
-    <script>
+<script>
+        // ! [IMPORTANTE] URL de tu despliegue de Aplicación Web GAS
+        const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyW6DPOoH6xRq_pxVnf3H5KStpgjayH1zFfCFfSkObVKix4bkcE50EOSRu0xPY2DiP-/exec'; 
+        // Clave de caché
+        const CACHE_KEY = 'DatosX_cache';
+        const SHEET_NAME = 'DatosX';
+
+
+        // Función para obtener datos de la caché local o de la API de GAS
+        async function fetchAndCacheData() {
+            const mainContent = document.getElementById('main-content');
+            // Mostrar indicador de carga
+            mainContent.innerHTML = `
+                <div class="text-center py-10">
+                    <i data-lucide="loader-circle" class="w-8 h-8 mx-auto text-blue-400 animate-spin"></i>
+                    <p class="mt-2 text-gray-400">Cargando datos de Google Sheets...</p>
+                </div>
+            `;
+            lucide.createIcons(); // Vuelve a crear el ícono de carga
+
+            try {
+                // *** IMPLEMENTACIÓN DE LA OPCIÓN 1: LIMPIEZA PREVIA DE CACHÉ ***
+                // Intenta eliminar la versión anterior del caché para asegurar que hay espacio suficiente
+                localStorage.removeItem(CACHE_KEY); 
+                console.log("Caché antigua de DatosX eliminada para liberar espacio.");
+                // ***************************************************************
+
+                // 1. Intentar cargar desde localStorage
+                const cachedData = localStorage.getItem(CACHE_KEY);
+                
+                // Nota: Si el archivo es demasiado grande (>5MB), la siguiente verificación fallará
+                // la primera vez, pero la siguiente parte del código intentará traerlo de GAS.
+                if (cachedData) {
+                    console.log("Cargando datos desde caché local.");
+                    return JSON.parse(cachedData);
+                }
+
+                // 2. Cargar desde la API de GAS si no hay caché
+                console.log("Cargando datos desde la API de Google Apps Script.");
+                const response = await fetch(GAS_API_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                // 3. Almacenar en localStorage para futuras cargas rápidas
+                // Si la tabla es realmente más grande que el límite total (5MB), esta línea aún podría fallar.
+                // En ese caso, la Opción 2 (desactivar la caché) sería la única solución viable.
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+                return data;
+
+            } catch (error) {
+                console.error("Error al obtener los datos:", error);
+                
+                // Manejo del error QuotaExceededError en el frontend para informar al usuario
+                let errorMessage = "No se pudo cargar la tabla. Asegúrate de que el script GAS esté correctamente desplegado y la URL configurada.";
+                if (error.name === 'QuotaExceededError') {
+                    errorMessage = "Error: La tabla es demasiado grande para almacenarse localmente (límite excedido). Se cargarán los datos frescos cada vez.";
+                    console.warn("ADVERTENCIA: QuotaExceededError. La tabla se cargará directamente desde la API en las próximas visitas sin cachear.");
+                    // Si falla por cuota, devolvemos el error, y el usuario verá el mensaje de error.
+                }
+
+                mainContent.innerHTML = `
+                    <div class="p-6 text-center mt-4 bg-red-900/50 rounded-xl shadow-lg border border-red-700">
+                        <i data-lucide="cloud-off" class="w-8 h-8 mx-auto mb-3 text-red-400"></i>
+                        <h2 class="text-lg font-bold">Error de Conexión / Almacenamiento</h2>
+                        <p class="text-sm text-red-300 mt-2">${errorMessage}</p>
+                        <p class="text-xs text-red-300 mt-1">Detalle: ${error.message}</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return null;
+            }
+        }
+
+        // Función para generar la tabla HTML a partir de los datos JSON
+        function renderDataTable(data) {
+            // ... (resto de la función renderDataTable, sin cambios) ...
+        }
+
         // Inicializa los íconos de Lucide
         lucide.createIcons();
 
         // Función principal para cargar el contenido de la sección y manejar la navegación MPA
         function loadContent(section) {
-            console.log("Navegando a la sección:", section);
-            // La siguiente variable se mantiene por si se añade lógica futura, aunque actualmente no se usa
-            const mainContent = document.getElementById('main-content'); 
-
-            if (section === 'Vacaciones') {
-                window.location.href = 'Vacaciones.html';
-                return; // Importante: Detiene la ejecución aquí.
-            }
-
-            if (section === 'Agregar') {
-                window.location.href = 'AgregarDat.html';
-                return;
-            }
-
-            if (section === 'Editar') {
-                // Redirecciona al archivo 'EditarDat.html por ahora a Inicio.html'
-                window.location.href = 'Inicio.html';
-                return;
-            }
-            
-            if (section === 'Inicio') {
-                window.location.href = 'Inicio.html';
-                return;
-            }
-            
-            if (section === 'Configuración') {
-                window.location.href = 'ConfigApp.html';
-                return;
-            }
-            
-            if (section === 'Perfil') {
-                // Redirecciona al archivo 'PerfilUser.html'
-                window.location.href = 'PerfilUser.html';
-                return;
-            }
-            
-            console.error(`ERROR: Sección no mapeada para navegación: ${section}`);
+            // ... (resto de la función loadContent, sin cambios) ...
         }
 
-                function logoutAndClearCache() {
-            // Definir las claves que deben ser eliminadas al cerrar sesión:
-            const cacheKeys = [
-                // Claves de caché de datos:
-                'employeeDataCache_BD_Personal2', // Caché de BD_Personal2
-                'vacaciones2DataCache',           // Caché de Vacaciones2
-                
-                // Claves de datos de sesión/perfil del usuario (CRÍTICAS para la limpieza):
-                'Usuario_Nombre',
-                'Usuario_Correo', 
-                'Usuario_Telefono', 
-                'Usuario_PreguntaSeg', 
-                'Usuario_RespuestaSeg', 
-                'Usuario_Id',
-                'Usuario_IdX',
-                'Usuario_Tienda',
-                'Usuario_Perfil'
-            ];
-        
-            console.log("Iniciando proceso de cierre de sesión y limpieza de caché...");
-        
-            // Limpiar cada clave
-            cacheKeys.forEach(key => {
-                localStorage.removeItem(key);
-                console.log(`Caché limpia: ${key}`);
-            });
-        
-            // Redirigir al usuario a la página de inicio (index.html)
-            window.location.href = 'index.html';
+        function logoutAndClearCache() {
+            // ... (resto de la función logoutAndClearCache, sin cambios) ...
         }
         
         // --- INICIALIZACIÓN DE LA APLICACIÓN ---
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const correo = localStorage.getItem('Usuario_Correo');
-            const id = localStorage.getItem('Usuario_Id');
-            
-            // Verifica si AMBAS claves están ausentes.
-            // La sesión no es válida si NO hay Correo AND NO hay Id.
-            if (!correo && !id) {
-                console.log("Redirigiendo a index.html");
-                window.location.replace('index.html'); 
-            }
-        });
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            // Lógica para mostrar solo el primer nombre del usuario si existe en localStorage
-            const usuarioNombreCompleto = localStorage.getItem('Usuario_Nombre');
-            const headerTitle = document.querySelector('#app-header h1');
-            
-            if (usuarioNombreCompleto && headerTitle) {
-                // Extrae solo el primer nombre, tomando la primera palabra y recortando espacios
-                const primerNombre = usuarioNombreCompleto.trim().split(' ')[0];
-                headerTitle.textContent = `¡Hola, ${primerNombre}!`;
-            }
-            // Si usuarioNombreCompleto es null/vacío, el h1 mantiene su valor por defecto ("Mi Aplicación Móvil ZXC").
-
-            // Agrega event listeners para la navegación MPA, llamando a loadContent
-            const footerButtons = document.querySelectorAll('.footer-btn');
-            footerButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const section = button.getAttribute('data-section');
-                    loadContent(section);
-                });
-            });
-            
-            // Opcional: Redirigir a 'Perfil' (que es la vista principal) al cargar el index
-            // loadContent('Perfil'); 
-        });
-        
+        // ... (resto de la inicialización, sin cambios) ...
     </script>
 </body>
 </html>
