@@ -50,10 +50,10 @@
     <div id="app-container" class="shadow-xl">
         
         <header id="app-header" class="fixed top-0 w-full h-14 border-b border-gray-700 dark:border-gray-500 flex items-center justify-between px-4">
-           <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
+            <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
                 Mi Aplicación Móvil ZXC
             </h1>
-            <div class="flex space-x-3">              
+            <div class="flex space-x-3">              
                 <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="logoutAndClearCache()">
                     <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
                 </button>
@@ -61,7 +61,7 @@
         </header>
 
         <main id="main-content" class="flex flex-col space-y-4">
-            </main>
+        </main>
 
         <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
             
@@ -84,7 +84,7 @@
                 <i data-lucide="database-backup" class="w-6 h-6"></i>
                 <span>Datos</span>
             </button>
-                                        
+                                    
             <button class="footer-btn" data-section="Perfil">
                 <i data-lucide="user" class="w-6 h-6"></i>
                 <span>Perfil</span>
@@ -96,11 +96,12 @@
             </button>
         </footer>
     </div>
-    
+
     <button id="loadFullDataButton" class="hidden fixed bottom-20 right-4 z-40 p-3 rounded-full bg-blue-600 shadow-xl text-white hover:bg-blue-700 transition-colors" title="Cargar totalidad de datos (Total)">
-        </button>
-    
-    <div id="configModal" class="modal-overlay hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    </button>
+
+    <div id="configModal" class="modal-overlay hidden fixed inset-0 z-50 flex items-center justify-center">
+        
         <div class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-sm border border-gray-700">
             
             <div class="flex items-center justify-between p-2 border-b border-gray-700">
@@ -116,17 +117,17 @@
                 </button>
             </div>
 
-            <div class="p-2 max-h-85 overflow-y-auto">
+            <div class="p-2"> 
                 
                 <div id="tab-order" class="tab-content">
-                    <p class="text-sm text-gray-400 mb-1">Arrastra los elementos para cambiar el orden de las columnas visibles.</p>
-                    <ul id="columnSortableList" class="space-y-1">
+                    <p class="text-sm text-gray-400 mb-1">Arrastra elementos para cambiar orden de columnas.</p>
+                    <ul id="columnSortableList" class="space-y-1 h-[360px] overflow-y-auto p-1">
                         </ul>
                 </div>
                 
                 <div id="tab-visibility" class="tab-content hidden">
                     <p class="text-sm text-gray-400 mb-3">Marca las columnas que deseas que aparezcan en la tabla.</p>
-                    <ul id="hiddenColumnList" class="space-y-1">
+                    <ul id="hiddenColumnList" class="space-y-1 h-[360px] overflow-y-auto p-1">
                         </ul>
                 </div>
             </div>
@@ -141,7 +142,6 @@
             </div>
         </div>
     </div>
-
 
         <script>
             // ! [IMPORTANTE] URL de tu despliegue de Aplicación Web GAS
@@ -306,7 +306,7 @@
                 mainContent.innerHTML = `
                     <div class="text-center py-10">
                         <i data-lucide="loader-circle" class="w-8 h-8 mx-auto text-blue-400 animate-spin"></i>
-                        <p class="mt-2 text-gray-400">Cargando ${fullLoad ? 'todos los' : 'datos iniciales'} de Google Sheets...</p>
+                        <p class="mt-2 text-gray-400">Cargando ${fullLoad ? 'todos los datos' : 'datos iniciales'} de Google Sheets...</p>
                     </div>
                 `;
                 lucide.createIcons(); 
@@ -626,7 +626,6 @@
                 }
             }
 
-
             /**
              * Inicializa el modal de configuración de columnas y sus listeners.
              */
@@ -658,7 +657,8 @@
                     // --- INSERCIÓN DEL REGISTRO ID EN LA PESTAÑA 1 (ORDEN) ---
                     if (allKeys.includes(idKey)) {
                         const idListItem = document.createElement('li');
-                        idListItem.className = 'flex items-center justify-between p-2 bg-blue-900/50 rounded-md shadow-md border border-blue-700 text-sm text-blue-300 cursor-not-allowed';
+                        // Clase original con p-1
+                        idListItem.className = 'flex items-center justify-between p-1 bg-blue-900/50 rounded-md shadow-md border border-blue-700 text-sm text-blue-300 cursor-not-allowed';
                         idListItem.setAttribute('data-key', idKey);
                         idListItem.innerHTML = `<i data-lucide="lock" class="w-4 h-4 text-blue-300 mr-2 shrink-0"></i><span class="flex-grow">${idDisplayName} (Clave)</span>`;
                         sortableList.appendChild(idListItem);
@@ -669,6 +669,7 @@
                         const displayName = columnDisplayMap[key] || key;
                         const listItem = document.createElement('li');
                         
+                        // CORREGIDO: Usar p-1 para uniformidad de altura
                         listItem.className = 'flex items-center justify-between p-1 bg-gray-700 rounded-md shadow-md cursor-grab active:cursor-grabbing border border-gray-600 hover:bg-gray-600 transition-colors text-sm';
                         
                         listItem.draggable = true;
@@ -683,11 +684,12 @@
                     // --- INSERCIÓN DEL REGISTRO ID EN LA PESTAÑA 2 (VISIBILIDAD) ---
                     if (allKeys.includes(idKey)) {
                         const idListItem = document.createElement('li');
-                        idListItem.className = 'flex items-center p-2 rounded-md bg-blue-900/50 border border-blue-700 text-sm text-blue-300 cursor-not-allowed';
-                        
+                        // Clase original con p-1
+                        idListItem.className = 'flex items-center justify-between p-1 bg-blue-900/50 rounded-md shadow-md border border-blue-700 text-sm text-blue-300 cursor-not-allowed';
+
                         idListItem.innerHTML = `
                             <input type="checkbox" id="col-vis-${idKey}" checked disabled data-key="${idKey}" class="w-4 h-4 text-blue-300 bg-blue-900 border-blue-700 rounded cursor-not-allowed">
-                            <label for="col-vis-${idKey}" class="ms-2 font-medium flex-grow">${idDisplayName} (Obligatoria)</label>
+                            <label for="col-vis-${idKey}" class="ms-2 flex-grow">${idDisplayName} (Obligatoria)</label>
                         `;
                         hiddenList.appendChild(idListItem);
                     }
@@ -698,11 +700,12 @@
                         const isChecked = visibleKeys.has(key); 
                         
                         const listItem = document.createElement('li');
-                        listItem.className = 'flex items-center p-1 rounded-md bg-gray-900/50 hover:bg-gray-700/50 transition-colors text-sm';
+                        // CORREGIDO: Usar p-1 para uniformidad de altura
+                        listItem.className = 'flex items-center justify-between p-1 rounded-md bg-gray-900/50 hover:bg-gray-700/50 transition-colors text-sm';
                         
                         listItem.innerHTML = `
                             <input type="checkbox" id="col-vis-${key}" data-key="${key}" ${isChecked ? 'checked' : ''} class="visibility-column-checkbox w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 cursor-pointer">
-                            <label for="col-vis-${key}" class="ms-2 font-medium text-gray-300 cursor-pointer flex-grow">${displayName}</label>
+                            <label for="col-vis-${key}" class="ms-2 text-gray-300 cursor-pointer flex-grow">${displayName}</label>
                         `;
                         hiddenList.appendChild(listItem);
                     });
@@ -786,11 +789,11 @@
                 const cedula = localStorage.getItem('CEDULA');
                 // 2. Obtener la referencia al botón
                 const navVacacionesBtn = document.getElementById('nav-vacaciones');
-    
+
                 if (!navVacacionesBtn) {
                     return; 
                 }
-    
+
                 if (!cedula) {
                     // No hay CEDULA: Aplicar clases de deshabilitado
                     
@@ -805,7 +808,7 @@
                     navVacacionesBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
                 }
             }
-    
+
             // Aseguramos que esta función se ejecute al iniciar la aplicación (dentro de DOMContentLoaded)
             document.addEventListener('DOMContentLoaded', () => {
                 // ... [Tu código existente] ...
@@ -821,11 +824,11 @@
             
                 // Ejecutar la lógica de control de acceso DESPUÉS de definir todos los elementos
                 disableVacacionesIfNoCedula(); 
-    
+
                 // Volver a inicializar los íconos al cargar
                 lucide.createIcons();
             });
-            
+
             function logoutAndClearCache() {
                 ['Usuario_Correo', 'Usuario_Id', 'Usuario_Tienda', STORAGE_KEY_ORDER].forEach(key => {
                     localStorage.removeItem(key);
