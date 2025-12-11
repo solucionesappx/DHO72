@@ -1089,6 +1089,11 @@
                 return;
             }
             
+            if (section === 'Datos') {
+                window.location.href = 'Data.html';
+                return;
+            }
+            
             if (section === 'Agregar') {
                 
                 const recordToEditJSON = localStorage.getItem(REGISTER_TRANSFER_KEY);
