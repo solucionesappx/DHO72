@@ -657,6 +657,58 @@
             });
         }
 
+        // ==========================================================
+        // --- LÓGICA DE CONTROL DE ACCESO A SECCIÓN VACACIONES ---
+        // ==========================================================
+        /**
+        * Verifica si existe una CEDULA en localStorage. Si no existe, 
+        * deshabilita visual y funcionalmente el botón de Vacaciones.
+        */
+        function disableVacacionesIfNoCedula() {
+            // 1. Obtener el valor de CEDULA de localStorage
+            const cedula = localStorage.getItem('CEDULA');
+            // 2. Obtener la referencia al botón
+            const navVacacionesBtn = document.getElementById('nav-vacaciones');
+
+            if (!navVacacionesBtn) {
+                return; 
+            }
+
+            if (!cedula) {
+                // No hay CEDULA: Aplicar clases de deshabilitado
+                
+                // opacity-50: Efecto opaco ("hover opaco" estático para indicar inactividad)
+                // cursor-not-allowed: Cambia el puntero/cursor a "prohibido"
+                // pointer-events-none: Anula completamente los eventos de click y hover,
+                //                     asegurando que no se active la navegación o el foco.
+                navVacacionesBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                
+            } else {
+                // Si existe CEDULA, asegurar que esté habilitado (si se deshabilitó antes)
+                navVacacionesBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+            }
+        }
+
+        // Aseguramos que esta función se ejecute al iniciar la aplicación (dentro de DOMContentLoaded)
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... [Tu código existente] ...
+            
+            // ... [Bloque de 'footerButtons' que ya tienes] ...
+            const footerButtons = document.querySelectorAll('.footer-btn');
+            footerButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const section = button.getAttribute('data-section');
+                    loadContent(section);          
+                });
+            });
+        
+            // Ejecutar la lógica de control de acceso DESPUÉS de definir todos los elementos
+            disableVacacionesIfNoCedula(); 
+
+            // Volver a inicializar los íconos al cargar
+            lucide.createIcons();
+        });
+        
         /**
         * Limpia todas las claves de caché de datos de la aplicación antes de cerrar sesión.
         * Incluye las claves de BD_Personal2 y Vacaciones2, y limpia cualquier dato de usuario.
