@@ -162,21 +162,22 @@
                 <span>Inicio</span>
             </button>
             
-            <button id="nav-vacaciones" class="footer-btn transition-opacity duration-300" data-section="Vacaciones">
-                <i data-lucide="calendar-days" class="w-6 h-6 text-gray-400"></i> 
+            <button class="footer-btn" data-section="Vacaciones">
+                <i data-lucide="calendar-days" class="w-6 h-6"></i>
                 <span>Vacaciones</span>
             </button>
 
+            <!-- BOTÓN AGREGAR: Establecido como activo por defecto -->
             <button class="footer-btn active" data-section="Agregar">
                 <i data-lucide="calendar-plus" class="w-6 h-6"></i>
                 <span>Agregar</span>
             </button>
-
-            <button class="footer-btn" data-section="Datos">
-                <i data-lucide="database-backup" class="w-6 h-6"></i>
-                <span>Datos</span>
+            
+            <button class="footer-btn hidden" data-section="Editar">
+                <i data-lucide="edit" class="w-6 h-6"></i>
+                <span>Editar</span>
             </button>
-                                        
+            
             <button class="footer-btn" data-section="Perfil">
                 <i data-lucide="user" class="w-6 h-6"></i>
                 <span>Perfil</span>
@@ -314,7 +315,7 @@
         // *** 4. ESTRUCTURA HTML DEL FORMULARIO DE VACACIONES (SIN CAMBIOS) ***
         // ====================================================================================
         const VACACIONES_FORM_STRUCTURE = `
-            <form id="vacation-form" class="space-y-4">
+            <form id="vacation-form" class="space-y-2">
                 
                 <div class="p-5 bg-gray-800 rounded-xl shadow-lg border border-gray-700 mt-4">
                     
@@ -349,9 +350,9 @@
 
                 </div>
 
-                <div class="p-5 bg-gray-900 rounded-xl shadow-lg border border-gray-700">
+                <div class="px-5 py-2 bg-gray-900 rounded-xl shadow-lg border border-gray-700">
                     
-                    <h2 class="text-xl font-bold text-yellow-300 mb-4 pb-2 flex items-center" id="form-title-wrapper"> 
+                    <h2 class="text-xl font-bold text-yellow-300 mb-2 pb-1 flex items-center" id="form-title-wrapper"> 
                         <span id="form-title-text">Detalles de Registro</span>
                         <button type="button" 
                                 onclick="toggleVacationLock()" 
@@ -1086,11 +1087,6 @@
 
             if (section === 'Configuración') {
                 window.location.href = 'ConfigApp.html';
-                return;
-            }
-            
-            if (section === 'Datos') {
-                window.location.href = 'Data.html';
                 return;
             }
             
