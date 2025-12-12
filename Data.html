@@ -296,9 +296,10 @@
             // 2. LÓGICA DE DATOS Y RENDERIZADO (CORE)
             // =================================================================================
 
-            /**
-             * Función principal para obtener datos de la API de GAS.
-             */
+            /*
+            * Función principal para obtener datos de la API de GAS.
+            */
+
             async function fetchAndCacheData(fullLoad = false) {
                 const mainContent = document.getElementById('main-content');
                 
@@ -312,20 +313,47 @@
                 lucide.createIcons(); 
 
                 const userTienda = localStorage.getItem('Usuario_Tienda') || 'DEFAULT';
+                // 1. OBTENER EL PERFIL PARA ENVIAR AL BACKEND
+                const userProfile = localStorage.getItem('Usuario_Perfil') || 'INVITADO'; 
+
                 let apiUrlWithParam = `${GAS_API_URL}?userTienda=${encodeURIComponent(userTienda)}`;
 
                 if (fullLoad) {
                     apiUrlWithParam += `&fullLoad=true`;
                 }
 
+                // 2. AÑADIR EL PERFIL A LOS PARÁMETROS DE LA URL
+                apiUrlWithParam += `&userProfile=${encodeURIComponent(userProfile)}`; 
+
                 try {
                     const response = await fetch(apiUrlWithParam);
+
+                    // --- MANEJO DE ERROR CRÍTICO 403 (AUTORIZACIÓN) ---
+                    // Manejamos el 403 antes de response.json() para evitar "Failed to fetch"
+                    if (response.status === 403) {
+                        const requiredProfile = 'Admin';
+                        
+                        // 3. Mostrar el aviso de seguridad
+                        alert(`AVISO: Acceso denegado. Se requiere el perfil "${requiredProfile}".`);
+                        
+                        // 4. Redirigir y detener la función
+                        window.location.href = 'index.html'; 
+                        
+                        // Devolvemos null para detener la ejecución de la promesa y del try/catch
+                        return null; 
+                    }
+                    // -----------------------------------------------------
+
+                    // Esta línea solo se ejecuta si la respuesta NO fue 403
                     const result = await response.json(); 
                     
+                    // Manejo de errores internos del backend (e.g., hoja no encontrada, errores 500)
                     if (!response.ok || result.error) {
                         const errorMessage = result.error || `HTTP error! status: ${response.status}`;
                         throw new Error(errorMessage);
                     }
+
+                    // --- PROCESAMIENTO DE DATOS EXITOSO ---
 
                     // 1. ASIGNAMOS VALORES DINÁMICOS RECIBIDOS
                     const serverOrder = result.columnOrder || [];
@@ -337,9 +365,7 @@
                     const savedOrder = localStorage.getItem(STORAGE_KEY_ORDER);
                     if (savedOrder) {
                         const parsedOrder = JSON.parse(savedOrder);
-                        // Filtrar el orden guardado por las claves que realmente existen en el servidor
                         const validSavedOrder = parsedOrder.filter(key => allAvailableColumnKeys.includes(key));
-                        // Añadir las nuevas claves del servidor (no vistas antes) al final
                         const newKeys = serverOrder.filter(key => !validSavedOrder.includes(key));
                         finalDisplayOrder = [...validSavedOrder, ...newKeys];
                     } else {
@@ -348,11 +374,10 @@
                     
                     window._currentTableData = result.data || [];
                     
-                    // 3. Configurar el estado del botón de FullLoad para que renderDataTable lo utilice
+                    // 3. Configurar el estado del botón de FullLoad
                     const totalRows = result.pagination?.totalRows || 0;
                     const fetchedRows = result.pagination?.fetchedRows || 0;
                     
-                    // Almacenamos el estado en una variable global
                     window._fullLoadState = {
                         shouldShow: totalRows > fetchedRows,
                         totalRows: totalRows
@@ -362,10 +387,12 @@
 
                 } catch (error) {
                     console.error("Error al obtener los datos:", error);
+                    
+                    // Asegurarse de que el spinner de carga sea reemplazado por un mensaje de error
                     mainContent.innerHTML = `
                         <div class="p-6 text-center mt-4 bg-red-900/50 rounded-xl shadow-lg border border-red-700">
                             <i data-lucide="cloud-off" class="w-8 h-8 mx-auto mb-3 text-red-400"></i>
-                            <h2 class="text-lg font-bold">Error de Conexión o Servidor</h2>
+                            <h2 class="text-lg font-bold">Falta de autorización para conexión con BD</h2>
                             <p class="text-sm text-red-300 mt-2">Detalle: ${error.message}</p>
                         </div>
                     `;
