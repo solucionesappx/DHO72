@@ -29,7 +29,7 @@
         .footer-btn.active { color: var(--color-primary-dark); }
 
         /* [Estilos de Tabla y Sticky] */
-        .table-scroll-container { max-height: calc(85vh - 150px); overflow: auto; border-radius: 0.75rem; border: 1px solid #4b5563; background-color: var(--color-bg-table-row); display: block; }
+        .table-scroll-container { max-height: calc(85vh - 200px); overflow: auto; border-radius: 0.75rem; border: 1px solid #4b5563; background-color: var(--color-bg-table-row); display: block; }
         .table-scroll-container table { border-collapse: collapse; table-layout: auto; width: max-content; min-width: 100%; }
         .table-scroll-container th { position: sticky; top: 0; z-index: 20; background-color: var(--color-header); color: var(--color-data-text); padding: 0.25rem 0.5rem; text-align: center; white-space: nowrap; font-size: 0.75rem; border-bottom: 2px solid rgba(255, 255, 255, 0.1); cursor: pointer; text-transform: uppercase; }
         .sticky-id-cell { position: sticky; left: 0; z-index: 30; font-weight: bold; text-align: center; border-right: 1px solid rgba(255, 255, 255, 0.2); min-width: 30px; max-width: 30px; }
@@ -43,8 +43,15 @@
         .table-scroll-container tr:nth-child(odd) .table-data-cell { background-color: #2c3645; }
         .header-content { display: flex; align-items: center; justify-content: center; gap: 4px; }
         .modal-overlay { background-color: rgba(0, 0, 0, 0.8); transition: opacity 0.3s ease; }
+        .search-actions-container { display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; width: 100%; }
+        .search-input-wrapper { position: relative; flex-grow: 1; border-radius: 0.75rem; }      
+        .search-input-wrapper input { width: 100%; padding-left: 2.5rem; padding-right: 1rem; padding-top: 0.25rem; padding-bottom: 0.25rem; border-radius: 0.75rem; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); background-color: #374151; color: #f3f4f6; border: 1px solid #4b5563; transition: border-color 0.15s, box-shadow 0.15s; outline: none; }
+        .search-input-wrapper input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px #3b82f6; }
+        .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+    
     </style>
 </head>
+
 <body class="dark transition-colors duration-300">
 
     <div id="app-container" class="shadow-xl">
@@ -118,17 +125,16 @@
             </div>
 
             <div class="p-2"> 
-                
                 <div id="tab-order" class="tab-content">
-                    <p class="text-sm text-gray-400 mb-1">Arrastra elementos para cambiar orden de columnas.</p>
-                    <ul id="columnSortableList" class="space-y-1 h-[360px] overflow-y-auto p-1">
-                        </ul>
+                <p class="text-sm text-gray-400 mb-1">Arrastra elementos para cambiar orden de columnas.</p>
+                <ul id="columnSortableList" class="space-y-1 h-[320px] overflow-y-auto p-1">
+                    </ul>
                 </div>
                 
                 <div id="tab-visibility" class="tab-content hidden">
-                    <p class="text-sm text-gray-400 mb-3">Marca las columnas que deseas que aparezcan en la tabla.</p>
-                    <ul id="hiddenColumnList" class="space-y-1 h-[360px] overflow-y-auto p-1">
-                        </ul>
+                <p class="text-sm text-gray-400 mb-3">Marca las columnas que deseas que aparezcan en la tabla.</p>
+                <ul id="hiddenColumnList" class="space-y-1 h-[320px] overflow-y-auto p-1">
+                    </ul>
                 </div>
             </div>
             
@@ -142,6 +148,8 @@
             </div>
         </div>
     </div>
+
+    
 
         <script>
             // ! [IMPORTANTE] URL de tu despliegue de Aplicación Web GAS
@@ -159,6 +167,10 @@
             let columnDisplayMap = {};           // Mapeo de claves limpias a nombres amigables
             let finalDisplayOrder = [];          // Orden final de columnas (persistencia local)
             let allAvailableColumnKeys = [];     // Todas las claves limpias disponibles en la hoja
+
+            let selectedSearchColumn = null; // Almacena la clave de la columna seleccionada para filtrar la tabla.
+            let searchTimeout = null;        // Para el Debounce del input de búsqueda de la tabla principal.
+            let configSearchTimeout = null;  // Para el Debounce del input de búsqueda del modal de configuración.            
 
             // Estado actual del ordenamiento de la tabla
             let currentSort = {
@@ -291,6 +303,113 @@
                 handleConfigModal(); 
             }
             window.handleSort = handleSort; // <--- ¡Esto hace la función globalmente accesible!
+
+            /**
+             * Rellena el select de columnas de búsqueda, establece la columna por defecto 
+             * y configura los listeners para el motor de búsqueda de la tabla principal.
+             */
+            function setupSearchEngine() {
+                const selectElement = document.getElementById('search-column-select');
+                const searchInput = document.getElementById('search-input');
+                const clearButton = document.getElementById('clear-search-btn');
+                
+                // Si no hay elementos de búsqueda (porque no se cargó el HTML), salimos.
+                if (!selectElement || !searchInput) return;
+
+                selectElement.innerHTML = ''; // Limpiar opciones anteriores
+                
+                // 1. Llenar el <select> con las columnas visibles
+                finalDisplayOrder.forEach(key => {
+                    const option = document.createElement('option');
+                    // El valor (value) es la clave interna (CEDULA), el texto es el nombre amigable (displayMap)
+                    option.value = key;
+                    option.textContent = columnDisplayMap[key] || key; 
+                    selectElement.appendChild(option);
+                });
+
+                // 2. Establecer la columna de búsqueda por defecto
+                selectedSearchColumn = finalDisplayOrder.length > 0 ? finalDisplayOrder[0] : null;
+                
+                // Si hay una columna seleccionada, actualiza el placeholder para indicar el criterio
+                if (selectedSearchColumn) {
+                    const friendlyName = columnDisplayMap[selectedSearchColumn] || selectedSearchColumn;
+                    searchInput.placeholder = `Buscar por: ${friendlyName}...`;
+                }
+
+                // 3. Configurar Listeners
+                
+                // Listener para cambiar la columna de búsqueda
+                selectElement.addEventListener('change', (e) => {
+                    selectedSearchColumn = e.target.value;
+                    const friendlyName = columnDisplayMap[selectedSearchColumn] || selectedSearchColumn;
+                    searchInput.placeholder = `Buscar por: ${friendlyName}...`;
+                    // Reaplicar el filtro con el nuevo criterio si hay texto
+                    filterEmployees(searchInput.value); 
+                });
+
+                // Listener para el input de búsqueda (con Debounce)
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        filterEmployees(e.target.value);
+                    }, 300);
+                });
+
+                // Listener para el botón de limpiar
+                clearButton.addEventListener('click', clearSearch);
+            }
+
+            /**
+             * Filtra la lista de empleados basándose en el texto de búsqueda y la columna seleccionada.
+             * NOTA: Usa 'allEmployeeData' como fuente y guarda el resultado en 'filteredEmployeeData'.
+             * @param {string} searchTerm - El término de búsqueda.
+             */
+            function filterEmployees(searchTerm) {
+                const query = String(searchTerm).trim().toLowerCase();
+                
+                // Caso 1: No hay criterio de búsqueda o columna seleccionada
+                if (query === '' || !selectedSearchColumn) {
+                    filteredEmployeeData = [...allEmployeeData]; // Muestra todos los datos
+                } else {
+                    // Caso 2: Filtrar solo en la columna seleccionada
+                    const field = selectedSearchColumn;
+                    
+                    filteredEmployeeData = allEmployeeData.filter(employee => {
+                        // Aseguramos que el valor de la celda exista y sea una cadena para la búsqueda
+                        const cellValue = String(employee[field] || '').toLowerCase();
+                        
+                        return cellValue.includes(query);
+                    });
+                }
+                
+                // Reaplicar la ordenación actual si existe
+                if (currentSortColumn && currentSortDirection) {
+                    performSort(filteredEmployeeData, currentSortColumn, currentSortDirection);
+                }
+
+                // Volver a renderizar y actualizar métricas con los datos filtrados
+                updateMetrics(filteredEmployeeData);
+                renderTable(filteredEmployeeData);
+            }
+
+            /**
+             * Configura el listener de búsqueda para el input del modal de configuración.
+             */
+            function setupConfigSearchListener() {
+                const searchInput = document.getElementById('config-search-input');
+                
+                if (searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        clearTimeout(configSearchTimeout);
+                        
+                        // Debounce: Esperar 200ms para aplicar el filtro en el modal
+                        configSearchTimeout = setTimeout(() => {
+                            filterConfigLists(e.target.value);
+                        }, 200);
+                    });
+                }
+            }
+
 
             // =================================================================================
             // 2. LÓGICA DE DATOS Y RENDERIZADO (CORE)
@@ -551,18 +670,29 @@
 
                 // Header con el Título, el Botón de Carga Total y el Botón de Configuración
                 const header = `
-                    <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-2xl font-bold">Tabla de Datos</h2>
-                        <div class="flex space-x-2">
+                    <div class="flex justify-between items-center mb-0">
+                        <h2 class="text-2xl font-bold mb-0">Tabla de Datos</h2> <div class="flex space-x-2">
                             ${loadButtonHTML} 
                             <button id="openConfigModal" class="p-2 rounded-full text-gray-300 hover:text-blue-400 transition-colors" title="Configurar Columnas">
                                 <i data-lucide="list-ordered" class="w-6 h-6"></i>
                             </button>
                         </div>
                     </div>
-                    <p class="text-sm text-gray-400 mb-6">Contenido de la hoja '${SHEET_NAME}'. (Total: ${totalRecords} registros)</p>
+                    <div class="flex justify-center search-input-wrapper mb-0 mt-0"> <input type="text" id="config-search-input" 
+                                placeholder="Buscar columna..."
+                                class="w-3/4 rounded-xl shadow-inner
+                                        text-gray-900 dark:text-gray-100
+                                        placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
+                                autocomplete="off">
+                            <i data-lucide="search" class="search-icon w-5 h-5 text-gray-500 dark:text-gray-300"></i>
+                        
+                            <button id="clear-search-btn" class="p-2 rounded-full text-red-500 hover:bg-gray-700 transition duration-150" title="Reiniciar Filtros y Ordenación">
+                                <i data-lucide="x-circle" class="w-8 h-8"></i>
+                            </button>
+                    </div> 
+                    
+                    <p class="text-sm text-gray-400 mb-0">Contenido de la hoja '${SHEET_NAME}'. (Total: ${totalRecords} registros)</p>
                 `;
-                
                 return header + tableHTML;
             }
 
