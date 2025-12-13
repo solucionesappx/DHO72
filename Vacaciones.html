@@ -323,7 +323,7 @@
                         <div class="relative flex-grow rounded-xl"> 
                             <!-- CLASES ACTUALIZADAS + autocomplete="off" -->
                             <input type="text" id="search-input" 
-                                placeholder="ID, Periodo o Concepto" 
+                                placeholder="Id, Periodo o Concepto" 
                                 class="w-full pl-10 pr-4 py-2 rounded-xl shadow-inner border 
                                     bg-white text-gray-900 placeholder-gray-500 border-gray-300 
                                     dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 dark:placeholder-gray-500 
@@ -495,27 +495,32 @@
 
         <!-- Footer de Navegación Fijo -->
         <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
+            
             <button class="footer-btn" data-section="Inicio">
                 <i data-lucide="home" class="w-6 h-6"></i>
                 <span>Inicio</span>
             </button>
-            <!-- Este botón tiene la clase 'active' por defecto para mostrar el estado actual -->
+            
             <button class="footer-btn active" data-section="Vacaciones">
-                <i data-lucide="calendar-days" class="w-6 h-6"></i> 
+                <i data-lucide="calendar-days" class="w-6 h-6"></i>
                 <span>Vacaciones</span>
             </button>
+
             <button class="footer-btn hidden" data-section="Agregar">
                 <i data-lucide="calendar-plus" class="w-6 h-6"></i>
                 <span>Agregar</span>
             </button>
-            <button class="footer-btn hidden" data-section="Editar">
-                <i data-lucide="edit" class="w-6 h-6"></i>
-                <span>Editar</span>
+
+            <button class="footer-btn" data-section="Datos">
+                <i data-lucide="database-backup" class="w-6 h-6"></i>
+                <span>Datos</span>
             </button>
+                                        
             <button class="footer-btn" data-section="Perfil">
                 <i data-lucide="user" class="w-6 h-6"></i>
                 <span>Perfil</span>
             </button>
+            
             <button class="footer-btn" data-section="Configuración">
                 <i data-lucide="settings" class="w-6 h-6"></i>
                 <span>Config</span>
@@ -628,7 +633,7 @@
         let currentSortColumn = null; // Columna activa para el ordenamiento
         let sortOrder = 'asc'; // 'asc' o 'desc'
         let searchFilter = ''; // Estado del filtro de búsqueda
-        let filterMode = 'all'; // 'all' (ID, Periodo o Concepto) o 'period' (Solo Periodo)
+        let filterMode = 'all'; // 'all' (Id, Periodo o Concepto) o 'period' (Solo Periodo)
         let employeeFixedDetails = {}; // Almacena los detalles fijos del empleado
         
         // ESTADO GLOBAL DEL MODAL: Almacena los datos actualmente filtrados y *ordenados*
@@ -1381,7 +1386,7 @@
                 input.placeholder = "Solo Periodo (YYYY)";
             } else {
                 filterMode = 'all';
-                input.placeholder = "ID, Periodo o Concepto";
+                input.placeholder = "Periodo o Concepto";
             }
             
             // Aplica el filtro inmediatamente después de cambiar el modo
@@ -1758,7 +1763,8 @@
                 'Agregar': 'AgregarDat.html',
                 'Editar': 'EditarDat.html',
                 'Perfil': 'PerfilUser.html',
-                'Configuración': 'ConfigApp.html'
+                'Configuración': 'ConfigApp.html',
+                'Datos': 'Data.html'
             };
 
             const targetFile = navigationMap[section];
