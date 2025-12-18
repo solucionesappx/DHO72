@@ -198,26 +198,76 @@
 <script>
     // --- 1. CONFIGURACIÓN Y VARIABLES GLOBALES ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCNpyLy2e59m3A03v10PZKYSsRvyJz4llCk_6OWQPQV0yMotgTj303bXGcxTiClVmTGQ/exec";
+    
+    // Almacenamiento de datos de tabla y configuración
     let currentTableData = [];
     let currentHeadersConfig = [];
-
-    const USUARIO_TIENDA_KEY = 'Usuario_Tienda';
-    const USUARIO_NOMBRE_KEY = 'Usuario_Nombre'; 
-    const USUARIO_PERFIL_KEY = 'Usuario_Perfil';
-    const USUARIO_IDX_KEY = 'Usuario_Idx';
     let USER_INFO = {}; 
 
-    // --- 2. INICIALIZACIÓN Y EVENTOS ---
+    // Claves de LocalStorage
+    const KEYS = {
+        TIENDA: 'Usuario_Tienda',
+        NOMBRE: 'Usuario_Nombre',
+        PERFIL: 'Usuario_Perfil',
+        IDX: 'Usuario_Idx',
+        CEDULA: 'Usuario_Cedula',
+        ID: 'Usuario_Id',
+        CORREO: 'Usuario_Correo'
+    };
+
+    // --- 2. INICIALIZACIÓN Y EVENTOS PRINCIPALES ---
     document.addEventListener('DOMContentLoaded', () => {
-        checkAccessPermissions();   // Bloqueo visual de botones
-        fetchAvailableTables();     // Carga de tarjetas de tablas
+        // A. Seguridad: Validar sesión activa
+        if (!validateSession()) return;
+
+        // B. Identidad: Cargar info de usuario y saludar
+        initializeUserInfo();
+
+        // C. Interfaz: Configurar botones y cargar datos iniciales
+        checkAccessPermissions();   // Bloqueo visual de botones por cédula
+        fetchAvailableTables();     // Carga de tarjetas desde Apps Script
+        setupNavigationEvents();    // Escuchadores del Footer
+        
         if (window.lucide) lucide.createIcons();
-        console.log("Configuración inicializada.");
+        console.log("Aplicación inicializada correctamente.");
     });
+
+    function validateSession() {
+        const correo = localStorage.getItem(KEYS.CORREO);
+        const id = localStorage.getItem(KEYS.ID);
+        if (!correo && !id) {
+            window.location.replace('index.html');
+            return false;
+        }
+        return true;
+    }
+
+    function initializeUserInfo() {
+        USER_INFO = {
+            tienda: localStorage.getItem(KEYS.TIENDA),
+            nombre: localStorage.getItem(KEYS.NOMBRE),
+            perfil: localStorage.getItem(KEYS.PERFIL),
+            idx: localStorage.getItem(KEYS.IDX)
+        };
+
+        const headerTitle = document.querySelector('#app-header h1, #app-header .text-xl.font-bold');
+        if (USER_INFO.nombre && headerTitle) {
+            const primerNombre = USER_INFO.nombre.trim().split(/\s+/)[0];
+            const nombreFormateado = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
+            headerTitle.textContent = `¡Hola, ${nombreFormateado}!`;
+        }
+    }
+
+    function setupNavigationEvents() {
+        const footerButtons = document.querySelectorAll('.footer-btn');
+        footerButtons.forEach(btn => {
+            btn.addEventListener('click', () => loadContent(btn.getAttribute('data-section')));
+        });
+    }
 
     // --- 3. SEGURIDAD Y NAVEGACIÓN ---
     function checkAccessPermissions() {
-        const cedula = localStorage.getItem('Usuario_Cedula');
+        const cedula = localStorage.getItem(KEYS.CEDULA);
         const btnVacaciones = document.getElementById('btn-vacaciones');
         const btnAgregar = document.getElementById('btn-agregar');
         const isRestricted = !cedula || cedula.trim() === "";
@@ -242,14 +292,14 @@
             'Perfil': 'PerfilUsuario.html' 
         };
 
-        // Validación de seguridad antes de navegar
+        // Validación de cédula para secciones críticas
         const vistasRestringidas = ['Vacaciones', 'Agregar'];
         if (vistasRestringidas.includes(section)) {
-            const cedula = localStorage.getItem('Usuario_Cedula');
+            const cedula = localStorage.getItem(KEYS.CEDULA);
             if (!cedula || cedula.trim() === "") {
                 showSystemModal({
                     title: 'Acceso Restringido',
-                    text: 'Debe tener registrada su CÉDULA en el perfil para acceder.',
+                    text: 'Debe registrar su CÉDULA en el perfil para acceder.',
                     type: 'warning'
                 });
                 return;
@@ -264,10 +314,10 @@
         window.location.href = 'index.html'; 
     }
 
-    // --- 4. CARGA Y GESTIÓN DE TABLAS ---
+    // --- 4. CARGA Y GESTIÓN DE TABLAS (API) ---
     async function fetchAvailableTables() {
         const grid = document.getElementById('table-menu-grid');
-        const tienda = localStorage.getItem('Usuario_Tienda') || 'DEFAULT';
+        const tienda = localStorage.getItem(KEYS.TIENDA) || 'DEFAULT';
         try {
             const res = await fetch(`${SCRIPT_URL}?action=getAvailableTables&userTienda=${tienda}`);
             const tables = await res.json();
@@ -295,50 +345,12 @@
         }
     }
 
-    async function downloadFullTable(tableName) {
-        const tienda = localStorage.getItem('Usuario_Tienda') || 'DEFAULT';
-        const perfil = localStorage.getItem('Usuario_Perfil') || 'INVITADO';
-
-        const proceder = await showSystemModal({
-            title: 'Descarga Completa',
-            text: `¿Deseas descargar todos los registros de "${tableName}"?`,
-            type: 'info',
-            confirmText: 'Descargar',
-            cancelText: 'Cancelar'
-        });
-
-        if (!proceder) return;
-
-        const globalLoader = document.getElementById('global-loader');
-        globalLoader.classList.remove('hidden');
-        if (window.lucide) lucide.createIcons();
-
-        await new Promise(r => setTimeout(r, 150));
-
-        try {
-            const url = `${SCRIPT_URL}?targetSheet=${encodeURIComponent(tableName)}&userTienda=${tienda}&userProfile=${perfil}&fullLoad=true`;
-            const res = await fetch(url);
-            const result = await res.json();
-            
-            if (result.error) throw new Error(result.error);
-            
-            currentTableData = result.data;
-            setupHeadersConfig(tableName, result);
-            
-            globalLoader.classList.add('hidden');
-            processFinalData(tableName); 
-        } catch (e) {
-            globalLoader.classList.add('hidden');
-            showSystemModal({ title: 'Error', text: e.message, type: 'warning' });
-        }
-    }
-
     async function handleLoadTable(tableName) {
         const panel = document.getElementById('column-config-panel');
         const container = document.getElementById('columns-list-container');
         const title = document.getElementById('config-table-title');
         
-        // Mover panel debajo del botón seleccionado
+        // Mover panel debajo de la tarjeta seleccionada
         const allButtons = document.querySelectorAll('.btn-table-custom');
         allButtons.forEach(b => {
             if (b.querySelector('span')?.textContent.trim() === tableName) b.after(panel);
@@ -352,8 +364,8 @@
         title.dataset.table = tableName;
 
         try {
-            const tienda = localStorage.getItem('Usuario_Tienda') || 'DEFAULT';
-            const perfil = localStorage.getItem('Usuario_Perfil') || 'INVITADO';
+            const tienda = localStorage.getItem(KEYS.TIENDA) || 'DEFAULT';
+            const perfil = localStorage.getItem(KEYS.PERFIL) || 'INVITADO';
             const res = await fetch(`${SCRIPT_URL}?targetSheet=${encodeURIComponent(tableName)}&userTienda=${tienda}&userProfile=${perfil}`);
             const result = await res.json();
 
@@ -369,7 +381,41 @@
         }
     }
 
-    // Función auxiliar para evitar duplicidad de lógica en mapeo de headers
+    async function downloadFullTable(tableName) {
+        const proceder = await showSystemModal({
+            title: 'Descarga Completa',
+            text: `¿Deseas descargar todos los registros de "${tableName}"?`,
+            type: 'info',
+            confirmText: 'Descargar',
+            cancelText: 'Cancelar'
+        });
+
+        if (!proceder) return;
+
+        const globalLoader = document.getElementById('global-loader');
+        globalLoader.classList.remove('hidden');
+        lucide.createIcons();
+
+        try {
+            const tienda = localStorage.getItem(KEYS.TIENDA) || 'DEFAULT';
+            const perfil = localStorage.getItem(KEYS.PERFIL) || 'INVITADO';
+            const url = `${SCRIPT_URL}?targetSheet=${encodeURIComponent(tableName)}&userTienda=${tienda}&userProfile=${perfil}&fullLoad=true`;
+            const res = await fetch(url);
+            const result = await res.json();
+            
+            if (result.error) throw new Error(result.error);
+            
+            currentTableData = result.data;
+            setupHeadersConfig(tableName, result);
+            processFinalData(tableName); 
+        } catch (e) {
+            showSystemModal({ title: 'Error', text: e.message, type: 'warning' });
+        } finally {
+            globalLoader.classList.add('hidden');
+        }
+    }
+
+    // --- 5. CONFIGURACIÓN DE COLUMNAS (UI Y LÓGICA) ---
     function setupHeadersConfig(tableName, result) {
         const savedConfig = JSON.parse(localStorage.getItem(`config_${tableName}`) || 'null');
         currentHeadersConfig = result.columnOrder.map((id, idx) => {
@@ -384,7 +430,6 @@
         }).sort((a, b) => a.order - b.order);
     }
 
-    // --- 5. CONFIGURACIÓN DE COLUMNAS (UI) ---
     function renderColumnConfig() {
         const container = document.getElementById('columns-list-container');
         container.innerHTML = currentHeadersConfig.map((col, index) => {
@@ -412,6 +457,17 @@
         lucide.createIcons();
     }
 
+    function moveColumn(idx, dir) {
+        const target = idx + dir;
+        [currentHeadersConfig[idx], currentHeadersConfig[target]] = [currentHeadersConfig[target], currentHeadersConfig[idx]];
+        renderColumnConfig();
+    }
+
+    function updateColVis(idx, val) { 
+        currentHeadersConfig[idx].visible = val; 
+        renderColumnConfig(); 
+    }
+
     async function setColumnFilter(idx) {
         const col = currentHeadersConfig[idx];
         const newValue = await showSystemModal({
@@ -433,21 +489,10 @@
         }
     }
 
-    function moveColumn(idx, dir) {
-        const target = idx + dir;
-        [currentHeadersConfig[idx], currentHeadersConfig[target]] = [currentHeadersConfig[target], currentHeadersConfig[idx]];
-        renderColumnConfig();
-    }
-
-    function updateColVis(idx, val) { 
-        currentHeadersConfig[idx].visible = val; 
-        renderColumnConfig(); 
-    }
-
     async function saveCurrentConfig() {
         const name = document.getElementById('config-table-title').dataset.table;
-        const userId = localStorage.getItem('Usuario_Id');
-        const userName = localStorage.getItem('Usuario_Nombre');
+        const userId = localStorage.getItem(KEYS.ID);
+        const userName = localStorage.getItem(KEYS.NOMBRE);
         const configData = JSON.stringify(currentHeadersConfig);
 
         localStorage.setItem(`config_${name}`, configData);
@@ -459,7 +504,7 @@
         } catch (e) { console.error("Error sincronización:", e); }
     }
 
-    // --- 6. PROCESAMIENTO Y RENDERIZADO DE DATOS ---
+    // --- 6. PROCESAMIENTO Y RENDERIZADO DE TABLA MODAL ---
     function processFinalData(tableName = "") {
         const activeCols = currentHeadersConfig.filter(c => c.visible);
         if (!activeCols.length) {
@@ -530,8 +575,7 @@
     function formatDate(v) {
         if (!v) return 'N/A';
         const d = new Date(v);
-        if (isNaN(d.getTime())) return v;
-        return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+        return isNaN(d.getTime()) ? v : `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
     }
 
     function formatDateTime(v) {
@@ -551,12 +595,11 @@
     async function closeConfigPanel() {
         const ok = await showSystemModal({ title: '¿Cerrar editor?', text: 'Se perderán los cambios no guardados.', type: 'warning', confirmText: 'Cerrar', cancelText: 'Cancelar' });
         if (ok) {
-            document.getElementById('system-modal').classList.add('hidden');
             document.getElementById('column-config-panel').classList.add('hidden');
         }
     }
 
-    // --- 8. MODAL DE SISTEMA ---
+    // --- 8. MODAL DE SISTEMA DINÁMICO ---
     function showSystemModal({ title, text, type = 'info', confirmText = 'Aceptar', cancelText = null, showInput = false, inputValue = '' }) {
         return new Promise((resolve) => {
             const modal = document.getElementById('system-modal');
@@ -608,80 +651,6 @@
             if (inputField) setTimeout(() => inputField.focus(), 50);
         });
     }
-
-        /**
-     * Lee los datos del usuario logueado desde localStorage.
-     */
-    function initializeUserInfo() {
-        USER_INFO.usuarioTienda = localStorage.getItem(USUARIO_TIENDA_KEY);
-        USER_INFO.usuarioNombre = localStorage.getItem(USUARIO_NOMBRE_KEY);
-        USER_INFO.usuarioPerfil = localStorage.getItem(USUARIO_PERFIL_KEY);
-        USER_INFO.usuarioIdx = localStorage.getItem(USUARIO_IDX_KEY);
-
-        const headerTitleEl = document.querySelector('#app-header .text-xl.font-bold');
-
-        if (USER_INFO.usuarioNombre && headerTitleEl) {
-            const names = USER_INFO.usuarioNombre.trim().split(/\s+/).filter(p => p.length > 0);
-            const primerNombre = names[0] || '';
-            
-            if (primerNombre) {
-                USER_INFO.usuarioPrimerNombre = primerNombre; 
-                headerTitleEl.textContent = `¡Hola, ${primerNombre}!`;
-            } else {
-                headerTitleEl.textContent = 'Mi Aplicación Móvil DHO';
-            }
-        } else if (headerTitleEl) {
-            headerTitleEl.textContent = 'Mi Aplicación Móvil DHO';
-        }
-        
-        console.log("USER_INFO inicializado:", USER_INFO);
-    }
-
-            // --- INICIALIZACIÓN DE LA APLICACIÓN ---
-        
-       document.addEventListener('DOMContentLoaded', function() {
-            const correo = localStorage.getItem('Usuario_Correo');
-            const id = localStorage.getItem('Usuario_Id');
-            
-            // Verifica si AMBAS claves están ausentes.
-            // La sesión no es válida si NO hay Correo AND NO hay Idx.
-            if (!correo && !id) {
-                console.log("Redirigiendo a index.html");
-                window.location.replace('index.html'); 
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Lógica para mostrar solo el primer nombre del usuario si está disponible en localStorage
-            const usuarioNombreCompleto = localStorage.getItem('Usuario_Nombre');
-            const headerTitle = document.querySelector('#app-header h1');
-            
-            if (usuarioNombreCompleto && headerTitle) {
-                // Extraer el primer nombre y capitalizar la primera letra
-                const primerNombre = usuarioNombreCompleto.trim().split(' ')[0];
-                const capitalizedFirstName = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
-                
-                headerTitle.textContent = `¡Hola, ${capitalizedFirstName}!`;
-            }
-
-            // Comenzar a cargar los datos de las hojas Google Sheets
-            loadAllData();
-            
-            // Inicializar escuchadores de UI (búsqueda, recarga, controles de modal)
-            initializeHomeListeners();
-
-            // Añadir escuchadores de eventos para la navegación MPA
-            const footerButtons = document.querySelectorAll('.footer-btn');
-            footerButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const section = button.getAttribute('data-section');
-                    loadContent(section);          
-                  });
-            });
-           
-            // Volver a inicializar los íconos al cargar
-            lucide.createIcons();
-        });
 </script>
 </body>
 </html>
