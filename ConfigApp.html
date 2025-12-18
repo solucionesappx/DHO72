@@ -201,6 +201,12 @@
     let currentTableData = [];
     let currentHeadersConfig = [];
 
+    const USUARIO_TIENDA_KEY = 'Usuario_Tienda';
+    const USUARIO_NOMBRE_KEY = 'Usuario_Nombre'; 
+    const USUARIO_PERFIL_KEY = 'Usuario_Perfil';
+    const USUARIO_IDX_KEY = 'Usuario_Idx';
+    let USER_INFO = {}; 
+
     // --- 2. INICIALIZACIÓN Y EVENTOS ---
     document.addEventListener('DOMContentLoaded', () => {
         checkAccessPermissions();   // Bloqueo visual de botones
@@ -602,6 +608,80 @@
             if (inputField) setTimeout(() => inputField.focus(), 50);
         });
     }
+
+        /**
+     * Lee los datos del usuario logueado desde localStorage.
+     */
+    function initializeUserInfo() {
+        USER_INFO.usuarioTienda = localStorage.getItem(USUARIO_TIENDA_KEY);
+        USER_INFO.usuarioNombre = localStorage.getItem(USUARIO_NOMBRE_KEY);
+        USER_INFO.usuarioPerfil = localStorage.getItem(USUARIO_PERFIL_KEY);
+        USER_INFO.usuarioIdx = localStorage.getItem(USUARIO_IDX_KEY);
+
+        const headerTitleEl = document.querySelector('#app-header .text-xl.font-bold');
+
+        if (USER_INFO.usuarioNombre && headerTitleEl) {
+            const names = USER_INFO.usuarioNombre.trim().split(/\s+/).filter(p => p.length > 0);
+            const primerNombre = names[0] || '';
+            
+            if (primerNombre) {
+                USER_INFO.usuarioPrimerNombre = primerNombre; 
+                headerTitleEl.textContent = `¡Hola, ${primerNombre}!`;
+            } else {
+                headerTitleEl.textContent = 'Mi Aplicación Móvil DHO';
+            }
+        } else if (headerTitleEl) {
+            headerTitleEl.textContent = 'Mi Aplicación Móvil DHO';
+        }
+        
+        console.log("USER_INFO inicializado:", USER_INFO);
+    }
+
+            // --- INICIALIZACIÓN DE LA APLICACIÓN ---
+        
+       document.addEventListener('DOMContentLoaded', function() {
+            const correo = localStorage.getItem('Usuario_Correo');
+            const id = localStorage.getItem('Usuario_Id');
+            
+            // Verifica si AMBAS claves están ausentes.
+            // La sesión no es válida si NO hay Correo AND NO hay Idx.
+            if (!correo && !id) {
+                console.log("Redirigiendo a index.html");
+                window.location.replace('index.html'); 
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lógica para mostrar solo el primer nombre del usuario si está disponible en localStorage
+            const usuarioNombreCompleto = localStorage.getItem('Usuario_Nombre');
+            const headerTitle = document.querySelector('#app-header h1');
+            
+            if (usuarioNombreCompleto && headerTitle) {
+                // Extraer el primer nombre y capitalizar la primera letra
+                const primerNombre = usuarioNombreCompleto.trim().split(' ')[0];
+                const capitalizedFirstName = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
+                
+                headerTitle.textContent = `¡Hola, ${capitalizedFirstName}!`;
+            }
+
+            // Comenzar a cargar los datos de las hojas Google Sheets
+            loadAllData();
+            
+            // Inicializar escuchadores de UI (búsqueda, recarga, controles de modal)
+            initializeHomeListeners();
+
+            // Añadir escuchadores de eventos para la navegación MPA
+            const footerButtons = document.querySelectorAll('.footer-btn');
+            footerButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const section = button.getAttribute('data-section');
+                    loadContent(section);          
+                  });
+            });
+           
+            // Volver a inicializar los íconos al cargar
+            lucide.createIcons();
+        });
 </script>
 </body>
 </html>
