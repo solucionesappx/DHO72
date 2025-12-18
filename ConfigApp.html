@@ -3,320 +3,605 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplicación Móvil - Base</title>
+    <title>Aplicación Móvil - DHO Configuración y Datos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 
-    <!-- Control de Caché del Navegador  -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    /* Variables y Base */
+    :root { 
+        --color-bg-dark: #1f2937; 
+        --color-bg-deep: #111827; 
+        --color-text-dark: #f3f4f6; 
+        --color-primary-dark: #60a5fa; 
+        --color-surface-dark: #374151; 
+        --border-color: #374151;
+    }
 
-    <style>
-        /* Configuración de Tailwind para usar el color de acento y la fuente Inter  */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-        html {
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+    html { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; background-color: var(--color-bg-dark); }
+    body { background-color: var(--color-bg-dark); color: var(--color-text-dark); margin: 0; }
 
-        /* Definición de colores base  */
-        :root {
-            --color-bg-dark: #1f2937;
-            --color-text-dark: #f3f4f6;
-            --color-primary-dark: #60a5fa;
-            --color-surface-dark: #374151;
-        }
-        
-        /* Estilos del cuerpo en modo oscuro */
-        .dark { background-color: var(--color-bg-dark); color: var(--color-text-dark); }
-        
-        #app-container {
-            max-width: 500px;
-            margin: 0 auto;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-            position: relative; 
-            overflow: hidden; 
-        }
+    /* Estructura de la App */
+    #app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.4); position: relative; background-color: var(--color-bg-dark); }
+    header, footer { width: 100%; max-width: 500px; z-index: 50; left: 50%; transform: translateX(-50%); background-color: var(--color-surface-dark); border-color: #4b5563; }
+    main { flex-grow: 1; overflow-y: auto; padding: 76px 1rem 80px 1rem; }
 
-        header, footer {
-            width: 100%;
-            max-width: 500px; 
-            z-index: 50; 
-            transition: background-color 0.3s, color 0.3s;
-            left: 50%;
-            transform: translateX(-50%);
-        }
+    /* Navegación Inferior */
+    .footer-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; font-size: 0.75rem; color: #9ca3af; transition: color 0.2s; background: transparent; border: none; cursor: pointer; width: 100%; }
+    .footer-btn.active { color: var(--color-primary-dark); }
 
-        /* Estilos específicos para header y footer en modo oscuro */
-        .dark header, .dark footer { 
-            background-color: var(--color-surface-dark); 
-            border-color: #4b5563; 
-        }
+    /* Grid de Selección de Tablas */
+    .btn-table-custom { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 0.5rem; height: 64px; width: 100%; padding: 0 1.25rem; background: rgba(31, 41, 55, 0.5); border: 1px solid #4b5563; border-radius: 0.75rem; cursor: pointer; transition: 0.2s; margin-bottom: 0.5rem; }
+    .btn-table-custom:hover { background: var(--color-surface-dark); border-color: var(--color-primary-dark); }
+    .btn-table-custom span { font-size: 15px; font-weight: 600; color: #e5e7eb; text-transform: uppercase; letter-spacing: 0.025em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        main {
-            flex-grow: 1;
-            overflow-y: auto; 
-            padding-left: 1rem;
-            padding-right: 1rem;
-            transition: padding 0.3s ease-in-out;
-            padding-top: 76px; /* Para compensar la altura del header */
-            padding-bottom: 72px; /* Para compensar la altura del footer */
-        }
-        
-        .footer-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 4px;
-            font-size: 0.75rem;
-            line-height: 1;
-            transition: color 0.2s, background-color 0.2s;
-            border-radius: 0.5rem;
-            color: inherit;
-        }
+    /* Panel de Configuración de Columnas */
+    .config-row { display: flex; align-items: center; justify-content: space-between; background: var(--color-bg-dark); padding: 0.35rem 0.8rem; border-radius: 0.4rem; margin-bottom: 0.3rem; border: 1px solid var(--border-color); }
+    .move-controls { display: flex; gap: 0.4rem; align-items: center; }
+    .btn-move { background: var(--color-surface-dark); color: #9ca3af; padding: 0.25rem; border-radius: 0.25rem; cursor: pointer; border: none; display: flex; align-items: center; }
+    .btn-move:disabled { opacity: 0.2; }
+    .label-col { flex-grow: 1; margin-left: 0.8rem; font-size: 0.75rem; font-weight: 500; color: #e5e7eb; }
 
-        .footer-btn.active { color: var(--color-primary-dark); }
-    </style>
+    /* MODAL VISTA PREVIA: Fondo Unificado */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(17, 24, 39, 0.9); z-index: 100; display: flex; justify-content: center; padding-top: 40px; }
+    .modal-content { background: var(--color-bg-deep); border: 1px solid var(--border-color); width: 95%; max-width: 460px; height: 80vh; border-radius: 1rem; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+    
+    .modal-header { padding: 1.25rem; background: var(--color-bg-deep); }
+    .modal-header input { background: #1f2937; border: 1px solid var(--border-color); color: var(--color-text-dark); }
+
+    .modal-body { flex-grow: 1; overflow-y: auto; padding: 0 1.25rem 1.25rem 1.25rem; background: var(--color-bg-deep); }
+
+    /* TABLA VISTA PREVIA: Redondeo y Estilo */
+    .table-res { width: 100%; max-height: 100%; overflow: auto; border: 1px solid var(--border-color); border-radius: 0.75rem; background: transparent; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.75rem; }
+    th { background: var(--color-surface-dark); color: var(--color-primary-dark); padding: 0.5rem; text-align: center; border-bottom: 1px solid #4b5563; position: sticky; top: 0; z-index: 15; white-space: nowrap; }
+    td { padding: 0.25rem; border-bottom: 1px solid #1f2937; color: #d1d5db; white-space: nowrap; }
+    
+    tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.03); }
+
+    /* Utilidades */
+    .spinner { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+
+    .modal-body::-webkit-scrollbar { width: 4px; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--color-surface-dark); border-radius: 10px; }
+
+    #column-config-panel { grid-column: 1 / -1; animation: slideDown 0.3s ease-out; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.5); }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Forzar alto automático para el modal de sistema */
+    #system-modal .modal-content { height: auto !important; min-height: min-content; align-self: center; }
+
+    /* Acciones en Botón de Tabla - Compacto */
+    .btn-table-actions { display: flex; gap: 0.15rem; margin-left: auto; }
+    .action-icon-btn { padding: 0.4rem; border-radius: 9999px; transition: all 0.2s; color: #9ca3af; background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .action-icon-btn:hover { background: #4b5563; color: #f3f4f6; border-radius: 0.5rem; transition: all 0.2s ease; }
+    .download-btn:hover { background: #4b5563; color: #f3f4f6; }
+
+</style>
 </head>
-<body class="dark transition-colors duration-300">
+<body>
 
-    <div id="app-container" class="shadow-xl">
-        
-        <header id="app-header" class="fixed top-0 w-full h-14 border-b border-gray-700 dark:border-gray-500 flex items-center justify-between px-4">
-         <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="window.location.href = 'Inicio.html'">
-                Mi Aplicación Móvil ZXC
+    <div id="app-container">
+        <header id="app-header" class="fixed top-0 border-b flex items-center justify-between px-4 h-14">
+            <h1 class="text-xl font-bold cursor-pointer hover:opacity-80 transition-opacity" onclick="loadContent('Inicio');">
+                Mi Aplicación Móvil DHO <!-- Título de fallback -->
             </h1>
-            <div class="flex space-x-3">              
-                <!-- Botón de Cerrar Sesión con redirección a index.html -->
-                <button class="p-2 rounded-full hover:opacity-80 transition-opacity" onclick="logoutAndClearCache()">
-                    <i data-lucide="log-out" class="w-6 h-6 text-red-400 dark:text-red-300"></i>
-                </button>
-            </div>
+            <button class="p-2 rounded-full hover:bg-gray-600" onclick="logoutAndClearCache()">
+                <i data-lucide="log-out" class="w-6 h-6 text-red-400"></i>
+            </button>
         </header>
 
-        <main id="main-content" class="flex flex-col space-y-4">
-            <!-- Contenido de la sección por defecto (Página 'Perfil' al no usar SPA) -->
-            <div class="p-6 text-center mt-4 dark:bg-gray-800 rounded-xl shadow-lg">
-                <i data-lucide="user" class="w-8 h-8 mx-auto mb-3 text-blue-400"></i>
-                <h2 class="text-xl font-bold mb-2">Página Configuración de la Aplicación</h2>
-                <p class="text-sm text-gray-400">Sección exclusiva para Administradores y Propietarios.</p>
-                <p class="text-xs mt-3 text-gray-500">Este es el archivo base (index.html), que redirigirá al Perfil.</p>
+        <main id="main-content">
+            <div class="p-5 bg-gray-800 border border-gray-700 rounded-xl shadow-lg">
+
+                <div id="table-menu-grid" class="grid grid-cols-1 gap-3 mb-6">
+                    <div id="loading-tables-spinner" class="col-span-1 flex flex-col items-center justify-center py-10 text-blue-400">
+                        <i data-lucide="loader-2" class="w-10 h-10 spinner mb-3"></i>
+                        <span class="text-sm font-medium text-gray-400">Buscando tablas...</span>
+                    </div>
+
+                </div>
+
+                <div id="column-config-panel" class="hidden bg-gray-900 p-4 rounded-lg border border-blue-500/30 mb-6 relative">
+                    <div class="flex flex-wrap items-center justify-between mb-4 mt-1 pr-8 gap-2">
+                        <h3 id="config-table-title" class="text-[15px] font-bold text-blue-400 leading-tight"></h3>
+                        <div class="flex items-center gap-1 ml-auto">
+                            <button onclick="saveCurrentConfig()" class="p-2 text-emerald-400 hover:bg-emerald-400/10 rounded-full transition-all" title="Guardar">
+                                <i data-lucide="save" class="w-6 h-6"></i>
+                            </button>
+                            <button onclick="processFinalData()" 
+                                    class="p-2 text-blue-400 hover:bg-blue-400/10 rounded-full transition-all" title="Ver Datos">
+                                <i data-lucide="scan-search" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="closeConfigPanel()" class="absolute top-2 right-2 text-gray-500 hover:text-red-400 hover:bg-gray-700/50 rounded-full p-1 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>                   
+                    <div id="columns-list-container"></div>
+                </div>
             </div>
         </main>
 
-        <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
-            
-            <!-- INICIO: Botón activo como se requiere/confirma -->
-            <button class="footer-btn active" data-section="Inicio">
-                <i data-lucide="home" class="w-6 h-6"></i>
-                <span>Inicio</span>
-            </button>
-            
-            <button id="nav-vacaciones" class="footer-btn transition-opacity duration-300" data-section="Vacaciones">
-                <i data-lucide="calendar-days" class="w-6 h-6 text-gray-400"></i> 
-                <span>Vacaciones</span>
-            </button>
+        <div id="table-modal" class="hidden modal-overlay">
+            <div class="modal-content shadow-2xl">
+                <div class="modal-header">
+                    <div class="flex items-center justify-between mb-4 gap-4">
+                        <h3 id="modal-main-title" class="text-blue-400 font-bold uppercase text-[11px] tracking-widest leading-tight flex-grow">
+                            Cargando...
+                        </h3>
+                        
+                        <button onclick="closeTableModal()" class="text-gray-400 hover:text-white transition-colors shrink-0">
+                            <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="relative flex items-center">
+                        <i data-lucide="search" class="absolute left-3 w-4 h-4 text-gray-500"></i>
+                        
+                        <input type="text" 
+                            id="modal-search-input" 
+                            placeholder="Buscar en esta tabla..." 
+                            oninput="filterModalTable(this.value)"
+                            class="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-10 pr-10 text-sm focus:border-blue-500 outline-none text-gray-200">
+                        
+                        <button onclick="clearSearch()" 
+                                class="absolute right-2 p-1.5 rounded-full hover:bg-gray-700 text-red-500 transition-all flex items-center justify-center"
+                                title="Limpiar búsqueda">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="table-res"> 
+                        <table id="main-data-table">
+                            <thead id="dyn-thead"></thead>
+                            <tbody id="dyn-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <button class="footer-btn hidden" data-section="Agregar">
-                <i data-lucide="calendar-plus" class="w-6 h-6"></i>
-                <span>Agregar</span>
-            </button>
-            
-            <button class="footer-btn" data-section="Datos">
-                <i data-lucide="database-backup" class="w-6 h-6"></i>
-                <span>Datos</span>
-            </button>
-            
-            <button class="footer-btn" data-section="Perfil">
-                <i data-lucide="user" class="w-6 h-6"></i>
-                <span>Perfil</span>
-            </button>
-            
-            <button class="footer-btn active" data-section="Configuración">
-                <i data-lucide="settings" class="w-6 h-6"></i>
-                <span>Config</span>
-            </button>
+        <footer id="app-footer" class="fixed bottom-0 border-t flex items-center justify-around h-18">
+            <button class="footer-btn" onclick="loadContent('Inicio')"><i data-lucide="home" class="w-6 h-6"></i><span>Inicio</span></button>
+            <button id="btn-vacaciones" class="footer-btn" onclick="loadContent('Vacaciones')"><i data-lucide="calendar-days" class="w-6 h-6"></i><span>Vacaciones</span></button>
+            <button id="btn-agregar" class="footer-btn" onclick="loadContent('Agregar')"><i data-lucide="calendar-plus" class="w-6 h-6"></i><span>Agregar</span></button>
+            <button class="footer-btn" onclick="loadContent('Perfil')"><i data-lucide="user" class="w-6 h-6"></i><span>Perfil</span></button>
+            <button class="footer-btn active" onclick="loadContent('Configuración')"><i data-lucide="settings" class="w-6 h-6"></i><span>Config</span></button>
         </footer>
     </div>
 
-    <script>
-        // Inicializa los íconos de Lucide
+    <div id="system-modal" class="hidden modal-overlay" style="align-items: center; padding-top: 0;">
+        <div class="modal-content !height-auto p-6 max-w-[320px] text-center border-blue-500/50">
+            <div id="sys-modal-icon" class="mb-4 flex justify-center"></div>
+            <h3 id="sys-modal-title" class="text-lg font-bold text-white mb-2"></h3>
+            <p id="sys-modal-text" class="text-gray-400 text-sm mb-6"></p>           
+            <div id="sys-modal-actions" class="flex gap-3 justify-center"></div>
+        </div>
+    </div>
+
+    <div id="global-loader" class="hidden fixed inset-0 z-[150] flex items-center justify-center bg-gray-900/80 backdrop-blur-sm">
+        <div class="flex flex-col items-center p-8 bg-gray-800 border border-blue-500/30 rounded-2xl shadow-2xl max-w-[280px] text-center">
+            <div class="relative mb-4">
+                <div class="w-10 h-10"></div>
+                <i data-lucide="loader-2" class="w-10 h-10 text-blue-400 spinner absolute top-0 left-0"></i>
+            </div>
+            <span class="text-blue-400 font-bold text-sm tracking-wider uppercase">Cargando Base de Datos</span>
+            <p class="text-gray-500 text-xs mt-2">Esto puede demorar unos segundos...</p>
+        </div>
+    </div>
+
+<script>
+    // --- 1. CONFIGURACIÓN Y VARIABLES GLOBALES ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCNpyLy2e59m3A03v10PZKYSsRvyJz4llCk_6OWQPQV0yMotgTj303bXGcxTiClVmTGQ/exec";
+    let currentTableData = [];
+    let currentHeadersConfig = [];
+
+    // --- 2. INICIALIZACIÓN Y EVENTOS ---
+    document.addEventListener('DOMContentLoaded', () => {
+        checkAccessPermissions();   // Bloqueo visual de botones
+        fetchAvailableTables();     // Carga de tarjetas de tablas
+        if (window.lucide) lucide.createIcons();
+        console.log("Configuración inicializada.");
+    });
+
+    // --- 3. SEGURIDAD Y NAVEGACIÓN ---
+    function checkAccessPermissions() {
+        const cedula = localStorage.getItem('Usuario_Cedula');
+        const btnVacaciones = document.getElementById('btn-vacaciones');
+        const btnAgregar = document.getElementById('btn-agregar');
+        const isRestricted = !cedula || cedula.trim() === "";
+
+        [btnVacaciones, btnAgregar].forEach(btn => {
+            if (btn) {
+                btn.disabled = isRestricted;
+                btn.classList.toggle('opacity-30', isRestricted);
+                btn.style.pointerEvents = isRestricted ? 'none' : 'auto';
+            }
+        });
+    }
+
+    function loadContent(section) {
+        if (section === 'Configuración') return;
+
+        const NAV_MAP = { 
+            'Inicio': 'Inicio.html', 
+            'Vacaciones': 'Vacaciones.html', 
+            'Agregar': 'AgregarReg.html', 
+            'Editar': 'EditarReg.html', 
+            'Perfil': 'PerfilUsuario.html' 
+        };
+
+        // Validación de seguridad antes de navegar
+        const vistasRestringidas = ['Vacaciones', 'Agregar'];
+        if (vistasRestringidas.includes(section)) {
+            const cedula = localStorage.getItem('Usuario_Cedula');
+            if (!cedula || cedula.trim() === "") {
+                showSystemModal({
+                    title: 'Acceso Restringido',
+                    text: 'Debe tener registrada su CÉDULA en el perfil para acceder.',
+                    type: 'warning'
+                });
+                return;
+            }
+        }
+
+        if (NAV_MAP[section]) window.location.href = NAV_MAP[section];
+    }
+
+    function logoutAndClearCache() { 
+        localStorage.clear(); 
+        window.location.href = 'index.html'; 
+    }
+
+    // --- 4. CARGA Y GESTIÓN DE TABLAS ---
+    async function fetchAvailableTables() {
+        const grid = document.getElementById('table-menu-grid');
+        const tienda = localStorage.getItem('Usuario_Tienda') || 'DEFAULT';
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=getAvailableTables&userTienda=${tienda}`);
+            const tables = await res.json();
+            grid.innerHTML = ''; 
+            tables.forEach(t => {
+                const btn = document.createElement('div');
+                btn.className = 'btn-table-custom';
+                btn.innerHTML = `
+                    <i data-lucide="table-2" class="w-6 h-6 text-blue-400"></i>
+                    <span class="flex-grow cursor-pointer" onclick="handleLoadTable('${t}')">${t}</span>
+                    <div class="btn-table-actions">
+                        <button class="action-icon-btn" onclick="event.stopPropagation(); handleLoadTable('${t}')" title="Configurar">
+                            <i data-lucide="settings-2" class="w-6 h-6 text-yellow-400"></i>
+                        </button>
+                        <button class="action-icon-btn download-btn" onclick="event.stopPropagation(); downloadFullTable('${t}')" title="Descarga Completa">
+                            <i data-lucide="cloud-download" class="w-6 h-6 text-white"></i>
+                        </button>
+                    </div>`;
+                grid.appendChild(btn);
+            });
+        } catch (e) { 
+            grid.innerHTML = '<p class="text-red-400 text-center">Error al conectar con el servidor</p>'; 
+        } finally { 
+            lucide.createIcons(); 
+        }
+    }
+
+    async function downloadFullTable(tableName) {
+        const tienda = localStorage.getItem('Usuario_Tienda') || 'DEFAULT';
+        const perfil = localStorage.getItem('Usuario_Perfil') || 'INVITADO';
+
+        const proceder = await showSystemModal({
+            title: 'Descarga Completa',
+            text: `¿Deseas descargar todos los registros de "${tableName}"?`,
+            type: 'info',
+            confirmText: 'Descargar',
+            cancelText: 'Cancelar'
+        });
+
+        if (!proceder) return;
+
+        const globalLoader = document.getElementById('global-loader');
+        globalLoader.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+
+        await new Promise(r => setTimeout(r, 150));
+
+        try {
+            const url = `${SCRIPT_URL}?targetSheet=${encodeURIComponent(tableName)}&userTienda=${tienda}&userProfile=${perfil}&fullLoad=true`;
+            const res = await fetch(url);
+            const result = await res.json();
+            
+            if (result.error) throw new Error(result.error);
+            
+            currentTableData = result.data;
+            setupHeadersConfig(tableName, result);
+            
+            globalLoader.classList.add('hidden');
+            processFinalData(tableName); 
+        } catch (e) {
+            globalLoader.classList.add('hidden');
+            showSystemModal({ title: 'Error', text: e.message, type: 'warning' });
+        }
+    }
+
+    async function handleLoadTable(tableName) {
+        const panel = document.getElementById('column-config-panel');
+        const container = document.getElementById('columns-list-container');
+        const title = document.getElementById('config-table-title');
+        
+        // Mover panel debajo del botón seleccionado
+        const allButtons = document.querySelectorAll('.btn-table-custom');
+        allButtons.forEach(b => {
+            if (b.querySelector('span')?.textContent.trim() === tableName) b.after(panel);
+        });
+
+        panel.classList.remove('hidden');
+        container.innerHTML = '<div class="p-8 text-center"><i data-lucide="loader-2" class="mx-auto w-8 h-8 text-blue-400 spinner"></i></div>';
         lucide.createIcons();
-
-        // Función principal para cargar el contenido de la sección y manejar la navegación MPA
-        function loadContent(section) {
-            console.log("Navegando a la sección:", section);
-            // La siguiente variable se mantiene por si se añade lógica futura, aunque actualmente no se usa
-            const mainContent = document.getElementById('main-content'); 
-
-            if (section === 'Vacaciones') {
-                window.location.href = 'Vacaciones.html';
-                return; // Importante: Detiene la ejecución aquí.
-            }
-
-            if (section === 'Agregar') {
-                window.location.href = 'AgregarDat.html';
-                return;
-            }
-
-            if (section === 'Editar') {
-                // Redirecciona al archivo 'EditarDat.html por ahora a Inicio.html'
-                window.location.href = 'Inicio.html';
-                return;
-            }
-            
-            if (section === 'Inicio') {
-                window.location.href = 'Inicio.html';
-                return;
-            }
-            
-            if (section === 'Configuración') {
-                window.location.href = 'ConfigApp.html';
-                return;
-            }
-            
-            if (section === 'Perfil') {
-                // Redirecciona al archivo 'PerfilUser.html'
-                window.location.href = 'PerfilUser.html';
-                return;
-            }
-
-            if (section === 'Datos') {
-                // Redirecciona al archivo 'Data.html'
-                window.location.href = 'Data.html';
-                return;
-            }
-            
-            console.error(`ERROR: Sección no mapeada para navegación: ${section}`);
-        }
-
-        // ==========================================================
-        // --- LÓGICA DE CONTROL DE ACCESO A SECCIÓN VACACIONES ---
-        // ==========================================================
-        /**
-        * Verifica si existe una CEDULA en localStorage. Si no existe, 
-        * deshabilita visual y funcionalmente el botón de Vacaciones.
-        */
-        function disableVacacionesIfNoCedula() {
-            // 1. Obtener el valor de CEDULA de localStorage
-            const cedula = localStorage.getItem('CEDULA');
-            // 2. Obtener la referencia al botón
-            const navVacacionesBtn = document.getElementById('nav-vacaciones');
-
-            if (!navVacacionesBtn) {
-                return; 
-            }
-
-            if (!cedula) {
-                // No hay CEDULA: Aplicar clases de deshabilitado
-                
-                // opacity-50: Efecto opaco ("hover opaco" estático para indicar inactividad)
-                // cursor-not-allowed: Cambia el puntero/cursor a "prohibido"
-                // pointer-events-none: Anula completamente los eventos de click y hover,
-                //                     asegurando que no se active la navegación o el foco.
-                navVacacionesBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-                
-            } else {
-                // Si existe CEDULA, asegurar que esté habilitado (si se deshabilitó antes)
-                navVacacionesBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
-            }
-        }
-
-        // Aseguramos que esta función se ejecute al iniciar la aplicación (dentro de DOMContentLoaded)
-        document.addEventListener('DOMContentLoaded', () => {
-            // ... [Tu código existente] ...
-            
-            // ... [Bloque de 'footerButtons' que ya tienes] ...
-            const footerButtons = document.querySelectorAll('.footer-btn');
-            footerButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const section = button.getAttribute('data-section');
-                    loadContent(section);          
-                });
-            });
         
-            // Ejecutar la lógica de control de acceso DESPUÉS de definir todos los elementos
-            disableVacacionesIfNoCedula(); 
+        title.textContent = `Configuración: ${tableName}`;
+        title.dataset.table = tableName;
 
-            // Volver a inicializar los íconos al cargar
+        try {
+            const tienda = localStorage.getItem('Usuario_Tienda') || 'DEFAULT';
+            const perfil = localStorage.getItem('Usuario_Perfil') || 'INVITADO';
+            const res = await fetch(`${SCRIPT_URL}?targetSheet=${encodeURIComponent(tableName)}&userTienda=${tienda}&userProfile=${perfil}`);
+            const result = await res.json();
+
+            if (result.error) throw new Error(result.error);
+
+            currentTableData = result.data;
+            setupHeadersConfig(tableName, result);
+            renderColumnConfig();
+            
+            setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+        } catch (e) {
+            container.innerHTML = `<p class="text-red-400 text-center p-4">Error: ${e.message}</p>`;
+        }
+    }
+
+    // Función auxiliar para evitar duplicidad de lógica en mapeo de headers
+    function setupHeadersConfig(tableName, result) {
+        const savedConfig = JSON.parse(localStorage.getItem(`config_${tableName}`) || 'null');
+        currentHeadersConfig = result.columnOrder.map((id, idx) => {
+            const saved = savedConfig ? savedConfig.find(x => x.id === id) : null;
+            return {
+                id: id,
+                label: result.displayMap[id] || id,
+                order: saved ? saved.order : idx + 1,
+                visible: saved ? saved.visible : true,
+                filterValue: saved ? (saved.filterValue || "") : ""
+            };
+        }).sort((a, b) => a.order - b.order);
+    }
+
+    // --- 5. CONFIGURACIÓN DE COLUMNAS (UI) ---
+    function renderColumnConfig() {
+        const container = document.getElementById('columns-list-container');
+        container.innerHTML = currentHeadersConfig.map((col, index) => {
+            const isOff = !col.visible;
+            const opacityClass = isOff ? 'opacity-30 pointer-events-none' : 'opacity-100';
+            const lupaColor = col.filterValue ? 'text-red-500 animate-pulse' : 'text-gray-500';
+            
+            return `
+                <div class="config-row flex items-center gap-2 ${isOff ? 'bg-gray-800/50' : ''}">
+                    <div class="move-controls flex gap-1 ${opacityClass}">
+                        <button class="btn-move p-1 bg-gray-700 rounded" onclick="moveColumn(${index}, -1)" ${index === 0 || isOff ? 'disabled' : ''}>
+                            <i data-lucide="chevron-up" class="w-4 h-4"></i>
+                        </button>
+                        <button class="btn-move p-1 bg-gray-700 rounded" onclick="moveColumn(${index}, 1)" ${index === currentHeadersConfig.length - 1 || isOff ? 'disabled' : ''}>
+                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <span class="label-col flex-grow text-xs truncate ${isOff ? 'text-gray-600' : 'text-gray-200'}">${col.label}</span>
+                    <button onclick="setColumnFilter(${index})" ${isOff ? 'disabled' : ''} class="p-1.5 rounded ${opacityClass} ${lupaColor} hover:bg-gray-700">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </button>
+                    <input type="checkbox" class="w-5 h-5 accent-emerald-500 cursor-pointer" ${col.visible ? 'checked' : ''} onchange="updateColVis(${index}, this.checked)">
+                </div>`;
+        }).join('');
+        lucide.createIcons();
+    }
+
+    async function setColumnFilter(idx) {
+        const col = currentHeadersConfig[idx];
+        const newValue = await showSystemModal({
+            title: `Filtrar: ${col.label}`,
+            text: 'Escribe el texto para filtrar esta columna:',
+            type: 'info',
+            confirmText: 'Aplicar',
+            cancelText: 'Cancelar',
+            showInput: true,
+            inputValue: col.filterValue || ''
+        });
+
+        if (newValue !== null) {
+            currentHeadersConfig[idx].filterValue = newValue.trim();
+            renderColumnConfig();
+            if (!document.getElementById('table-modal').classList.contains('hidden')) {
+                filterModalTable(document.getElementById('modal-search-input').value);
+            }
+        }
+    }
+
+    function moveColumn(idx, dir) {
+        const target = idx + dir;
+        [currentHeadersConfig[idx], currentHeadersConfig[target]] = [currentHeadersConfig[target], currentHeadersConfig[idx]];
+        renderColumnConfig();
+    }
+
+    function updateColVis(idx, val) { 
+        currentHeadersConfig[idx].visible = val; 
+        renderColumnConfig(); 
+    }
+
+    async function saveCurrentConfig() {
+        const name = document.getElementById('config-table-title').dataset.table;
+        const userId = localStorage.getItem('Usuario_Id');
+        const userName = localStorage.getItem('Usuario_Nombre');
+        const configData = JSON.stringify(currentHeadersConfig);
+
+        localStorage.setItem(`config_${name}`, configData);
+
+        try {
+            const url = `${SCRIPT_URL}?action=saveTableConfig&userId=${encodeURIComponent(userId)}&userName=${encodeURIComponent(userName)}&tableName=${encodeURIComponent(name)}&configData=${encodeURIComponent(configData)}`;
+            await fetch(url);
+            showSystemModal({ title: 'Éxito', text: `Vista de "${name}" sincronizada.`, type: 'success' });
+        } catch (e) { console.error("Error sincronización:", e); }
+    }
+
+    // --- 6. PROCESAMIENTO Y RENDERIZADO DE DATOS ---
+    function processFinalData(tableName = "") {
+        const activeCols = currentHeadersConfig.filter(c => c.visible);
+        if (!activeCols.length) {
+            showSystemModal({ title: 'Atención', text: 'Selecciona al menos una columna.', type: 'warning' });
+            return;
+        }
+
+        const finalTableName = tableName || document.getElementById('config-table-title').dataset.table || "Tabla";
+        const prefix = (currentTableData.length === 20) ? "Vista Previa" : "BD Tabla";
+        
+        document.getElementById('modal-main-title').textContent = `${prefix}: ${finalTableName.toUpperCase()} (${currentTableData.length} REGISTROS)`;
+        document.getElementById('dyn-thead').innerHTML = `<tr>${activeCols.map(c => `<th class="text-center">${c.label}</th>`).join('')}</tr>`;
+        
+        filterModalTable(document.getElementById('modal-search-input').value || ""); 
+        document.getElementById('table-modal').classList.remove('hidden');
+        lucide.createIcons();
+    }
+
+    function filterModalTable(globalQuery) {
+        const gQ = globalQuery.trim().toLowerCase();
+        const activeCols = currentHeadersConfig.filter(c => c.visible);
+        const colFilters = activeCols.filter(c => c.filterValue);
+
+        const filtered = currentTableData.filter(row => {
+            const matchesCol = colFilters.every(col => String(row[col.id] || "").toLowerCase().includes(col.filterValue.toLowerCase()));
+            if (!matchesCol) return false;
+            if (gQ === "") return true;
+            return activeCols.some(col => String(row[col.id] || "").toLowerCase().includes(gQ));
+        });
+
+        renderTableRows(filtered, activeCols);
+    }
+
+    function renderTableRows(data, cols) {
+        const tbody = document.getElementById('dyn-tbody');
+        tbody.innerHTML = data.map(row => {
+            const cells = cols.map(c => {
+                let val = row[c.id];
+                let align = 'text-left';
+                let extra = '';
+
+                // Formateo por tipo de columna
+                if (['INGRESO', 'DIA_INICIO', 'DIA_FINAL'].includes(c.id)) val = formatDate(val);
+                else if (c.id === 'RegistroDate') val = formatDateTime(val);
+                else if (['CEDULA', 'DIF', 'DIAS_VAC2', 'DIAS_VACACIONES', 'BONO_VACACIONAL'].includes(c.id)) val = formatNumberWithDots(val);
+                
+                // Alineación
+                if (['VACACIONES_ID', 'PERIODO', 'REGISTRO_ID', 'INGRESO', 'DIA_INICIO', 'DIA_FINAL', 'RegistroDate'].includes(c.id)) align = 'text-center';
+                else if (['DIF', 'DIAS_VAC2', 'DIAS_VACACIONES', 'CEDULA', 'BONO_VACACIONAL'].includes(c.id)) align = 'text-right';
+                
+                if (c.id === 'DESCRIPCION_CONCEPTO') extra = ' cell-fixed-width-scroll';
+
+                return `<td class="${align}${extra} px-3 py-1 border-b border-gray-800">${val ?? ''}</td>`;
+            }).join('');
+            return `<tr>${cells}</tr>`;
+        }).join('');
+    }
+
+    // --- 7. FORMATEADORES Y UTILIDADES ---
+    function formatNumberWithDots(v) {
+        if (!v && v !== 0) return '';
+        const number = parseFloat(String(v).replace(',', '.'));
+        if (isNaN(number)) return v;
+        const decimals = Math.abs(number - Math.round(number)) < 0.001 ? 0 : 2;
+        return new Intl.NumberFormat('es-ES', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(number);
+    }
+
+    function formatDate(v) {
+        if (!v) return 'N/A';
+        const d = new Date(v);
+        if (isNaN(d.getTime())) return v;
+        return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}`;
+    }
+
+    function formatDateTime(v) {
+        if (!v) return 'N/A';
+        const d = new Date(v);
+        if (isNaN(d.getTime())) return v;
+        return `${formatDate(v)} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+    }
+
+    function clearSearch() {
+        const input = document.getElementById('modal-search-input');
+        input.value = ''; filterModalTable(''); input.focus();
+    }
+
+    function closeTableModal() { document.getElementById('table-modal').classList.add('hidden'); }
+
+    async function closeConfigPanel() {
+        const ok = await showSystemModal({ title: '¿Cerrar editor?', text: 'Se perderán los cambios no guardados.', type: 'warning', confirmText: 'Cerrar', cancelText: 'Cancelar' });
+        if (ok) {
+            document.getElementById('system-modal').classList.add('hidden');
+            document.getElementById('column-config-panel').classList.add('hidden');
+        }
+    }
+
+    // --- 8. MODAL DE SISTEMA ---
+    function showSystemModal({ title, text, type = 'info', confirmText = 'Aceptar', cancelText = null, showInput = false, inputValue = '' }) {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('system-modal');
+            const iconEl = document.getElementById('sys-modal-icon');
+            const actionsEl = document.getElementById('sys-modal-actions');
+            
+            modal.querySelectorAll('.input-wrapper-dynamic').forEach(el => el.remove());
+            document.getElementById('sys-modal-title').textContent = title;
+            document.getElementById('sys-modal-text').textContent = text;
+
+            const icons = {
+                success: '<i data-lucide="check-circle-2" class="w-12 h-12 text-emerald-400"></i>',
+                warning: '<i data-lucide="alert-triangle" class="w-12 h-12 text-amber-400"></i>',
+                info: '<i data-lucide="search" class="w-12 h-12 text-blue-400"></i>'
+            };
+            iconEl.innerHTML = icons[type] || icons.info;
+
+            let inputField = null;
+            if (showInput) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'input-wrapper-dynamic relative flex items-center mb-4 mt-2';
+                wrapper.innerHTML = `<input type="text" value="${inputValue}" class="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-4 pr-10 text-sm text-white outline-none focus:border-blue-500" placeholder="Texto...">
+                                     <button class="absolute right-2 text-red-500"><i data-lucide="x" class="w-4 h-4"></i></button>`;
+                inputField = wrapper.querySelector('input');
+                wrapper.querySelector('button').onclick = () => { inputField.value = ''; inputField.focus(); };
+                document.getElementById('sys-modal-text').after(wrapper);
+                inputField.onkeydown = (e) => { if (e.key === 'Enter') btnConfirm.click(); };
+            }
+
+            actionsEl.innerHTML = '';
+            const finalize = (v) => { modal.classList.add('hidden'); resolve(v); };
+
+            if (cancelText) {
+                const btnCancel = document.createElement('button');
+                btnCancel.className = 'px-4 py-2 rounded-lg bg-gray-700 text-gray-300 text-sm';
+                btnCancel.textContent = cancelText;
+                btnCancel.onclick = () => finalize(null);
+                actionsEl.appendChild(btnCancel);
+            }
+
+            const btnConfirm = document.createElement('button');
+            btnConfirm.className = `px-4 py-2 rounded-lg text-white text-sm ${type === 'success' ? 'bg-emerald-600' : 'bg-blue-600'}`;
+            btnConfirm.textContent = confirmText;
+            btnConfirm.onclick = () => finalize(showInput ? inputField.value : true);
+            actionsEl.appendChild(btnConfirm);
+
+            modal.classList.remove('hidden');
             lucide.createIcons();
-        });    
-        
-        function logoutAndClearCache() {
-            // Definir las claves que deben ser eliminadas al cerrar sesión:
-            const cacheKeys = [
-                // Claves de caché de datos:
-                'employeeDataCache_BD_Personal2', // Caché de BD_Personal2
-                'vacaciones2DataCache',           // Caché de Vacaciones2
-                
-                // Claves de datos de sesión/perfil del usuario (CRÍTICAS para la limpieza):
-                'Usuario_Nombre',
-                'Usuario_Correo', 
-                'Usuario_Telefono', 
-                'Usuario_PreguntaSeg', 
-                'Usuario_RespuestaSeg', 
-                'Usuario_Id',
-                'Usuario_IdX',
-                'Usuario_Tienda',
-                'Usuario_Perfil'
-            ];
-        
-            console.log("Iniciando proceso de cierre de sesión y limpieza de caché...");
-        
-            // Limpiar cada clave
-            cacheKeys.forEach(key => {
-                localStorage.removeItem(key);
-                console.log(`Caché limpia: ${key}`);
-            });
-        
-            // Redirigir al usuario a la página de inicio (index.html)
-            window.location.href = 'index.html';
-        }
-        
-        // --- INICIALIZACIÓN DE LA APLICACIÓN ---
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const correo = localStorage.getItem('Usuario_Correo');
-            const id = localStorage.getItem('Usuario_Id');
-            
-            // Verifica si AMBAS claves están ausentes.
-            // La sesión no es válida si NO hay Correo AND NO hay Id.
-            if (!correo && !id) {
-                console.log("Redirigiendo a index.html");
-                window.location.replace('index.html'); 
-            }
+            if (inputField) setTimeout(() => inputField.focus(), 50);
         });
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            // Lógica para mostrar solo el primer nombre del usuario si existe en localStorage
-            const usuarioNombreCompleto = localStorage.getItem('Usuario_Nombre');
-            const headerTitle = document.querySelector('#app-header h1');
-            
-            if (usuarioNombreCompleto && headerTitle) {
-                // Extrae solo el primer nombre, tomando la primera palabra y recortando espacios
-                const primerNombre = usuarioNombreCompleto.trim().split(' ')[0];
-                headerTitle.textContent = `¡Hola, ${primerNombre}!`;
-            }
-            // Si usuarioNombreCompleto es null/vacío, el h1 mantiene su valor por defecto ("Mi Aplicación Móvil ZXC").
-
-            // Agrega event listeners para la navegación MPA, llamando a loadContent
-            const footerButtons = document.querySelectorAll('.footer-btn');
-            footerButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const section = button.getAttribute('data-section');
-                    loadContent(section);
-                });
-            });
-            
-            // Opcional: Redirigir a 'Perfil' (que es la vista principal) al cargar el index
-            // loadContent('Perfil'); 
-        });
-        
-    </script>
+    }
+</script>
 </body>
 </html>
