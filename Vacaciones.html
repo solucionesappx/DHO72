@@ -494,18 +494,39 @@
         <!-- Fin MODAL DE DETALLE DE VACACIONES -->
 
         <!-- Footer de Navegación Fijo -->
-        <footer id="app-footer" class="fixed bottom-0 border-t flex items-center justify-around h-18">
-            <button class="footer-btn" onclick="loadContent('Inicio')"><i data-lucide="home" class="w-6 h-6"></i><span>Inicio</span></button>
-            <button id="btn-vacaciones" class="footer-btn" onclick="loadContent('Vacaciones')"><i data-lucide="calendar-days" class="w-6 h-6"></i><span>Vacaciones</span></button>
-            <button id="btn-agregar" class="footer-btn" onclick="loadContent('Agregar')"><i data-lucide="calendar-plus" class="w-6 h-6"></i><span>Agregar</span></button>
-            <button class="footer-btn" onclick="loadContent('Perfil')"><i data-lucide="user" class="w-6 h-6"></i><span>Perfil</span></button>
-            <button class="footer-btn active" onclick="loadContent('Configuración')"><i data-lucide="settings" class="w-6 h-6"></i><span>Config</span></button>
+        <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around">  
+            <button class="footer-btn" data-section="Inicio"><i data-lucide="home" class="w-6 h-6"></i><span>Inicio</span></button>
+            <button class="footer-btn active" data-section="Vacaciones"><i data-lucide="calendar-days" class="w-6 h-6"></i><span>Vacaciones</span></button>
+            <button id="nav-agregar" class="footer-btn transition-opacity duration-300" data-section="Agregar"><i data-lucide="calendar-plus" class="w-6 h-6"></i><span>Agregar</span></button>
+            <button class="footer-btn hidden" data-section="Datos"><i data-lucide="database-backup" class="w-6 h-6"></i><span>Datos</span></button>                           
+            <button class="footer-btn" data-section="Perfil"><i data-lucide="user" class="w-6 h-6"></i><span>Perfil</span></button>
+            <button class="footer-btn" data-section="Configuración"><i data-lucide="settings" class="w-6 h-6"></i><span>Config</span></button>
         </footer>
+    </div>
 
     <script>
         // Inicializa los íconos de Lucide
         lucide.createIcons();
 
+      function disableVacacionesIfNoCedula() {
+            // 1. Obtener el valor de CEDULA de localStorage
+            const cedula = localStorage.getItem('CEDULA');
+            // 2. Obtener la referencia al botón
+            const navAgregarBtn = document.getElementById('nav-agregar');
+
+            if (!navAgregarBtn) {
+                return; 
+            }
+
+            if (!cedula) {
+                navAgregarBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+                
+            } else {
+                // Si existe CEDULA, asegurar que esté habilitado (si se deshabilitó antes)
+                navAgregarBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+            }
+        }
+        
         // 1. Constantes de configuración
         const GET_URL = 'https://script.google.com/macros/s/AKfycbx87WvxA9ca1KyGMA1wsw1npZw5vPtjoItomhF823BICXScNrWGFh5m0Dj6Veb24CtHXQ/exec'; 
         // const CEDULA = '13105322'; // Cédula para filtrar los datos en el GAS
@@ -1724,26 +1745,7 @@
                 }
             });
         }
-    // --- 2. INICIALIZACIÓN Y EVENTOS ---
-    document.addEventListener('DOMContentLoaded', () => {
-        checkAccessPermissions();   // Bloqueo visual de botones
-    });
 
-    // --- 3. SEGURIDAD Y NAVEGACIÓN ---
-    function checkAccessPermissions() {
-        const cedula = localStorage.getItem('Usuario_Cedula');
-        const btnVacaciones = document.getElementById('btn-vacaciones');
-        const btnAgregar = document.getElementById('btn-agregar');
-        const isRestricted = !cedula || cedula.trim() === "";
-
-        [btnVacaciones, btnAgregar].forEach(btn => {
-            if (btn) {
-                btn.disabled = isRestricted;
-                btn.classList.toggle('opacity-30', isRestricted);
-                btn.style.pointerEvents = isRestricted ? 'none' : 'auto';
-            }
-        });
-    }
 
         // Función principal para cargar el contenido de la sección y manejar la navegación MPA
         function loadContent(section) {
