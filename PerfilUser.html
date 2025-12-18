@@ -147,37 +147,12 @@
             </div>
         </header>
 
-        <footer id="app-footer" class="fixed bottom-0 w-full h-18 border-t border-gray-700 dark:border-gray-500 flex items-center justify-around py-2">
-            
-            <button class="footer-btn" data-section="Inicio">
-                <i data-lucide="home" class="w-6 h-6"></i>
-                <span>Inicio</span>
-            </button>
-            
-            <button id="nav-vacaciones" class="footer-btn transition-opacity duration-300" data-section="Vacaciones">
-                <i data-lucide="calendar-days" class="w-6 h-6 text-gray-400"></i> 
-                <span>Vacaciones</span>
-            </button>
-
-            <button class="footer-btn hidden" data-section="Agregar">
-                <i data-lucide="calendar-plus" class="w-6 h-6"></i>
-                <span>Agregar</span>
-            </button>
-
-            <button class="footer-btn" data-section="Datos">
-                <i data-lucide="database-backup" class="w-6 h-6"></i>
-                <span>Datos</span>
-            </button>
-                                        
-            <button class="footer-btn active" data-section="Perfil">
-                <i data-lucide="user" class="w-6 h-6"></i>
-                <span>Perfil</span>
-            </button>
-            
-            <button class="footer-btn" data-section="Configuración">
-                <i data-lucide="settings" class="w-6 h-6"></i>
-                <span>Config</span>
-            </button>
+        <footer id="app-footer" class="fixed bottom-0 border-t flex items-center justify-around h-18">
+            <button class="footer-btn" onclick="loadContent('Inicio')"><i data-lucide="home" class="w-6 h-6"></i><span>Inicio</span></button>
+            <button id="btn-vacaciones" class="footer-btn" onclick="loadContent('Vacaciones')"><i data-lucide="calendar-days" class="w-6 h-6"></i><span>Vacaciones</span></button>
+            <button id="btn-agregar" class="footer-btn" onclick="loadContent('Agregar')"><i data-lucide="calendar-plus" class="w-6 h-6"></i><span>Agregar</span></button>
+            <button class="footer-btn" onclick="loadContent('Perfil')"><i data-lucide="user" class="w-6 h-6"></i><span>Perfil</span></button>
+            <button class="footer-btn active" onclick="loadContent('Configuración')"><i data-lucide="settings" class="w-6 h-6"></i><span>Config</span></button>
         </footer>
     </div>
     
@@ -689,9 +664,23 @@
             }
         }
 
+            function checkAccessPermissions() {
+                const cedula = localStorage.getItem('Usuario_Cedula');
+                const btnVacaciones = document.getElementById('btn-vacaciones');
+                const btnAgregar = document.getElementById('btn-agregar');
+                const isRestricted = !cedula || cedula.trim() === "";
+        
+                [btnVacaciones, btnAgregar].forEach(btn => {
+                    if (btn) {
+                        btn.disabled = isRestricted;
+                        btn.classList.toggle('opacity-30', isRestricted);
+                        btn.style.pointerEvents = isRestricted ? 'none' : 'auto';
+                    }
+                });
+            }
         // Aseguramos que esta función se ejecute al iniciar la aplicación (dentro de DOMContentLoaded)
         document.addEventListener('DOMContentLoaded', () => {
-            // ... [Tu código existente] ...
+        checkAccessPermissions();   // Bloqueo visual de botones    
             
             // ... [Bloque de 'footerButtons' que ya tienes] ...
             const footerButtons = document.querySelectorAll('.footer-btn');
