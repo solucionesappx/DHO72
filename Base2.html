@@ -78,7 +78,8 @@
             </div>
         </main>
         <footer id="app-footer" class="bottom-0 h-18 border-t flex items-center justify-around px-2 py-1">
-            <button class="footer-btn active" data-section="Inicio"><i data-lucide="home" class="w-6 h-6"></i><span>Inicio</span></button>
+            <button class="footer-btn active" data-section="Base"><i data-lucide="house-plus" class="w-6 h-6"></i><span>Base</span></button>
+            <button class="footer-btn" data-section="Inicio"><i data-lucide="home" class="w-6 h-6"></i><span>Inicio</span></button>
             <button id="btn-datos" class="footer-btn" data-section="Datos"><i data-lucide="database" class="w-6 h-6"></i><span>Datos</span></button>
             <button id="btn-agregar" class="footer-btn" data-section="Agregar"><i data-lucide="plus-circle" class="w-6 h-6"></i><span>Agregar</span></button>
             <button class="footer-btn" data-section="Perfil"><i data-lucide="user" class="w-6 h-6"></i><span>Perfil</span></button>
@@ -113,8 +114,8 @@
             if(window.lucide)lucide.createIcons();
         }
         async function loadContent(s){
-            const NAV={'Inicio':'Inicio.html','Inicio':'Inicio.html','Datos': 'Datos.html','Agregar':'AgregarDat.html','Perfil':'PerfilUser.html','Configuracion':'ConfigApp.html'};
-            if(['Datos', 'Agregar'].includes(s) && !localStorage.getItem(KEYS.INPUT_ID)){return showSystemModal({title:'Acceso Imposible', text:'Registre el dato CLAVE para su búsqueda en la sección correspondiente.', type:'warning'});}    
+            const NAV={'Base':'Base2.html','Inicio':'Inicio.html','Vacaciones': 'Vacaciones.html','Agregar':'AgregarDat.html','Perfil':'PerfilUser.html','Configuracion':'ConfigApp.html'};
+            if(['Agregar'].includes(s) && !localStorage.getItem(KEYS.INPUT_ID)){return showSystemModal({title:'Acceso Imposible', text:'Registre el dato CLAVE para su búsqueda en la sección correspondiente.', type:'warning'});}    
             if(s==='Configuracion' && localStorage.getItem(KEYS.PERFIL)!=='Admin') return showSystemModal({title:'Acceso Denegado',text:'Solo administradores.',type:'warning'});
             if(NAV[s]) window.location.href=NAV[s];
         }     
