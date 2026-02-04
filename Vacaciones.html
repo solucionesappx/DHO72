@@ -296,6 +296,7 @@
             <div id="scroll-container">
                 
                 <!-- 1. TARJETA DE INFORMACIÓN DEL TRABAJADOR -->
+
                 <div id="employee-card-container" class="pt-2 mb-6">
                     <!-- El contenido de la tarjeta se inyectará aquí -->
                     <div class="employee-card p-4 rounded-xl shadow-lg border border-gray-700">
@@ -311,8 +312,13 @@
                     <div class="flex items-center space-x-2 p-0">
                         <input type="checkbox" id="filterByPeriodCheckbox" onchange="updateFilterPlaceholder();" 
                                 class="w-4 h-4 rounded text-blue-500 light:bg-gray-200 dark:bg-gray-600 border-gray-400 focus:ring-blue-500 cursor-pointer">
-                        <label for="filterByPeriodCheckbox" class="text-base text-gray-100 select-none cursor-pointer">
+                        <label for="filterByPeriodCheckbox" class="text-base text-gray-100 select-none cursor-pointer pr-2 border-r-2 border-gray-600">
                             Filtrar por Periodo
+                        </label>
+                        <input type="checkbox" id="filterByRecalculatedCheckbox" onchange="updateFilterPlaceholder();" 
+                                class="w-4 h-4 rounded text-blue-500 light:bg-gray-200 dark:bg-gray-600 border-gray-400 focus:ring-blue-500 cursor-pointer">
+                        <label for="filterByRecalculatedCheckbox" class="text-base text-gray-100 select-none cursor-pointer">
+                            Filtrar por Recalculado
                         </label>
                     </div>
 
@@ -630,7 +636,8 @@
         let searchFilter = ''; // Estado del filtro de búsqueda
         let filterMode = 'all'; // 'all' (Id, Periodo o Concepto) o 'period' (Solo Periodo)
         let employeeFixedDetails = {}; // Almacena los detalles fijos del empleado
-        
+        let filterRecalculated = false;
+
         // ESTADO GLOBAL DEL MODAL: Almacena los datos actualmente filtrados y *ordenados*
         let currentFilteredData = [];   
 
@@ -815,30 +822,44 @@
             // HTML EXTRAÍDO (parte superior de la tarjeta hasta la línea separadora)
             const staticHTML = `
                 <div class="employee-card p-4 rounded-xl shadow-xl transition duration-300">
-
-                        <div class="flex items-center text-sm text-gray-400 space-x-1 pb-1">
+                    <div class="flex items-start justify-between mb-2">
+                        <div class="flex items-center text-sm text-gray-400 space-x-2">
                             <i data-lucide="circle-user-round" class="w-6 h-6 text-blue-400/90 flex-shrink-0"></i>
-                            <h3 class="p-1 text-[15px] font-extrabold text-white leading-tight" id="display-empresa">   
+                            <h3 class="p-1 text-[15px] font-extrabold text-white leading-tight">   
                                 ${nombreFormateado.toUpperCase()}
                             </h3>
                         </div>
+
+                        <button type="button" onclick="closeAndReturn()" 
+                                id="close-modal-x-btn"
+                                class="w-10 h-10 
+                                    flex items-center justify-center 
+                                    rounded-full 
+                                    bg-white/5
+                                    text-red-400 
+                                    hover:bg-red-500/20 
+                                    hover:text-red-500
+                                    hover:scale-110
+                                    transition-all duration-300 flex-shrink-0">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
                         
-                        <div class="grid grid-cols-2 gap-4 pt-1 border-t border-gray-400">
-                            <div class="flex items-start text-sm text-gray-400 space-x-1">
-                                <i data-lucide="factory" class="w-6 h-6 text-blue-400/90 flex-shrink-0"></i>
-                                <h3 class="p-1 text-sm font-extrabold text-white leading-tight" id="display-empresa">   
-                                    ${empresa}
-                                </h3>
-                            </div>
+                    <div class="grid grid-cols-2 gap-4 pt-1 border-t border-gray-400">
+                        <div class="flex items-start text-sm text-gray-400 space-x-1">
+                            <i data-lucide="factory" class="w-6 h-6 text-blue-400/90 flex-shrink-0"></i>
+                            <h3 class="p-1 text-sm font-extrabold text-white leading-tight" id="display-empresa">   
+                                ${empresa}
+                            </h3>
+                        </div>
 
-                            <div class="text-right">
-                                <div class="flex flex-col items-end pb-1">
-                                    <span class="text-sm text-gray-400 font-semibold">Cédula: <span class="text-gray-300" id="display-cedula">${formatNumberWithDots(cedula)}</span></span>
-                                    <span class="text-sm text-gray-400 font-semibold">Ingreso: <span class="text-gray-300" id="display-ingreso">${formatDate(fechaIngreso)}</span></span>
-                                </div>
+                        <div class="text-right">
+                            <div class="flex flex-col items-end pb-1">
+                                <span class="text-sm text-gray-400 font-semibold">Cédula: <span class="text-gray-300" id="display-cedula">${formatNumberWithDots(cedula)}</span></span>
+                                <span class="text-sm text-gray-400 font-semibold">Ingreso: <span class="text-gray-300" id="display-ingreso">${formatDate(fechaIngreso)}</span></span>
                             </div>
-                        </div>   
-
+                        </div>
+                    </div>   
 
                     <div class="flex flex-row items-center justify-center p-1 rounded-xl border border-gray-600 bg-gray-600/80 hover:bg-gray-500 transition-colors cursor-pointer"
                         title="Otro Trabajador" 
@@ -858,6 +879,11 @@
             container.innerHTML = staticHTML;
             lucide.createIcons();
         }
+
+function closeAndReturn() {
+
+    window.location.href = 'Inicio.html';
+}
 
         /**
          * Renderiza la parte inferior de la tarjeta (los totales de vacaciones calculados)
@@ -1259,86 +1285,98 @@
          * También actualiza el estado global `currentFilteredData`.
          * @param {string|null} key - La columna (key) por la cual ordenar. Si es null, aplica el orden por defecto.
          */
-        function sortData(key) {
-            // 1. Filtrar los datos 
-            const filteredData = originalVacacionesData.filter(row => {
-                if (!searchFilter) return true; // Si no hay filtro, devuelve todo
-
-                const searchTerm = searchFilter.toLowerCase();
-                const periodo = String(row['PERIODO'] || '').toLowerCase();
-                
-                // --- Lógica de Filtrado Condicional ---
-                if (filterMode === 'period') {
-                    // MODO 1: Solo filtrar por Periodo
-                    return periodo.includes(searchTerm);
-                } else {
-                    // MODO 2: Filtrar por Periodo O Concepto O OBSERVACIONES O VACACIONES_ID (default)
-                    const concepto = String(row['DESCRIPCION_CONCEPTO'] || '').toLowerCase();
-                    const observaciones = String(row['OBSERVACIONES'] || '').toLowerCase();
-                    const vacacionesId = String(row['VACACIONES_ID'] || '').toLowerCase(); 
-
-                    return periodo.includes(searchTerm) || 
-                        concepto.includes(searchTerm) || 
-                        observaciones.includes(searchTerm) ||
-                        vacacionesId.includes(searchTerm); 
-                }
-            });
-
-            // 2. Clonar el array filtrado para ordenarlo (dataToSort es la versión final de la tabla)
-            const dataToSort = [...filteredData];
-            
-            // 3. Actualiza el estado de ordenamiento
-            if (key) {
-                if (currentSortColumn === key) {
-                    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-                } else {
-                    currentSortColumn = key;
-                    sortOrder = 'asc';
-                }
-            } else if (!currentSortColumn) {
-                currentSortColumn = null;
-                sortOrder = 'asc';
-            }
-
-            // 4. Ordenar los datos (Modifica dataToSort in-place)
-            dataToSort.sort((a, b) => {
-                // Ordenamiento por defecto (si no hay una columna activa, se aplica el nuevo orden)
-                if (!currentSortColumn || currentSortColumn === 'CEDULA' || !key) {
-                    let comparison;
-                    
-                    // 1. Criterio Prioritario: VACACIONES_ID (Descendente - ¡Debe ser Numérico!)
-                    // Usamos 'desc' y 'true' para ordenar IDs como números de mayor a menor.
-                    comparison = compareValues(a.VACACIONES_ID, b.VACACIONES_ID, 'desc', true); 
-                    if (comparison !== 0) return comparison;
-
-                    // 2. Criterio Secundario: RegistroDate (Ascendente - No es Numérico)
-                    // Usamos 'asc' y 'false' para ordenar las fechas como cadenas de texto de forma ascendente.
-                    comparison = compareValues(a.RegistroDate, b.RegistroDate, 'asc', false);
-                    
-                    return comparison;
-                } else {
-                    // Ordenamiento por la columna seleccionada por el usuario (código existente)
-                    const sortKey = currentSortColumn;
-                    let valA = a[sortKey] !== undefined ? a[sortKey] : '';
-                    let valB = b[sortKey] !== undefined ? b[sortKey] : '';
-                    
-                    // Asume que las columnas de días y bono son numéricas
-                    const isNumeric = ['DIAS_VACACIONES', 'BONO_VACACIONAL'].includes(sortKey); 
-                    
-                    return compareValues(valA, valB, sortOrder, isNumeric);
-                }
-            });
-
-            // 5. Almacenar los datos filtrados y ordenados en el estado global
-            currentFilteredData = dataToSort;
-
-            // 6. Actualizar métricas de la tarjeta con los datos filtrados
-            updateCardMetrics(currentFilteredData);
-            
-            // 7. Renderizar la tabla con los datos ordenados y actualizar los iconos
-            renderVacacionesTable(currentFilteredData); 
-            updateSortIcons();
+/**
+ * Filtra, ordena y renderiza los datos de la tabla de vacaciones.
+ * @param {string|null} key - La columna por la cual ordenar. Si es null, usa el orden por defecto.
+ */
+function sortData(key) {
+    // 1. Filtrar los datos 
+    const filteredData = originalVacacionesData.filter(row => {
+        
+        // --- A. Lógica de Filtro por Condición (Filtro Fijo de Estado) ---
+        // Si el checkbox de Recalculado está activo
+        if (filterRecalculated) {
+            const condicion = String(row['VACACION_CONDICION'] || '').trim();
+            // Si el valor no es exactamente "Recalculado", se excluye del resultado
+            if (condicion !== 'Recalculado') return false;
         }
+
+        // --- B. Lógica de Búsqueda por Texto (Filtro Dinámico) ---
+        if (!searchFilter) return true; // Si el buscador está vacío, el registro pasa
+
+        const searchTerm = searchFilter.toLowerCase();
+        const periodo = String(row['PERIODO'] || '').toLowerCase();
+        
+        if (filterMode === 'period') {
+            // MODO 1: Solo buscar coincidencias en la columna PERIODO
+            return periodo.includes(searchTerm);
+        } else {
+            // MODO 2: Búsqueda general en múltiples columnas (default)
+            const concepto = String(row['DESCRIPCION_CONCEPTO'] || '').toLowerCase();
+            const observaciones = String(row['OBSERVACIONES'] || '').toLowerCase();
+            const vacacionesId = String(row['VACACIONES_ID'] || '').toLowerCase(); 
+
+            return periodo.includes(searchTerm) || 
+                   concepto.includes(searchTerm) || 
+                   observaciones.includes(searchTerm) ||
+                   vacacionesId.includes(searchTerm); 
+        }
+    });
+
+    // 2. Clonar el array filtrado para no mutar el original
+    const dataToSort = [...filteredData];
+    
+    // 3. Actualizar el estado de ordenamiento (Ascendente / Descendente)
+    if (key) {
+        if (currentSortColumn === key) {
+            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSortColumn = key;
+            sortOrder = 'asc';
+        }
+    } else if (!currentSortColumn) {
+        // Inicialización por defecto si no hay columna seleccionada
+        currentSortColumn = null;
+        sortOrder = 'asc';
+    }
+
+    // 4. Ordenar los datos
+    dataToSort.sort((a, b) => {
+        // Caso A: Ordenamiento Automático (cuando no se hace clic en encabezados o es CEDULA)
+        if (!currentSortColumn || currentSortColumn === 'CEDULA' || !key) {
+            let comparison;
+            
+            // Prioridad 1: VACACIONES_ID de forma Descendente (Más recientes primero)
+            comparison = compareValues(a.VACACIONES_ID, b.VACACIONES_ID, 'desc', true); 
+            if (comparison !== 0) return comparison;
+
+            // Prioridad 2: RegistroDate de forma Ascendente
+            comparison = compareValues(a.RegistroDate, b.RegistroDate, 'asc', false);
+            
+            return comparison;
+        } else {
+            // Caso B: Ordenamiento solicitado por el usuario al hacer clic en un encabezado
+            const sortKey = currentSortColumn;
+            let valA = a[sortKey] !== undefined ? a[sortKey] : '';
+            let valB = b[sortKey] !== undefined ? b[sortKey] : '';
+            
+            // Identificamos columnas numéricas para una comparación matemática correcta
+            const isNumeric = ['DIAS_VACACIONES', 'BONO_VACACIONAL', 'VACACIONES_ID'].includes(sortKey); 
+            
+            return compareValues(valA, valB, sortOrder, isNumeric);
+        }
+    });
+
+    // 5. Actualizar el estado global con los datos ya procesados
+    currentFilteredData = dataToSort;
+
+    // 6. Actualizar las métricas visuales (totales, contadores, etc.)
+    updateCardMetrics(currentFilteredData);
+    
+    // 7. Renderizar la tabla en el DOM y refrescar iconos de Lucide
+    renderVacacionesTable(currentFilteredData); 
+    updateSortIcons();
+}
 
         /**
          * Aplica los filtros de búsqueda y luego el ordenamiento actual.
@@ -1353,40 +1391,44 @@
             }
         }
         
-        /**
-         * Limpia el campo de búsqueda y reinicia el filtro.
-         */
-        function clearSearchFilter() {
-            const input = document.getElementById('search-input');
-            const checkbox = document.getElementById('filterByPeriodCheckbox');
-            
-            if (input) {
-                input.value = '';
-            }
-            // Asegura que el checkbox se resetee a su estado inicial
-            checkbox.checked = false; 
-            updateFilterPlaceholder(); // Actualiza el placeholder y el modo de filtro
-            // applyAllFilters se llama dentro de updateFilterPlaceholder si el modo de filtro cambia
-        }
+/**
+ * Limpia el campo de búsqueda y reinicia todos los filtros.
+ */
+function clearSearchFilter() {
+    const input = document.getElementById('search-input');
+    const cbPeriod = document.getElementById('filterByPeriodCheckbox');
+    const cbRecalc = document.getElementById('filterByRecalculatedCheckbox');
+    
+    if (input) input.value = '';
+    if (cbPeriod) cbPeriod.checked = false;
+    if (cbRecalc) cbRecalc.checked = false; 
 
-        /**
-         * Actualiza el modo de filtro y el placeholder de la búsqueda, luego llama a applyAllFilters.
-         */
-        function updateFilterPlaceholder() {
-            const input = document.getElementById('search-input');
-            const checkbox = document.getElementById('filterByPeriodCheckbox');
-            
-            if (checkbox.checked) {
-                filterMode = 'period';
-                input.placeholder = "Solo Periodo (YYYY)";
-            } else {
-                filterMode = 'all';
-                input.placeholder = "Periodo o Concepto";
-            }
-            
-            // Aplica el filtro inmediatamente después de cambiar el modo
-            applyAllFilters();
-        }
+    updateFilterPlaceholder(); 
+}
+
+ /**
+ * Actualiza los modos de filtro, el placeholder y ejecuta la filtración.
+ */
+function updateFilterPlaceholder() {
+    const input = document.getElementById('search-input');
+    const cbPeriod = document.getElementById('filterByPeriodCheckbox');
+    const cbRecalc = document.getElementById('filterByRecalculatedCheckbox');
+    
+    filterMode = (cbPeriod && cbPeriod.checked) ? 'period' : 'all';
+    filterRecalculated = (cbRecalc && cbRecalc.checked);
+
+    if (filterMode === 'period') {
+        input.placeholder = filterRecalculated 
+            ? "Año (en Recalculados)" 
+            : "Solo Periodo (YYYY)";
+    } else {
+        input.placeholder = filterRecalculated 
+            ? "Buscar en Recalculados..." 
+            : "Nombre, Id, Descripción, etc...";
+    }
+    
+    applyAllFilters();
+}
 
         /**
          * Actualiza visualmente los iconos de ordenamiento en el encabezado de la tabla.
@@ -1577,7 +1619,7 @@
             }
             
             // ... Definiciones de constantes ...
-            const EXCLUIR_COLUMNS = ['NOMBRE_EMPLEADO', 'INGRESO', 'VACACION_CONDICION', 'RegistroUser', 'RegistroDate', 'CEDULA', 
+            const EXCLUIR_COLUMNS = ['NOMBRE_EMPLEADO', 'INGRESO', 'RegistroUser', 'RegistroDate', 'CEDULA', 
             'NOMBRES', 'APELLIDOS', 'EMPRESA'];           
             const DATE_COLUMNS = ['DIA_INICIO', 'DIA_FINAL'];
             const DATETIME_COLUMN = ['RegistroDate']; 
@@ -1822,16 +1864,23 @@
         });
         
         document.addEventListener('DOMContentLoaded', () => {
-            // Lógica para mostrar solo el primer nombre del usuario si existe en localStorage
+
+            console.group("DEBUG: Estado de LocalStorage en SPA Secundaria");
+            console.log("Cédula activa:", localStorage.getItem('employeeInfo.CEDULA'));
+            console.log("Filtro previo para volver:", localStorage.getItem('LAST_SEARCH_TERM'));
+            console.groupEnd();
+
+            // 1. Lógica para mostrar solo el primer nombre del usuario
             const usuarioNombreCompleto = localStorage.getItem('Usuario_Nombre');
             const headerTitle = document.querySelector('#app-header h1');
             
             if (usuarioNombreCompleto && headerTitle) {
                 const primerNombre = usuarioNombreCompleto.trim().split(' ')[0];
-                headerTitle.textContent = `¡Hola, ${primerNombre}!`;
+                const capitalizedName = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
+                headerTitle.textContent = `¡Hola, ${capitalizedName}!`;
             }
 
-            // Agrega event listeners para la navegación MPA, llamando a loadContent
+            // 2. Event listeners para la navegación MPA
             const footerButtons = document.querySelectorAll('.footer-btn');
             footerButtons.forEach(button => {
                 button.addEventListener('click', () => {
@@ -1840,16 +1889,16 @@
                 });
             });
             
-            // 4. Llama a la función de inicialización para cargar los datos al iniciar (no forzado)
+            // 3. Cargar datos iniciales
             const urlParams = new URLSearchParams(window.location.search);
             const forceReload = urlParams.get('reload') === 'true';
             initVacacionesView(forceReload);
 
             if (forceReload) {
-            history.replaceState(null, '', window.location.pathname);
+                history.replaceState(null, '', window.location.pathname);
             }
             
-            // Inicializa los íconos de Lucide nuevamente.
+            // 4. Inicializa los íconos de Lucide.
             lucide.createIcons();
         });
         
