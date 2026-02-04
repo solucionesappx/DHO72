@@ -7,8 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
-
-    
     <style>
         /* Configuración de Tailwind para usar el color de acento y la fuente Inter */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -220,12 +218,12 @@
 
         .table-data-cell {
             font-size: 0.875rem; 
-            padding-top: 0.25rem; 
-            padding-bottom: 0.25rem;
+            padding-top: 0rem; 
+            padding-bottom: 0rem;
             white-space: nowrap; 
             transition: background-color 0.15s, color 0.15s, border-color 0.15s;
             border-bottom: 1px solid #4b5563; 
-            height: 32px; 
+            height: 20px; 
             /* Propiedades eliminadas: display: flex y align-items: center */
         }
         
@@ -643,6 +641,11 @@
         let vacationData = [];    // 🎯 Variable global para Vacaciones2
         let filteredEmployeeData = [];
         
+        let searchInput;
+        let clearBtn;
+        let reloadBtn;
+        let detailsModal;
+        
         let debounceTimer; // Temporizador de retardo para la búsqueda
         let alertTimeoutId; // 
         
@@ -691,7 +694,7 @@
         
         // Estado del modal (Vista o Edición)
         let isEditMode = false;
-        
+
         // =================================================================
         // --- FUNCIONES DE MANEJO DE DATOS GAS Y ORDENACIÓN ---
         // =================================================================
@@ -740,6 +743,31 @@
             });
         }
         
+        // Esta función debería ejecutarse después de que 'allEmployeeData' tenga los datos de Google
+        function recoverNavigationState() {
+            const savedSearch = localStorage.getItem('LAST_SEARCH_TERM');
+            
+            if (savedSearch) {
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    // 1. Sincronizamos la UI
+                    searchInput.value = savedSearch;
+                    // 2. Sincronizamos la variable de control
+                    searchFilter = savedSearch;
+                    
+                    // 3. Ejecutamos el motor de filtrado de tu SPA
+                    // Esto actualizará 'filteredEmployeeData' y renderizará la tabla
+                    if (typeof handleSearch === 'function') {
+                        handleSearch(); 
+                    } else if (typeof applyFilters === 'function') {
+                        applyFilters();
+                    }
+                    
+                    console.log("Filtro recuperado exitosamente:", savedSearch);
+                }
+            }
+        }
+
         /**
          * Ordena los datos filtrados por la columna especificada (llamada por el clic del usuario).
          * @param {string} column - La clave de la columna por la que ordenar.
@@ -1379,17 +1407,22 @@
          * @param {string} searchTerm - El término de búsqueda.
          */
         function filterEmployees(searchTerm) {
+            // 1. Sincronizar la variable global de búsqueda
+            searchFilter = searchTerm; 
+
             const query = String(searchTerm).trim().toLowerCase();
             
+            // 2. Lógica de Filtrado
             if (query === '') {
-                // Si la búsqueda está vacía, mostrar todos los datos sin alterar el orden (filteredData = allData.slice())
+                // Si la búsqueda está vacía, mostramos todos los datos originales
                 filteredEmployeeData = [...allEmployeeData];
             } else {
-                // Filtrar datos
+                // Filtrar sobre el array principal de empleados
                 filteredEmployeeData = allEmployeeData.filter(employee => {
-                    // INCLUIR COLUMNAS PARA BÚSQUEDA
+                    // Columnas en las que se realizará la búsqueda
                     const searchFields = [
-                        'EMPRESA', 'NOMBRES', 'APELLIDOS', 'CEDULA', 'CARGO', 'NOMINA', 'SECTOR', 'UNIDAD'
+                        'EMPRESA', 'NOMBRES', 'APELLIDOS', 'CEDULA', 'CARGO', 
+                        'NOMINA', 'SECTOR', 'UNIDAD'
                     ];
 
                     return searchFields.some(field => 
@@ -1398,14 +1431,24 @@
                 });
             }
             
-            // Reaplicar la ordenación actual si existe
-            if (currentSortColumn && currentSortDirection) {
-                performSort(filteredEmployeeData, currentSortColumn, currentSortDirection);
+            // 3. Reaplicar la ordenación si el usuario ya tenía una columna seleccionada
+            if (typeof currentSortColumn !== 'undefined' && currentSortColumn && currentSortDirection) {
+                if (typeof performSort === 'function') {
+                    performSort(filteredEmployeeData, currentSortColumn, currentSortDirection);
+                }
             }
 
-            // Volver a renderizar y actualizar métricas con los datos filtrados
-            updateMetrics(filteredEmployeeData);
-            renderTable(filteredEmployeeData);
+            // 4. Actualizar la Interfaz y Métricas
+            // Verificamos que las funciones existan antes de llamarlas para evitar errores
+            if (typeof updateMetrics === 'function') {
+                updateMetrics(filteredEmployeeData);
+            }
+            
+            if (typeof renderTable === 'function') {
+                renderTable(filteredEmployeeData);
+            } else {
+                console.error("Error: renderTable no está definida.");
+            }
         }
         
         /**
@@ -1417,11 +1460,15 @@
                 searchInput.value = '';
             }
 
-            // REINICIAR ORDENACIÓN a NULL para el orden por defecto de GAS
+            // 1. LIMPIAR PERSISTENCIA: Borramos el rastro del filtro para que no 
+            // aparezca la próxima vez que regresemos de otra SPA.
+            localStorage.removeItem('LAST_SEARCH_TERM');
+
+            // 2. REINICIAR ORDENACIÓN a NULL para el orden por defecto de GAS
             currentSortColumn = null;
             currentSortDirection = null;
 
-            // Restablecer filtro (lo que activará el renderizado sin ordenación)
+            // 3. Restablecer filtro (activará el renderizado sin ordenación y sin texto)
             filterEmployees(''); 
         }
 
@@ -1776,7 +1823,7 @@
             }
         }        
 
-/**
+        /**
          * Muestra un modal de alerta/carga personalizado.
          * @param {string} message - El mensaje a mostrar.
          * @param {'loading'|'info'|'error'} type - El tipo de alerta.
@@ -2263,7 +2310,11 @@
         /**
          * Inicializa los escuchadores DOM específicos de la página de Inicio (búsqueda, recarga).
          */
+        /**
+         * Inicializa todos los escuchadores de eventos para la pantalla de Inicio.
+         */
         function initializeHomeListeners() {
+            // 1. Declaración de elementos del DOM
             const searchInput = document.getElementById('search-input');
             const clearBtn = document.getElementById('clear-search-btn');
             const reloadBtn = document.getElementById('reload-icon');
@@ -2273,6 +2324,7 @@
             const saveBtn = document.getElementById('save-icon-button'); 
             const cancelBtn = document.getElementById('cancel-icon-button'); 
 
+            // --- ESCUCHADORES PARA EL MODAL DE DETALLES ---
             if (firedBtn) {
                 firedBtn.addEventListener('click', () => {
                     handleFiredWorker();
@@ -2286,84 +2338,150 @@
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', cancelEditMode);
             }
-            
-            // Escuchador para el campo de búsqueda con Debounce (300ms)
+
+            // --- MOTOR DE BÚSQUEDA Y PERSISTENCIA ---
             if (searchInput) {
                 searchInput.addEventListener('input', () => {
+                    // Detenemos el temporizador anterior para no saturar el proceso
                     clearTimeout(debounceTimer);
+                    
                     debounceTimer = setTimeout(() => {
-                        filterEmployees(searchInput.value);
-                    }, 300);
+                        const valor = searchInput.value.trim();
+                        
+                        // 1. GUARDADO EN TIEMPO REAL:
+                        // Guardamos el término aquí para que persista si el usuario 
+                        // navega a otra SPA y luego regresa.
+                        localStorage.setItem('LAST_SEARCH_TERM', valor);
+                        
+                        // 2. FILTRADO DE TABLA:
+                        // Ejecutamos la función que ya actualiza filteredEmployeeData y renderiza
+                        filterEmployees(valor);
+                        
+                        console.log("Búsqueda guardada y filtrada:", valor);
+                    }, 300); // 300ms de espera tras dejar de escribir
                 });
             }
 
-            // Escuchador para el botón de borrar búsqueda y ordenación
+            // --- BOTÓN DE LIMPIAR BÚSQUEDA ---
             if (clearBtn) {
-                clearBtn.addEventListener('click', clearSearch);
+                clearBtn.addEventListener('click', () => {
+                    // Llamamos a la función clearSearch que definimos antes
+                    clearSearch();
+                    
+                    // Aseguramos que el localStorage se limpie también aquí por seguridad
+                    localStorage.removeItem('LAST_SEARCH_TERM');
+                });
             }
 
-            // Escuchador para el botón de recargar datos (omite caché)
+            // --- BOTÓN DE RECARGA (Omitir caché de GAS) ---
             if (reloadBtn) {
-                reloadBtn.addEventListener('click', reloadData);
+                reloadBtn.addEventListener('click', () => {
+                    // Si el usuario recarga, solemos querer mantener el filtro o limpiarlo.
+                    // Aquí lo dejamos a tu elección, usualmente reloadData refresca todo.
+                    reloadData();
+                });
             }
 
-            // Escuchador para cerrar el modal de detalles haciendo clic en el overlay
+            // --- CIERRE DE MODAL POR CLIC EXTERNO (Overlay) ---
             if (detailsModal) {
                 detailsModal.addEventListener('click', (event) => {
-                    // Cierra solo si se hace clic directamente en el overlay (el fondo gris oscuro)
+                    // Solo cierra si se hace clic en el fondo gris y no estamos editando
                     if (event.target.id === 'details-employee-modal' && !isEditMode) {
-                        closeDetailsModal();
+                        if (typeof closeDetailsModal === 'function') {
+                            closeDetailsModal();
+                        }
                     }
                 });
             }
             
-            // Los escuchadores de tabla se llaman dentro de renderTable
+            // Nota: Los escuchadores de las filas de la tabla (clic en empleado) 
+            // se reinicializan automáticamente dentro de renderTable().
         }
         
         // --- INICIALIZACIÓN DE LA APLICACIÓN ---
         
-       document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. VALIDACIÓN DE SESIÓN (Prioridad absoluta) ---
             const correo = localStorage.getItem('Usuario_Correo');
             const id = localStorage.getItem('Usuario_Id');
             
-            // Verifica si AMBAS claves están ausentes.
-            // La sesión no es válida si NO hay Correo AND NO hay Idx.
-            if (!correo && !id) {
-                console.log("Redirigiendo a index.html");
-                window.location.replace('index.html'); 
-            }
-        });
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        const valor = searchInput.value.trim();
+                        
+                        // 1. Lo guardamos inmediatamente para que esté listo si el usuario navega
+                        localStorage.setItem('LAST_SEARCH_TERM', valor);
+                        
+                        // 2. Ejecutamos el filtro normal
+                        filterEmployees(valor);
+                    }, 300);
+                });
+            }            
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Lógica para mostrar solo el primer nombre del usuario si está disponible en localStorage
+            if (!correo && !id) {
+                console.warn("Sesión no válida, redirigiendo...");
+                window.location.replace('index.html');
+                return; 
+            }
+
+            // --- 2. DEPURACIÓN DE ENTRADA ---
+            const savedSearch = localStorage.getItem('LAST_SEARCH_TERM');
+            console.group("🚀 Sistema de Persistencia: Inicio.html");
+            console.log("Filtro recuperado:", savedSearch ? `"${savedSearch}"` : "Ninguno");
+            console.log("Usuario:", localStorage.getItem('Usuario_Nombre'));
+            console.groupEnd();
+
+            // --- 3. LÓGICA DE SALUDO ---
             const usuarioNombreCompleto = localStorage.getItem('Usuario_Nombre');
             const headerTitle = document.querySelector('#app-header h1');
             
             if (usuarioNombreCompleto && headerTitle) {
-                // Extraer el primer nombre y capitalizar la primera letra
                 const primerNombre = usuarioNombreCompleto.trim().split(' ')[0];
-                const capitalizedFirstName = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
-                
-                headerTitle.textContent = `¡Hola, ${capitalizedFirstName}!`;
+                const capitalizedName = primerNombre.charAt(0).toUpperCase() + primerNombre.slice(1).toLowerCase();
+                headerTitle.textContent = `¡Hola, ${capitalizedName}!`;
             }
 
-            // Comenzar a cargar los datos de las hojas Google Sheets
+            // --- 4. CARGA INICIAL DE DATOS Y LISTENERS ---
             loadAllData();
-            
-            // Inicializar escuchadores de UI (búsqueda, recarga, controles de modal)
             initializeHomeListeners();
 
-            // Añadir escuchadores de eventos para la navegación MPA
+            // --- 5. RESTAURACIÓN DEL ESTADO DE BÚSQUEDA ---
+            if (savedSearch) {
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) {
+                    // Restaurar valor visual en el input
+                    searchInput.value = savedSearch;
+                    
+                    // Esperamos a que la carga de Google Sheets termine para aplicar el filtro
+                    setTimeout(() => {
+                        if (typeof filterEmployees === 'function') {
+                            // Verificamos que existan datos antes de filtrar
+                            if (allEmployeeData && allEmployeeData.length > 0) {
+                                filterEmployees(savedSearch);
+                            } else {
+                                // Si los datos aún no están, reintentamos brevemente una vez
+                                setTimeout(() => filterEmployees(savedSearch), 1000);
+                            }
+                        }
+                    }, 800); 
+                }
+            }
+
+            // --- 6. NAVEGACIÓN Y COMPONENTES ---
             const footerButtons = document.querySelectorAll('.footer-btn');
             footerButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const section = button.getAttribute('data-section');
-                    loadContent(section);          
-                  });
+                    if (typeof loadContent === 'function') loadContent(section);          
+                });
             });
-           
-            // Volver a inicializar los íconos al cargar
-            lucide.createIcons();
+
+            // Refrescar iconos globales
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         });
         
     </script>
